@@ -67,6 +67,8 @@ __recovery/
 # Castalia statistics file (since XE7 Castalia is distributed with Delphi)
 *.stat
 
-#arquivos do pdv
-Retorno.txt
-Testes.dll
+#arquivos 
+Testes/ModelSupport_ComumTest/
+Testes/Win32/Debug/
+
+

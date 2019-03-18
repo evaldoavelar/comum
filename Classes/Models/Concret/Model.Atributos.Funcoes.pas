@@ -212,6 +212,9 @@ begin
   try
     Result := nil;
 
+    if (prop =nil) or (prop.GetAttributes = nil) then Exit;
+
+
     for attr in prop.GetAttributes do
     begin
       if (attr is Attribute) then

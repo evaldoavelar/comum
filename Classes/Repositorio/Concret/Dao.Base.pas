@@ -47,6 +47,8 @@ type
     function Delete<T: class>(Model: T): LongInt; overload;
     function Delete<T: class>(): IQueryBuilder<T>; overload;
 
+    function SQLToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
+
     constructor Create(aConnection: IConection; aLog: ILog = nil);
     destructor destroy; override;
   end;
@@ -311,11 +313,26 @@ begin
             else if (CompareText('Char', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsString)
             else if (CompareText('TDateTime', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsDateTime)
+            begin
+              if (Field.IsNull = false) or (Field.AsString <> '' ) then
+                prop.SetValue(TObject(Entity), Field.AsDateTime)
+              else
+                prop.SetValue(TObject(Entity), 0)
+            end
             else if (CompareText('TDate', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsDateTime)
+            begin
+              if Field.IsNull = false then
+                prop.SetValue(TObject(Entity), Field.AsDateTime)
+              else
+                prop.SetValue(TObject(Entity), 0);
+            end
             else if (CompareText('TTime', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsDateTime)
+            begin
+              if Field.IsNull = false then
+                prop.SetValue(TObject(Entity), Field.AsDateTime)
+              else
+                prop.SetValue(TObject(Entity), 0);
+            end
             else if (CompareText('Boolean', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsBoolean)
             else if (CompareText('Currency', prop.PropertyType.Name)) = 0 then
@@ -333,7 +350,7 @@ begin
             on E: Exception do
             begin
               raise Exception.Create('SetValue: prop.PropertyType.Name=' + prop.PropertyType.Name
-                + ' FieldName' + Field.FieldName + ' - '
+                + ' FieldName=' + Field.FieldName + ' - '
                 + E.Message);
             end;
           end;
@@ -518,6 +535,7 @@ begin
 
     Result := self.FConnection.ExecSQL(FLastSql, CampoValor);
 
+    FreeAndNil(CampoValor);
   except
     on E: Exception do
     begin
@@ -577,6 +595,11 @@ begin
       raise TDaoException.Create('SelectALL Exception: ' + E.Message);
     end;
   end;
+end;
+
+function TDaoBase.SQLToList<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
+begin
+  Result := self.OnToList<T>(aCmd, aCampoValor);
 end;
 
 function TDaoBase.Update<T>: IQueryBuilder<T>;
@@ -655,6 +678,7 @@ begin
     // tabela
     tabela := TAtributosFuncoes.tabela<T>;
 
+    Log('Montando o sql: ' + tabela);
     FLastSql := SQL.Delete.From(tabela)
       .ToString +
       GetWhere<T>(Model);
@@ -667,6 +691,7 @@ begin
     on E: Exception do
     begin
       Log('<< Delete Exception');
+      Log(E.Message);
       raise TDaoException.Create(E.Message);
     end;
   end;

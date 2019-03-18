@@ -372,7 +372,7 @@ end;
 
 destructor TQueryBuilder<T>.destroy;
 begin
-  FCampoValor.Free;
+  FreeAndNil(FCampoValor);
   inherited;
 end;
 

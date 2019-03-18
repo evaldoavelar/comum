@@ -29,9 +29,9 @@ implementation
 
 constructor TTabelaBD.Create;
 begin
-  Campos := TObjectList<CampoAttribute>.Create();
-  Fks := TObjectList<ForeignKeyAttribute>.Create();
-  Pks := TObjectList<PrimaryKeyAttribute>.Create();
+  Campos := TObjectList<CampoAttribute>.Create(false);
+  Fks := TObjectList<ForeignKeyAttribute>.Create(false);
+  Pks := TObjectList<PrimaryKeyAttribute>.Create(false);
 end;
 
 destructor TTabelaBD.destroy;

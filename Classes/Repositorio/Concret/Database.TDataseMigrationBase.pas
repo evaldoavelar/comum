@@ -16,7 +16,7 @@ uses
   Database.TTabelaBD,
   Database.SGDB,
   Database.Tabela.Firebird,
-  Database.Tabela.SqlServer, Database.Tabela.Oracle;
+  Database.Tabela.SqlServer, Database.Tabela.Oracle, Log.ILog;
 
 type
 
@@ -25,58 +25,63 @@ type
   /// <summary>
   /// Responsável por criar as tabelas e campos do objeto no banco de dados
   /// </summary>
-  TDataseMigrationBase = Class(TInterfacedObject, IDataseMigration)
+  TDataseMigrationBase = class(TInterfacedObject, IDataseMigration)
   private
 
   private
+
+    function getScript(Entity: TClass): TStringList;
+    procedure ExtractedAttributes(var Tabela: TTabelaBD; arAttr:
+      TArray<TCustomAttribute>);
+    function Atualiza(AClasse: TClass; AScripts: TStringList): Integer;
+    function getTipoTabela: TTabelaBD;
+
+  protected
+    FLog: ILog;
     FTipoBD: TSGBD;
     FErros: TDictionary<TClass, string>;
     FConection: IConection;
     FVersao: IDatabaseVersion;
-    function getScript(Entity: TClass): TStringList;
-    procedure ExtractedAttributes(var Tabela: TTabelaBD; arAttr: TArray<TCustomAttribute>);
-    function Atualiza(AClasse: TClass; AScripts: TStringList): Integer;
-    function getTipoTabela: TTabelaBD;
-    function PodeMigrar: Boolean;
 
-  protected
-    // carga inicial na base
-    procedure Seed(); virtual; abstract;
     // sobrescrever este metodo e passar quais sao os objetos que seram usados na migração
     function GetObjetos: TArrayObject; virtual; abstract;
-
+    function PodeMigrar: Boolean;
   public
-    function Migrate():IDataseMigration;
+    function Migrate(): IDataseMigration;
+    // carga inicial na base                                                                    '
+    function Seed(): IDataseMigration; virtual; abstract;
     function GetErros: TDictionary<TClass, string>;
-    constructor create(aConection: IConection; aVersao: IDatabaseVersion; ATipo: TSGBD);
+  public
+    constructor create(aConection: IConection; aVersao: IDatabaseVersion; ATipo:
+      TSGBD; aLog: ILog);
     destructor destroy();
-  End;
+  end;
 
   { TDataseMigrationFB }
 
 implementation
 
-
 function TDataseMigrationBase.getScript(Entity: TClass): TStringList;
 var
   Rtti: TRttiContext;
   ltype: TRttiType;
-  attr: TCustomAttribute;
+  attr: TArray<TCustomAttribute>;
   prop: TRttiProperty;
   FTabela: TTabelaBD;
 begin
-//veridicar se vai ser sql,oracle,firebird, etc
+  // veridicar se vai ser sql,oracle,firebird, etc
   FTabela := getTipoTabela;
 
   Rtti := TRttiContext.create;
   ltype := Rtti.GetType((Entity));
+  attr := ltype.GetAttributes;
 
   // extrair as anotações das classes
-  ExtractedAttributes(FTabela, ltype.GetAttributes);
+  ExtractedAttributes(FTabela, attr);
 
   for prop in ltype.GetProperties do
   begin
-   // extrair as anotações das propriedades
+    // extrair as anotações das propriedades
     ExtractedAttributes(FTabela, prop.GetAttributes);
   end;
 
@@ -95,7 +100,7 @@ var
   VersaoEXE: string;
 begin
   result := Self;
-  self.FErros.clear;
+  Self.FErros.clear;
 
   objetos := GetObjetos();
 
@@ -104,38 +109,41 @@ begin
 
   try
     try
-	  //pecorrer os objetos uinformados em  GetObjetos
+      // pecorrer os objetos uinformados em  GetObjetos
       for I := Low(objetos) to High(objetos) do
       begin
-           //recuperar a calsse do objeto
+        // recuperar a calsse do objeto
         classe := objetos[I];
-        //monta o script sql desse objeto
+        // monta o script sql desse objeto
         scripts := getScript(classe);
-        //execulta o script no banco de dados
+        // execulta o script no banco de dados
         Atualiza(classe, scripts);
       end;
     finally
       if Assigned(scripts) then
         FreeAndNil(scripts);
+      SetLength(objetos, 0);
     end;
 
-     //se não houve erros
+    // se não houve erros
     if FErros.Count = 0 then
     begin
-      //obtem a versão do executável
+      // obtem a versão do executável
       VersaoEXE := TUtil.GetVersionInfo();
-      //salvar como ultima versao atualizada
+      // salvar como ultima versao atualizada
       FVersao.AtualizaVersaoBD(VersaoEXE);
     end;
 
   except
     on E: Exception do
-      raise Exception.create('Migrate: ' + classe.ClassName + ' - ' + E.Message);
+      raise Exception.create('Migrate: ' + classe.ClassName + ' - ' +
+        E.Message);
   end;
 
 end;
 
-function TDataseMigrationBase.Atualiza(AClasse: TClass; AScripts: TStringList): Integer;
+function TDataseMigrationBase.Atualiza(AClasse: TClass; AScripts: TStringList):
+  Integer;
 var
   sql: string;
 begin
@@ -144,11 +152,11 @@ begin
   for sql in AScripts do
   begin
     try
-      self.FConection.ExecSQL(sql);
+      Self.FConection.ExecSQL(sql);
     except
       on E: Exception do
       begin
-        self.FErros.Add(AClasse, E.Message + ' - ' + sql);
+        Self.FErros.Add(AClasse, E.Message + ' - ' + sql);
         Inc(result);
       end;
     end;
@@ -162,26 +170,29 @@ var
   VERSAOBD: string;
 begin
 
-  VERSAOBD := self.FVersao.GetVersaoBD;
+  VERSAOBD := Self.FVersao.GetVersaoBD;
   VersaoEXE := TUtil.GetVersionInfo();
 
-  if (TUtil.CompararVersao(VersaoEXE, VERSAOBD) = stMenor) or (VersaoEXE = '0.0.0.0') then
+  if (TUtil.CompararVersao(VersaoEXE, VERSAOBD) = stMenor) or (VersaoEXE =
+    '0.0.0.0') then
     result := True;
 
 end;
 
-constructor TDataseMigrationBase.create(aConection: IConection; aVersao: IDatabaseVersion; ATipo: TSGBD);
+constructor TDataseMigrationBase.create(aConection: IConection; aVersao:
+  IDatabaseVersion; ATipo: TSGBD; aLog: ILog);
 begin
-  self.FConection := aConection;
-  self.FTipoBD := ATipo;
-  self.FErros := TDictionary<TClass, string>.create();
-  self.FVersao := aVersao;
+  Self.FConection := aConection;
+  Self.FTipoBD := ATipo;
+  Self.FErros := TDictionary<TClass, string>.create();
+  Self.FVersao := aVersao;
+  Self.FLog := aLog;
 end;
 
 destructor TDataseMigrationBase.destroy;
 begin
-  self.FErros.clear;
-  self.FErros.Free;
+  Self.FErros.clear;
+  Self.FErros.Free;
 end;
 
 function TDataseMigrationBase.getTipoTabela: TTabelaBD;
@@ -194,21 +205,24 @@ begin
     tpSqlServer:
       result := TTabelaSqlServer.create;
     tpOracle:
-     result := TTabelaOracle.create;
+      result := TTabelaOracle.create;
   end;
 end;
+
 /// <summary>
 /// está função vai extrair os atributos dos objetos.
 /// </summary>
 /// <example>
-///Abaixo a propriedade SEQ está notada com o atributo campo e PrimaryKey
+/// Abaixo a propriedade SEQ está notada com o atributo campo e PrimaryKey
 /// <code>
-///    [campo('SEQ', tpINTEGER, 0, 0, True)]
-///    [PrimaryKey('PK_ITEMPEDIDO', 'IDPEDIDO,SEQ')]
-///    property SEQ: INTEGER read FSEQ write FSEQ;
+/// [campo('SEQ', tpINTEGER, 0, 0, True)]
+/// [PrimaryKey('PK_ITEMPEDIDO', 'IDPEDIDO,SEQ')]
+/// property SEQ: INTEGER read FSEQ write FSEQ;
 /// </code>
 /// </example>
-procedure TDataseMigrationBase.ExtractedAttributes(var Tabela: TTabelaBD; arAttr: TArray<TCustomAttribute>);
+
+procedure TDataseMigrationBase.ExtractedAttributes(var Tabela: TTabelaBD;
+  arAttr: TArray<TCustomAttribute>);
 var
   attr: TCustomAttribute;
 begin

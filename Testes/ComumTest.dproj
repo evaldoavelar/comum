@@ -97,9 +97,11 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <VerInfo_Build>77</VerInfo_Build>
+        <VerInfo_MajorVer>2</VerInfo_MajorVer>
+        <VerInfo_AutoIncVersion>false</VerInfo_AutoIncVersion>
+        <VerInfo_Build>0</VerInfo_Build>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.77;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=2.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -123,11 +125,9 @@
         <DCCReference Include="..\Classes\Models\Abstract\Model.IObserve.pas"/>
         <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.IConection.pas"/>
         <DCCReference Include="..\Classes\Repositorio\Concret\Dao.Conection.Parametros.pas"/>
-        <DCCReference Include="..\Classes\Exceptions\Exceptions.pas"/>
         <DCCReference Include="Model\Test.Model.Pedido.pas"/>
         <DCCReference Include="..\Classes\Models\Concret\Model.Atributos.pas"/>
         <DCCReference Include="..\Classes\Models\Concret\Model.Atributos.Tipos.pas"/>
-        <DCCReference Include="..\Classes\Utils\Utils.Funcoes.pas"/>
         <DCCReference Include="Model\Test.Model.Item.pas"/>
         <DCCReference Include="..\Classes\Repositorio\Abstract\Database.IDataseMigration.pas"/>
         <DCCReference Include="..\Classes\Repositorio\Abstract\Database.TTabelaBD.pas"/>
@@ -159,7 +159,6 @@
         <DCCReference Include="..\Classes\Licenca\Concret\Licenca.Concret.Validador.pas"/>
         <DCCReference Include="..\Classes\Helpers\Helpers.HelperDateTime.pas"/>
         <DCCReference Include="..\Classes\Helpers\Helpers.HelperDate.pas"/>
-        <DCCReference Include="..\Classes\Helpers\Helpers.HelperString.pas"/>
         <DCCReference Include="..\Classes\Licenca\Abstract\Licenca.Abstract.Validador.pas"/>
         <DCCReference Include="..\Classes\Models\Abstract\Model.IJSON.pas"/>
         <DCCReference Include="TestJSonUtils.pas"/>
@@ -172,6 +171,14 @@
         <DCCReference Include="..\Classes\Repositorio\Concret\Dao.Conection.Firedac.pas"/>
         <DCCReference Include="..\Classes\Helpers\Helpers.HelperCurrency.pas"/>
         <DCCReference Include="TesteHelpers.pas"/>
+        <DCCReference Include="..\Classes\Atualizacao\Concret\Atualizacao.Concret.FTP.pas"/>
+        <DCCReference Include="..\Classes\Atualizacao\Abstract\Atualizacao.Abstract.FTP.pas"/>
+        <DCCReference Include="..\Classes\Exceptions\Exceptions.pas"/>
+        <DCCReference Include="..\Classes\Utils\Utils.Funcoes.pas"/>
+        <DCCReference Include="..\Classes\Helpers\Helpers.HelperString.pas"/>
+        <DCCReference Include="TestAtualizacaoApp.pas"/>
+        <DCCReference Include="TestUtilsArarray.pas"/>
+        <DCCReference Include="..\Classes\Utils\Utils.ArrayUtil.pas"/>
         <None Include="ModelSupport_ComumTest\default.txaPackage"/>
         <None Include="ModelSupport_ComumTest\default.txvpck"/>
         <None Include="ModelSupport_ComumTest\Utils\default.txvpck"/>
@@ -403,13 +410,13 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Exceptions\default.txvpck" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Licenca\Abstract\default.txaPackage" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Licenca\Abstract\default.txaPackage" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Exceptions\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -538,12 +545,6 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\TestDatabaseMigration\default.txvpck" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win32">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="ModelSupport_ComumTest\Log\TxtLog\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
@@ -551,6 +552,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="ModelSupport_ComumTest\JSON\Atributes\default.txvpck" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="ModelSupport_ComumTest\TestDatabaseMigration\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -748,19 +755,13 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win32\Debug\ComumTest.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>ComumTest.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Dao\Base\default.txaPackage" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Model\IPrototype\default.txaPackage" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Model\IPrototype\default.txaPackage" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Dao\Base\default.txaPackage" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -1041,6 +1042,12 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="Win32\Debug\ComumTest.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>ComumTest.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="ModelSupport_ComumTest\Licenca\default.txaPackage" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
@@ -1155,27 +1162,12 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXResource">
@@ -1554,12 +1546,27 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceResourceRules">
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>

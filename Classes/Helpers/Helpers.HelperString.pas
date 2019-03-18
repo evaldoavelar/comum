@@ -2,7 +2,8 @@ unit Helpers.HelperString;
 
 interface
 
-uses Utils.Funcoes, System.RegularExpressions, System.Classes, System.StrUtils;
+uses Utils.Funcoes, System.RegularExpressions, System.Classes, System.StrUtils,
+  System.SysUtils;
 
 type
 
@@ -15,6 +16,7 @@ type
     function SubString(PosInicial, PosFinal: integer): string;
     function LeftPad(Ch: char; Len: integer): string;
     function RightPad(Ch: char; Len: integer): string;
+    function ToInt(): Integer;
   end;
 
 implementation
@@ -48,6 +50,11 @@ end;
 function TStringHelper.SubString(PosInicial, PosFinal: integer): string;
 begin
   Result := Copy(Self, PosInicial, PosFinal - PosInicial);
+end;
+
+function TStringHelper.ToInt: Integer;
+begin
+  result := strToInt(self);
 end;
 
 function TStringHelper.Explode(const Ch: char): TStringList;

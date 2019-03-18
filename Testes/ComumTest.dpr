@@ -22,11 +22,9 @@ uses
   Model.IObserve in '..\Classes\Models\Abstract\Model.IObserve.pas',
   Dao.IConection in '..\Classes\Repositorio\Abstract\Dao.IConection.pas',
   Dao.Conection.Parametros in '..\Classes\Repositorio\Concret\Dao.Conection.Parametros.pas',
-  Exceptions in '..\Classes\Exceptions\Exceptions.pas',
   Test.Model.Pedido in 'Model\Test.Model.Pedido.pas',
   Model.Atributos in '..\Classes\Models\Concret\Model.Atributos.pas',
   Model.Atributos.Tipos in '..\Classes\Models\Concret\Model.Atributos.Tipos.pas',
-  Utils.Funcoes in '..\Classes\Utils\Utils.Funcoes.pas',
   Test.Model.Item in 'Model\Test.Model.Item.pas',
   Database.IDataseMigration in '..\Classes\Repositorio\Abstract\Database.IDataseMigration.pas',
   Database.TTabelaBD in '..\Classes\Repositorio\Abstract\Database.TTabelaBD.pas',
@@ -58,7 +56,6 @@ uses
   Licenca.Concret.Validador in '..\Classes\Licenca\Concret\Licenca.Concret.Validador.pas',
   Helpers.HelperDateTime in '..\Classes\Helpers\Helpers.HelperDateTime.pas',
   Helpers.HelperDate in '..\Classes\Helpers\Helpers.HelperDate.pas',
-  Helpers.HelperString in '..\Classes\Helpers\Helpers.HelperString.pas',
   Licenca.Abstract.Validador in '..\Classes\Licenca\Abstract\Licenca.Abstract.Validador.pas',
   Model.IJSON in '..\Classes\Models\Abstract\Model.IJSON.pas',
   TestJSonUtils in 'TestJSonUtils.pas',
@@ -70,7 +67,15 @@ uses
   JSON.Utils in '..\Classes\JSON\JSON.Utils.pas',
   Dao.Conection.Firedac in '..\Classes\Repositorio\Concret\Dao.Conection.Firedac.pas',
   Helpers.HelperCurrency in '..\Classes\Helpers\Helpers.HelperCurrency.pas',
-  TesteHelpers in 'TesteHelpers.pas';
+  TesteHelpers in 'TesteHelpers.pas',
+  Atualizacao.Concret.FTP in '..\Classes\Atualizacao\Concret\Atualizacao.Concret.FTP.pas',
+  Atualizacao.Abstract.FTP in '..\Classes\Atualizacao\Abstract\Atualizacao.Abstract.FTP.pas',
+  Exceptions in '..\Classes\Exceptions\Exceptions.pas',
+  Utils.Funcoes in '..\Classes\Utils\Utils.Funcoes.pas',
+  Helpers.HelperString in '..\Classes\Helpers\Helpers.HelperString.pas',
+  TestAtualizacaoApp in 'TestAtualizacaoApp.pas',
+  TestUtilsArarray in 'TestUtilsArarray.pas',
+  Utils.ArrayUtil in '..\Classes\Utils\Utils.ArrayUtil.pas';
 
 {$R *.res}
 

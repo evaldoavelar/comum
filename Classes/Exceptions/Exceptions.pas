@@ -14,6 +14,8 @@ type
 
   TConectionException = class(Exception);
 
+  TAtualizacaoException = class(Exception);
+
 implementation
 
 end.

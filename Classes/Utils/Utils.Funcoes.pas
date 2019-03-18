@@ -7,9 +7,12 @@ uses
   Winapi.ImageHlp,
   System.StrUtils,
   System.SysUtils,
+  System.IOUtils,
   System.Classes,
   System.TypInfo,
-  System.Generics.Defaults, Winapi.ShellAPI;
+  System.Generics.Defaults,
+  Winapi.ShellAPI,
+  IdHashMessageDigest, System.Variants;
 
 type
   TStrArray = array of string;
@@ -29,6 +32,9 @@ type
     class function Truncar(Valor: currency; casas: Integer): currency;
     class function CompararVersao(const versao1: TFileName; const versao2: TFileName): TComparaVersao;
     class function IFF<T>(aExpressao: Boolean; aResultFalse: T; aResultTrue: T): T;
+    class function IsEmptyOrNull(const Value: Variant): Boolean;
+    class function MD5String(text: string): string;
+    class function ExtrairNumeros(text: string): string;
 
     class function DiretorioAplicacao: string;
     class procedure AbrirDiretorio(aHandle: HWND; aDir: string);
@@ -52,7 +58,7 @@ end;
 
 class function TUtil.DiretorioAplicacao: string;
 begin
-  Result := ExtractFileDir(ParamStr(0));
+  Result := ExtractFileDir(ParamStr(0)) + TPath.DirectorySeparatorChar;
 end;
 
 class function TUtil.RemoveChar(text: string; Caracter: char): string;
@@ -199,6 +205,23 @@ begin
   end;
 end;
 
+class function TUtil.IsEmptyOrNull(const Value: Variant): Boolean;
+begin
+  Result := VarIsClear(Value) or VarIsEmpty(Value) or VarIsNull(Value) or (VarCompareValue(Value, Unassigned) = vrEqual);
+  if (not Result) and VarIsStr(Value) then
+    Result := Value = '';
+end;
+
+class function TUtil.MD5String(text: string): string;
+begin
+  with TIdHashMessageDigest5.Create do
+    try
+      Result := HashStringAsHex(text);
+    finally
+      free;
+    end;
+end;
+
 class function TUtil.Explode(text: string; const Ch: char): TStringList;
 var
   c: word;
@@ -250,6 +273,18 @@ begin
   begin
     Result.Strings[i] := Trim(Result.Strings[i]);
   end;
+end;
+
+class function TUtil.ExtrairNumeros(text: string): string;
+var
+  i: Integer;
+begin
+  Result := '';
+  for i := 1 to Length(text) do
+    if (text[i] in ['0' .. '9']) then
+    begin
+      Result := Result + text[i];
+    end;
 end;
 
 class function TUtil.ValidaCNPJ(CNPJ: string): Boolean;

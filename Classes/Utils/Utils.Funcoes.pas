@@ -35,7 +35,6 @@ type
     class function IsEmptyOrNull(const Value: Variant): Boolean;
     class function MD5String(text: string): string;
     class function ExtrairNumeros(text: string): string;
-
     class function DiretorioAplicacao: string;
     class procedure AbrirDiretorio(aHandle: HWND; aDir: string);
     class function DataCriacaoAplicacao(): TDate;

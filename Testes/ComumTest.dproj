@@ -97,9 +97,14 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+<<<<<<< HEAD
         <VerInfo_MajorVer>2</VerInfo_MajorVer>
         <VerInfo_AutoIncVersion>false</VerInfo_AutoIncVersion>
         <VerInfo_Build>0</VerInfo_Build>
+=======
+        <DCC_DcuOutput>.\dcu\</DCC_DcuOutput>
+        <VerInfo_Build>77</VerInfo_Build>
+>>>>>>> 6476a37bad42c714e6ff9beea1236ec7cd22b62a
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=2.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
@@ -171,6 +176,7 @@
         <DCCReference Include="..\Classes\Repositorio\Concret\Dao.Conection.Firedac.pas"/>
         <DCCReference Include="..\Classes\Helpers\Helpers.HelperCurrency.pas"/>
         <DCCReference Include="TesteHelpers.pas"/>
+<<<<<<< HEAD
         <DCCReference Include="..\Classes\Atualizacao\Concret\Atualizacao.Concret.FTP.pas"/>
         <DCCReference Include="..\Classes\Atualizacao\Abstract\Atualizacao.Abstract.FTP.pas"/>
         <DCCReference Include="..\Classes\Exceptions\Exceptions.pas"/>
@@ -179,6 +185,9 @@
         <DCCReference Include="TestAtualizacaoApp.pas"/>
         <DCCReference Include="TestUtilsArarray.pas"/>
         <DCCReference Include="..\Classes\Utils\Utils.ArrayUtil.pas"/>
+=======
+        <DCCReference Include="Model\Test.Model.Log.pas"/>
+>>>>>>> 6476a37bad42c714e6ff9beea1236ec7cd22b62a
         <None Include="ModelSupport_ComumTest\default.txaPackage"/>
         <None Include="ModelSupport_ComumTest\default.txvpck"/>
         <None Include="ModelSupport_ComumTest\Utils\default.txvpck"/>
@@ -557,7 +566,11 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+<<<<<<< HEAD
                 <DeployFile LocalName="ModelSupport_ComumTest\TestDatabaseMigration\default.txvpck" Configuration="Debug" Class="ProjectFile">
+=======
+                <DeployFile LocalName="ModelSupport_ComumTest\Log\TxtLog\default.txvpck" Configuration="Debug" Class="ProjectFile">
+>>>>>>> 6476a37bad42c714e6ff9beea1236ec7cd22b62a
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

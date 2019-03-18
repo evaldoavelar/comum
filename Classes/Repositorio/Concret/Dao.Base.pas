@@ -296,7 +296,7 @@ begin
 
     for prop in rType.GetProperties do
     begin
-
+      // a propriedade é de escrita
       if prop.IsWritable then
       begin
         // pegar o campo corresponte a property

@@ -30,6 +30,7 @@ var
   Valor: Currency;
   Resultado: string;
 begin
+<<<<<<< HEAD
 //  Valor := 1556.25;
 //  Resultado := 'um mil quinhentos e cinquenta e seis reais e vinte e cinco centavos.';
 //  CheckEquals(Resultado.ToLower, Valor.ToReiasExtenco.ToLower);
@@ -49,6 +50,27 @@ begin
 //  Valor := 0.05;
 //  Resultado := 'cinco centavos.';
 //  CheckEquals(Resultado.ToLower, Valor.ToReiasExtenco.ToLower);
+=======
+  Valor := 1556.25;
+  Resultado := 'um mil quinhentos e cinquenta e seis reais e vinte e cinco centavos.';
+  CheckEquals(Resultado, Valor.ToReiasExtenco);
+
+  Valor := 156.25;
+  Resultado := 'cento e cinquenta e seis reais e vinte e cinco centavos.';
+  CheckEquals(Resultado, Valor.ToReiasExtenco);
+
+  Valor := 6.25;
+  Resultado := 'seis reais e vinte e cinco centavos.';
+  CheckEquals(Resultado, Valor.ToReiasExtenco);
+
+  Valor := 0.25;
+  Resultado := 'vinte e cinco centavos.';
+  CheckEquals(Resultado, Valor.ToReiasExtenco);
+
+  Valor := 0.05;
+  Resultado := 'cinco centavos.';
+  CheckEquals(Resultado, Valor.ToReiasExtenco);
+>>>>>>> 6476a37bad42c714e6ff9beea1236ec7cd22b62a
 end;
 
 procedure TestHelpers.PodeColocarLeftPad;

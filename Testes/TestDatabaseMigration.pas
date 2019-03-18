@@ -17,9 +17,9 @@ uses
   Database.TDataseMigrationBase,
   Database.SGDB,
   Dao.Conection.Parametros,
-  Dao.Conection,
+  Dao.Conection.Firedac,
   Dao.IConection,
-  Database.Version, DataBase.MigrationLocal;
+  Database.Version, DataBase.MigrationLocal, Test.Model.Log;
 
 type
   // Test methods for class IDataseMigration
@@ -32,49 +32,50 @@ type
     procedure TearDown; override;
   published
     procedure TestMigrate;
-    procedure TestGetErros;
+   // procedure TestGetErros;
   end;
 
 implementation
 
 procedure TestIDataseMigration.SetUp;
 var
-  conexao: TConection;
+  conexao: TFiredacConection;
   versao: TDatabaseVersion;
 begin
-//  conexao := TConection.Create(
-//    TConectionParametros.Create(
-//    tpSqlServer,
-//    'LOCALHOST',
-//    'pdv_narciso_lj58',
-//    'rm',
-//    'rm',
-//    'Teste',
-//    0
-//    )
-//    );
-
-  conexao := TConection.Create(
+  conexao := TFiredacConection.Create(
     TConectionParametros.Create(
-    tpOracle,
+    tpSqlServer,
     'localhost',
-    'orcl',
+    'pdvsn',
     'rm',
     'rm',
     'Teste',
-    1521
+    0
     )
     );
+
+  //  conexao := TFiredacConection.Create(
+  //    TConectionParametros.Create(
+  //    tpOracle,
+  //    'localhost',
+  //    'orcl',
+  //    'rm',
+  //    'rm',
+  //    'Teste',
+  //    1521
+  //    )
+  //    );
 
   versao := TDatabaseVersion.Create(conexao);
 
   // TODO: Initialize FIDataseMigration
-  FIDataseMigration := TMigrationLocal.Create(conexao, versao, tpOracle);
+  FIDataseMigration := TMigrationLocal.Create(conexao, versao, tpSqlServer,
+    TLogTeste.New);
 end;
 
 procedure TestIDataseMigration.TearDown;
 begin
-  FIDataseMigration := nil;
+  //FIDataseMigration := nil;
 end;
 
 procedure TestIDataseMigration.TestMigrate;
@@ -82,17 +83,18 @@ begin
   FIDataseMigration.Migrate;
 end;
 
-procedure TestIDataseMigration.TestGetErros;
-var
-  ReturnValue: TDictionary<TClass, string>;
-begin
-  ReturnValue := FIDataseMigration.GetErros;
-  // TODO: Validate method results
-end;
+//procedure TestIDataseMigration.TestGetErros;
+//var
+//  ReturnValue: TDictionary<TClass, string>;
+//begin
+//  ReturnValue := FIDataseMigration.GetErros;
+//  // TODO: Validate method results
+//end;
 
 initialization
 
-// Register any test cases with the test runner
-RegisterTest(TestIDataseMigration.Suite);
+  // Register any test cases with the test runner
+  RegisterTest(TestIDataseMigration.Suite);
 
 end.
+

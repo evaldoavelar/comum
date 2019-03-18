@@ -40,9 +40,9 @@ begin
 end;
 
 function TDatabaseVersion.GetVersaoBD: string;
-var
-  sql: TStringBuilder;
-  ds: TDataset;
+//var
+//  sql: TStringBuilder;
+//  ds: TDataset;
 begin
 //  sql := TStringBuilder.Create;
 //  sql.Append('select versaobd ')
@@ -60,8 +60,8 @@ begin
 
      result := '0.0.0.0';
 
-  sql.Free;
-  ds.Free;
+ // sql.Free;
+ // ds.Free;
 end;
 
 end.

@@ -3,13 +3,14 @@ unit DataBase.MigrationLocal;
 interface
 
 uses DataBase.IDataseMigration, DataBase.TDataseMigrationBase,
-Test.Model.AUTOINC, Test.Model.Pedido, Test.Model.Item, Test.Model.Produto;
+  Test.Model.AUTOINC, Test.Model.Pedido, Test.Model.Item, Test.Model.Produto,
+  System.SysUtils;
 
 type
 
   TMigrationLocal = class(TDataseMigrationBase)
   protected
-    procedure Seed(); override;
+    function Seed(): IDataseMigration; override;
     function GetObjetos: TArrayObject; override;
   end;
 
@@ -26,11 +27,17 @@ begin
   result[3] := TItemPedido;
 end;
 
-procedure TMigrationLocal.Seed;
+function TMigrationLocal.Seed: IDataseMigration;
+var
+  Produto: TProduto;
 begin
-  inherited;
+  result := Self;
 
-
+  Produto := TProduto.create;
+  Produto.CODIGO := Random(10000).ToString;
+  Produto.DESCRICAO := 'Teste ' + Produto.CODIGO;
+  Produto.UND := 'UN';
+  Produto.PRECO_VENDA := 556.6;
 
 end;
 

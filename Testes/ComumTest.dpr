@@ -68,6 +68,7 @@ uses
   Dao.Conection.Firedac in '..\Classes\Repositorio\Concret\Dao.Conection.Firedac.pas',
   Helpers.HelperCurrency in '..\Classes\Helpers\Helpers.HelperCurrency.pas',
   TesteHelpers in 'TesteHelpers.pas',
+<<<<<<< HEAD
   Atualizacao.Concret.FTP in '..\Classes\Atualizacao\Concret\Atualizacao.Concret.FTP.pas',
   Atualizacao.Abstract.FTP in '..\Classes\Atualizacao\Abstract\Atualizacao.Abstract.FTP.pas',
   Exceptions in '..\Classes\Exceptions\Exceptions.pas',
@@ -76,6 +77,9 @@ uses
   TestAtualizacaoApp in 'TestAtualizacaoApp.pas',
   TestUtilsArarray in 'TestUtilsArarray.pas',
   Utils.ArrayUtil in '..\Classes\Utils\Utils.ArrayUtil.pas';
+=======
+  Test.Model.Log in 'Model\Test.Model.Log.pas';
+>>>>>>> 6476a37bad42c714e6ff9beea1236ec7cd22b62a
 
 {$R *.res}
 

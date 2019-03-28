@@ -98,6 +98,15 @@ type
     constructor Create(ATabelaIncremento: string);
   end;
 
+  IGNOREAttribute = class(TCustomAttribute)
+  private
+    FIgnore: Boolean;
+    procedure SetIgnore(const Value: Boolean);
+  published
+    property Ignore: Boolean read FIgnore write SetIgnore;
+    constructor Create(AIgnore: Boolean);
+  end;
+
 implementation
 
 { CampoAttribute }
@@ -186,12 +195,24 @@ end;
 
 constructor AutoIncAttribute.Create(ATabelaIncremento: string);
 begin
-  Self.FTabelaIncremento := aTabelaIncremento;
+  Self.FTabelaIncremento := ATabelaIncremento;
 end;
 
 procedure AutoIncAttribute.SetTabelaIncremento(const Value: string);
 begin
   FTabelaIncremento := Value;
+end;
+
+{ IGNOREAttribute }
+
+constructor IGNOREAttribute.Create(AIgnore: Boolean);
+begin
+   FIgnore := AIgnore;
+end;
+
+procedure IGNOREAttribute.SetIgnore(const Value: Boolean);
+begin
+  FIgnore := Value;
 end;
 
 end.

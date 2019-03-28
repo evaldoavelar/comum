@@ -6,7 +6,7 @@ unit Utils.Rtti;
 
 interface
 
-uses System.Classes;
+uses System.Classes, System.Generics.Collections;
 
 Type
   TRttiUtil = Class
@@ -14,6 +14,8 @@ Type
     class procedure Copy<T: Class>(ASource: T; ATarget: T; AIgnore: string = ''); static;
     class function Clone<T: Class>(ASource: T): T; static;
     class function New<T>(aType: TClass): T; static;
+
+    class procedure ListDisposeOf<T: Class>(aList: TList<T>); static;
 
     class procedure Initialize<T: Class>(ASource: T);
 
@@ -54,26 +56,54 @@ end;
 class function TRttiUtil.EnumToString<T>(value: T): String;
 begin
   case Sizeof(T) of
-    1: Result := GetEnumName(TypeInfo(T), PByte(@value)^);
-    2: Result := GetEnumName(TypeInfo(T), PWord(@value)^);
-    4: Result := GetEnumName(TypeInfo(T), PCardinal(@value)^);
+    1:
+      result := GetEnumName(TypeInfo(T), PByte(@value)^);
+    2:
+      result := GetEnumName(TypeInfo(T), PWord(@value)^);
+    4:
+      result := GetEnumName(TypeInfo(T), PCardinal(@value)^);
   end;
 end;
 
 class function TRttiUtil.StringToEnum<T>(value: string): T;
 begin
   try
-   case Sizeof(T) of
-    1: PByte(@Result)^ := GetEnumValue(TypeInfo(T), value);
-    2: PWord(@Result)^ := GetEnumValue(TypeInfo(T), value);
-    4: PCardinal(@Result)^ := GetEnumValue(TypeInfo(T), value);
-  end;
+    case Sizeof(T) of
+      1:
+        PByte(@result)^ := GetEnumValue(TypeInfo(T), value);
+      2:
+        PWord(@result)^ := GetEnumValue(TypeInfo(T), value);
+      4:
+        PCardinal(@result)^ := GetEnumValue(TypeInfo(T), value);
+    end;
 
   except
     on E: Exception do
       raise Exception.Create('TRttiUtil.StringToEnum ' + E.Message);
   end;
 
+end;
+
+class procedure TRttiUtil.ListDisposeOf<T>(aList: TList<T>);
+var
+  item: T;
+begin
+  try
+    if Assigned(aList) = False then
+      Exit;
+
+    for item in aList do
+    begin
+      item.Free;
+    end;
+
+    aList.Clear;
+    aList.Free;
+
+  except
+    on E: Exception do
+      raise Exception.Create('TRttiUtil.ListDisposeOf ' + E.Message);
+  end;
 end;
 
 class procedure TRttiUtil.Initialize<T>(ASource: T);
@@ -129,18 +159,18 @@ begin
   IsComponent := (ASource is TComponent);
   try
     // loop through the props, copying values across for ones that are read/write
-    Move(ASource, SourceAsPointer, SizeOf(Pointer));
-    Move(ATarget, ResultAsPointer, SizeOf(Pointer));
+    Move(ASource, SourceAsPointer, Sizeof(Pointer));
+    Move(ATarget, ResultAsPointer, Sizeof(Pointer));
 
     if ASource is TComponent then
     begin
       Fld := RttiType.GetField('Parent');
-      if assigned(Fld) then
+      if Assigned(Fld) then
       begin
         Fld.SetValue(ResultAsPointer, Fld.GetValue(SourceAsPointer));
       end
       else
-        IsComponent := false;
+        IsComponent := False;
     end;
 
     LookOutForNameProp := IsComponent and (TComponent(ASource).Owner <> nil);
@@ -164,7 +194,7 @@ begin
           begin
             if LookOutForNameProp and (prop.Name = 'Name') and
               (prop.PropertyType is TRttiStringType) then
-              LookOutForNameProp := false
+              LookOutForNameProp := False
             else
             begin
               if (prop.PropertyType.TypeKind = tkClass) then

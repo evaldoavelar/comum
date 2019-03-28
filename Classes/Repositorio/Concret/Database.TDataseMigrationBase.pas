@@ -42,6 +42,7 @@ type
     FErros: TDictionary<TClass, string>;
     FConection: IConection;
     FVersao: IDatabaseVersion;
+    FPodeMigrar: Boolean;
 
     // sobrescrever este metodo e passar quais sao os objetos que seram usados na migração
     function GetObjetos: TArrayObject; virtual; abstract;
@@ -170,13 +171,15 @@ var
   VERSAOBD: string;
 begin
 
+  result := false;
+
   VERSAOBD := Self.FVersao.GetVersaoBD;
   VersaoEXE := TUtil.GetVersionInfo();
 
-  if (TUtil.CompararVersao(VersaoEXE, VERSAOBD) = stMenor) or (VersaoEXE =
-    '0.0.0.0') then
+  if (TUtil.CompararVersao(VersaoEXE, VERSAOBD) = stMenor) or (VersaoEXE = '0.0.0.0') then
     result := True;
 
+  FPodeMigrar := result;
 end;
 
 constructor TDataseMigrationBase.create(aConection: IConection; aVersao:
@@ -187,6 +190,7 @@ begin
   Self.FErros := TDictionary<TClass, string>.create();
   Self.FVersao := aVersao;
   Self.FLog := aLog;
+  Self.FPodeMigrar := false;
 end;
 
 destructor TDataseMigrationBase.destroy;

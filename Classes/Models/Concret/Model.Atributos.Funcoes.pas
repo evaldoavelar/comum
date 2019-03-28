@@ -213,10 +213,6 @@ begin
 
     if (prop =nil) or (prop.GetAttributes = nil) then Exit;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 6476a37bad42c714e6ff9beea1236ec7cd22b62a
     for attr in prop.GetAttributes do
     begin
       if (attr is Attribute) then

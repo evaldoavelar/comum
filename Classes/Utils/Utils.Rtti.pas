@@ -16,7 +16,6 @@ Type
     class function New<T>(aType: TClass): T; static;
 
     class procedure ListDisposeOf<T: Class>(aList: TList<T>); static;
-
     class procedure Initialize<T: Class>(ASource: T);
 
     class procedure EnumToValues<T>(Values: TStrings);
@@ -27,7 +26,30 @@ Type
 
 implementation
 
+
 uses System.TypInfo, System.SysUtils, System.Rtti;
+
+class procedure TRttiUtil.ListDisposeOf<T>(aList: TList<T>);
+var
+  item: T;
+begin
+  try
+    if Assigned(aList) = False then
+      Exit;
+
+    for item in aList do
+    begin
+      item.Free;
+    end;
+
+    aList.Clear;
+    aList.Free;
+
+  except
+    on E: Exception do
+      raise Exception.Create('TRttiUtil.ListDisposeOf ' + E.Message);
+  end;
+end;
 
 class function TRttiUtil.EnumName<T>(value: integer): string;
 begin
@@ -82,28 +104,6 @@ begin
       raise Exception.Create('TRttiUtil.StringToEnum ' + E.Message);
   end;
 
-end;
-
-class procedure TRttiUtil.ListDisposeOf<T>(aList: TList<T>);
-var
-  item: T;
-begin
-  try
-    if Assigned(aList) = False then
-      Exit;
-
-    for item in aList do
-    begin
-      item.Free;
-    end;
-
-    aList.Clear;
-    aList.Free;
-
-  except
-    on E: Exception do
-      raise Exception.Create('TRttiUtil.ListDisposeOf ' + E.Message);
-  end;
 end;
 
 class procedure TRttiUtil.Initialize<T>(ASource: T);

@@ -12,7 +12,9 @@ type
     procedure Encode(Dia, mes, ano: Word);
     procedure SetDateNow;
     procedure EncodeStr(Dia, mes, ano: string);
-    procedure ReplaceTimer;
+    procedure ReplaceTimer; overload;
+    procedure ReplaceTimer(aHora, aMin, aSec, aMil: Word); overload;
+    function ToString: string;
   end;
 
 implementation
@@ -31,21 +33,38 @@ begin
   end;
 end;
 
+procedure THelperDate.ReplaceTimer(aHora, aMin, aSec, aMil: Word);
+var
+  newTime: TDateTime;
+  data: TDateTime;
+begin
+  newTime := EncodeTime(aHora, aMin, aSec, aMil);
+  data := Self;
+  ReplaceTime(data, newTime);
+  Self := data;
+
+end;
+
 procedure THelperDate.ReplaceTimer;
 var
   newTime: TDateTime;
-  data:TDateTime;
+  data: TDateTime;
 begin
   newTime := EncodeTime(0, 0, 0, 0);
   data := Self;
   ReplaceTime(data, newTime);
-  self := data;
+  Self := data;
 
 end;
 
 procedure THelperDate.SetDateNow;
 begin
   Self := Now;
+end;
+
+function THelperDate.ToString: string;
+begin
+  result := DateToStr(Self);
 end;
 
 end.

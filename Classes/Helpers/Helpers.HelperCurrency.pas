@@ -9,6 +9,7 @@ type
 
   THelperCurrency = record helper for Currency
     function ToReais: string;
+    function ToStrDuasCasas: string;
     function ToReiasExtenco: string;
   end;
 
@@ -122,6 +123,11 @@ begin
   else
     Result := Result + ' Centavos.';
 
+end;
+
+function THelperCurrency.ToStrDuasCasas: string;
+begin
+    Result := FormatFloat('0.,00', Self);
 end;
 
 end.

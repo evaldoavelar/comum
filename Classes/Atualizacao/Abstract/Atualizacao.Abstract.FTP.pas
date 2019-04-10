@@ -18,7 +18,7 @@ type
   end;
 
 
-  IAtualizacaoFTP = interface
+  IAtualizacaoFTP = interface(IAtualizacaoObservable)
     ['{78097FC3-D203-4A83-8249-FADAE0A9FFA2}']
     function SetUpHOST(aHost: string; aUsername: string; aPassword: string; aPorta: Integer): IAtualizacaoFTP; overload;
     function SetUpClient(aDiretorioFTP: string; aArquivoVersaoFTP: string; aNomeExe: string; aVersaoExeLocal: string): IAtualizacaoFTP; overload;

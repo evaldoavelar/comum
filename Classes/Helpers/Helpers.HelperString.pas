@@ -7,21 +7,39 @@ uses Utils.Funcoes, System.RegularExpressions, System.Classes, System.StrUtils,
 
 type
 
-  TStringHelper = record helper for  string
+  TStringHelper = record helper for
+    string
       public
     function ValidaCPF: Boolean;
     function ValidaCNPJ: Boolean;
+    function ValidaEMAIL: Boolean;
     function GetNumbers: string;
     function Explode(const Ch: char): TStringList;
     function SubString(PosInicial, PosFinal: integer): string;
     function LeftPad(Ch: char; Len: integer): string;
     function RightPad(Ch: char; Len: integer): string;
-    function ToInt(): Integer;
+    function ToInt(): integer;
+    function TrimAll(): string;
+
   end;
 
 implementation
 
 { TStringHelper }
+
+function TStringHelper.ValidaEMAIL: Boolean;
+var
+  aStr: string;
+begin
+  aStr := Self.TrimAll;
+  if Pos('@', aStr) > 1 then
+  begin
+    Delete(aStr, 1, Pos('@', aStr));
+    Result := (Length(aStr) > 0) and (Pos('.', aStr) > 2);
+  end
+  else
+    Result := False;
+end;
 
 function TStringHelper.RightPad(Ch: char; Len: integer): string;
 var
@@ -52,9 +70,14 @@ begin
   Result := Copy(Self, PosInicial, PosFinal - PosInicial);
 end;
 
-function TStringHelper.ToInt: Integer;
+function TStringHelper.ToInt: integer;
 begin
-  result := strToInt(self);
+  Result := strToInt(Self);
+end;
+
+function TStringHelper.TrimAll: string;
+begin
+  Result := Trim(Self);
 end;
 
 function TStringHelper.Explode(const Ch: char): TStringList;

@@ -28,7 +28,6 @@ begin
   if not Assigned(LibPointer) then
   begin
     sLibName := NomeDLL;
-    if ExtractFilePath(sLibName) <> '' then
       if not FileExists(sLibName) then
         raise Exception.Create('Arquivo não encontrado: ' + sLibName);
 

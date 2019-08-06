@@ -23,6 +23,7 @@ type
     function OnGet<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
     function OnToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
 
+
     function DataSetToObject<T: class>(ds: TDataSet): T;
     function CreateInstance<T: class>: T;
 
@@ -48,6 +49,7 @@ type
     function Delete<T: class>(): IQueryBuilder<T>; overload;
 
     function SQLToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
+    function SQLToT<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
 
     constructor Create(aConnection: IConection; aLog: ILog = nil);
     destructor destroy; override;
@@ -314,7 +316,7 @@ begin
               prop.SetValue(TObject(Entity), Field.AsString)
             else if (CompareText('TDateTime', prop.PropertyType.Name)) = 0 then
             begin
-              if (Field.IsNull = false) or (Field.AsString <> '' ) then
+              if (Field.IsNull = false) or (Field.AsString <> '') then
                 prop.SetValue(TObject(Entity), Field.AsDateTime)
               else
                 prop.SetValue(TObject(Entity), 0)
@@ -600,6 +602,11 @@ end;
 function TDaoBase.SQLToList<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
 begin
   Result := self.OnToList<T>(aCmd, aCampoValor);
+end;
+
+function TDaoBase.SQLToT<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
+begin
+  Result := self.OnGet<T>(aCmd, aCampoValor);
 end;
 
 function TDaoBase.Update<T>: IQueryBuilder<T>;

@@ -23,7 +23,6 @@ type
     function OnGet<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
     function OnToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
 
-
     function DataSetToObject<T: class>(ds: TDataSet): T;
     function CreateInstance<T: class>: T;
 
@@ -50,6 +49,7 @@ type
 
     function SQLToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
     function SQLToT<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
+    function SQLExec<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
 
     constructor Create(aConnection: IConection; aLog: ILog = nil);
     destructor destroy; override;
@@ -597,6 +597,11 @@ begin
       raise TDaoException.Create('SelectALL Exception: ' + E.Message);
     end;
   end;
+end;
+
+function TDaoBase.SQLExec<T>(aCmd: string;   aCampoValor: TDictionary<string, Variant>): Integer;
+begin
+  Result := self.OnExec<T>(aCmd, aCampoValor);
 end;
 
 function TDaoBase.SQLToList<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;

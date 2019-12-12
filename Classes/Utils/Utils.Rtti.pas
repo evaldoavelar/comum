@@ -34,7 +34,7 @@ var
   item: T;
 begin
   try
-    if Assigned(aList) = False then
+    if (Assigned(aList) = False) or (aList.Count <= 0) then
       Exit;
 
     for item in aList do

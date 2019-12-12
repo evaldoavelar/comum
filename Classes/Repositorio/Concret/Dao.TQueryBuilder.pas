@@ -59,7 +59,7 @@ type
     function &Or(const pColumn: string): IQueryBuilder<T>; overload;
     function Equal(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>; overload;
 
-    function Different(const pValue: Variant): IQueryBuilder<T>; overload;
+    function Different(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>; overload;
 
     function Greater(const pValue: Variant): IQueryBuilder<T>; overload;
 
@@ -376,9 +376,12 @@ begin
   inherited;
 end;
 
-function TQueryBuilder<T>.Different(const pValue: Variant): IQueryBuilder<T>;
+function TQueryBuilder<T>.Different(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>;
 begin
-  FSQLWhere := FSQLWhere.Different(VariantToISQLValue(pValue));
+ if isParam then
+  FSQLWhere := FSQLWhere.Different(VariantToISQLValue(pValue))
+  else
+    FSQLWhere := FSQLWhere.Different(TValue.FromVariant(pValue));
   result := Self;
 end;
 

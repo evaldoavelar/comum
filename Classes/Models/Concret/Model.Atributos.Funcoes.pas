@@ -9,7 +9,7 @@ uses
   System.Rtti,
   Model.Atributos,
   Model.Atributos.Tipos,
-  Model.IModelBase, Utils.Funcoes;
+  Model.IModelBase, Utils.Funcoes, System.StrUtils;
 
 type
 
@@ -124,12 +124,16 @@ var
   Rtti: TRttiContext;
   ltype: TRttiType;
   prop: TRttiProperty;
+  method: TRttiMethod;
   index: integer;
   Campo: string;
   attr: TCustomAttribute;
   attrCampo: CampoAttribute;
   value: Variant;
-
+  LRecord: TRttiRecordType;
+  v: TValue;
+  propName: string;
+  isNullable: Boolean;
 begin
   try
 
@@ -141,32 +145,56 @@ begin
     // pecorrer as propriedades
     for prop in ltype.GetProperties do
     begin
-
       attr := indexOfAttribute(prop, CampoAttribute);
 
       if (attr <> nil) then
       begin
         attrCampo := CampoAttribute(attr);
         Campo := attrCampo.Campo;
-        value := prop.GetValue(TObject(Model)).AsVariant;
+        propName := prop.PropertyType.Name;
+        isNullable := StartsText('TNullable<', propName);
 
-        if (CompareText('string', prop.PropertyType.Name)) = 0 then
+        // verificar se eh do tipo Nullable
+        if isNullable then
+        begin
+          // get Nullable<T> instance...
+          v := prop.GetValue(TObject(Model));
+
+          //verificar se tem dado
+          method := Rtti.GetType(v.TypeInfo).GetMethod('HasValue');
+          if (not method.Invoke(v, []).AsBoolean) then
+            Continue;
+
+          // invoke Nullable<T>.ToString() method on that instance...
+          method := Rtti.GetType(v.TypeInfo).GetMethod('ToTValue');
+          value := method.Invoke(v, []).AsVariant;
+
+          // pegar o nome da propriedade
+          method := Rtti.GetType(v.TypeInfo).GetMethod('GetTypeString');
+          propName := method.Invoke(v, []).AsString;
+        end
+        else
+        begin
+          value := prop.GetValue(TObject(Model)).AsVariant;
+        end;
+
+        if (CompareText('string', propName) = 0) and (isNullable = False)  then
           value := prop.GetValue(TObject(Model)).AsString
-        else if (CompareText('TDateTime', prop.PropertyType.Name)) = 0 then
+        else if (CompareText('TDateTime', propName)) = 0 then
           TVarData(value).vType := varDate
-        else if (CompareText('TDate', prop.PropertyType.Name)) = 0 then
+        else if (CompareText('TDate', propName)) = 0 then
           TVarData(value).vType := varDate
-        else if (CompareText('TTime', prop.PropertyType.Name)) = 0 then
+        else if (CompareText('TTime', propName)) = 0 then
           TVarData(value).vType := varDate
-        else if (CompareText('Boolean', prop.PropertyType.Name)) = 0 then
+        else if (CompareText('Boolean', propName)) = 0 then
           TVarData(value).vType := varBoolean
-        else if (CompareText('Currency', prop.PropertyType.Name)) = 0 then
+        else if (CompareText('Currency', propName)) = 0 then
           TVarData(value).vType := varCurrency
-        else if (CompareText('Integer', prop.PropertyType.Name)) = 0 then
+        else if (CompareText('Integer', propName)) = 0 then
           TVarData(value).vType := varInteger
-        else if (CompareText('Smallint', prop.PropertyType.Name)) = 0 then
+        else if (CompareText('Smallint', propName)) = 0 then
           TVarData(value).vType := varSmallint
-        else if (CompareText('Double', prop.PropertyType.Name)) = 0 then
+        else if (CompareText('Double', propName)) = 0 then
           TVarData(value).vType := varDouble;
 
         Result.Add(Campo, value);
@@ -204,14 +232,15 @@ begin
   end;
 end;
 
-class function TAtributosFuncoes.indexOfAttribute(prop: TRttiObject; Attribute: TClass):  TCustomAttribute;
+class function TAtributosFuncoes.indexOfAttribute(prop: TRttiObject; Attribute: TClass): TCustomAttribute;
 var
   attr: TCustomAttribute;
 begin
   try
     Result := nil;
 
-    if (prop =nil) or (prop.GetAttributes = nil) then Exit;
+    if (prop = nil) or (prop.GetAttributes = nil) then
+      Exit;
 
     for attr in prop.GetAttributes do
     begin

@@ -2,14 +2,13 @@ unit Log.TxtLog;
 
 interface
 
-uses Log.ILog, Log.TTipoLog, System.Classes;
+uses Log.ILog, Log.TTipoLog, System.Classes, Winapi.Windows;
 
 type
 
   TLogTXT = class(TInterfacedObject, ILog)
   private
-    class var
-      FInstancia: TLogTXT;
+    class var FInstancia: TLogTXT;
   private
     FDiretorio: string;
     FAtivo: Boolean;
@@ -37,8 +36,10 @@ type
     function setAtivo(): ILog;
     function setInativo(): ILog;
 
-    constructor Create(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog);
-    class function New(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog): ILog;
+    constructor Create(aDiretorio: string; aNomeArquivo: string;
+      aDecorator: ILog);
+    class function New(aDiretorio: string; aNomeArquivo: string;
+      aDecorator: ILog): ILog;
   end;
 
 implementation
@@ -56,7 +57,8 @@ begin
     FDecorator.d(Log);
 end;
 
-constructor TLogTXT.Create(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog);
+constructor TLogTXT.Create(aDiretorio: string; aNomeArquivo: string;
+  aDecorator: ILog);
 begin
   FDecorator := aDecorator;
   FDiretorio := aDiretorio;
@@ -87,32 +89,35 @@ var
   tft: textfile;
   linha: string;
 begin
-  linha := Format(' %s - %s - %s', [
-    FormatDateTime('dd/mm/yy hh:mm:ss', Now),
-    aTipo.ToString,
-    aTexto]
-    );
+  try
 
-  if Ativo then
-  begin
-    AssignFile(tft, NomeArquivo);
-    if FileExists(NomeArquivo) then
-      Append(tft)
-    else
-      ReWrite(tft);
+    linha := Format(' %s - %s - %s', [FormatDateTime('dd/mm/yy hh:mm:ss', Now),
+      aTipo.ToString, aTexto]);
 
-    Writeln(tft, linha);
-    Closefile(tft);
-  end;
+      OutputDebugString( PWideChar(linha));
 
-  if Assigned(FOnLog) then
-  begin
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        FOnLog(linha, aTipo);
-      end
-      );
+    if Ativo then
+    begin
+      AssignFile(tft, NomeArquivo);
+      if FileExists(NomeArquivo) then
+        Append(tft)
+      else
+        ReWrite(tft);
+
+      Writeln(tft, linha);
+      Closefile(tft);
+    end;
+
+    if Assigned(FOnLog) then
+    begin
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          FOnLog(linha, aTipo);
+        end);
+    end;
+  except
+    on e: Exception do
   end;
 end;
 
@@ -131,8 +136,8 @@ begin
     FDecorator.i(Log);
 end;
 
-class
-  function TLogTXT.New(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog): ILog;
+class function TLogTXT.New(aDiretorio: string; aNomeArquivo: string;
+aDecorator: ILog): ILog;
 begin
   if Assigned(FInstancia) then
     result := FInstancia

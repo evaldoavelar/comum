@@ -244,6 +244,7 @@ begin
   Produto.BLOQUEADO := True;
   Produto.PRECO_CUSTO := 1.99;
   Produto.DATA_CADASTRO := date;
+  Produto.TESTENULLSTRING.Value := 'TESTENULLSTRING';
   FDaoBase.Update(Produto);
 
   // assertivas
@@ -658,6 +659,7 @@ begin
   result.OBSERVACOES := 'Teste de Dao;βινστγυ';
   result.QUANTIDADEFRACIONADA := True;
   result.MENSAGEMRETORNO := GetXML;
+  result.TESTENULLSTRING.Clear;
 
   Models.Add(result);
 end;

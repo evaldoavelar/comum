@@ -10,6 +10,7 @@ type
   THelperCurrency = record helper for Currency
     function ToReais: string;
     function ToStrDuasCasas: string;
+    function ToStrDuasCasasSemPonto: string;
     function ToReiasExtenco: string;
   end;
 
@@ -127,7 +128,12 @@ end;
 
 function THelperCurrency.ToStrDuasCasas: string;
 begin
-    Result := FormatFloat('0.,00', Self);
+  Result := FormatFloat('0.,00', Self);
+end;
+
+function THelperCurrency.ToStrDuasCasasSemPonto: string;
+begin
+  Result := CurrToStr(Self, ffCurrency, 2)
 end;
 
 end.

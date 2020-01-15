@@ -133,7 +133,9 @@ end;
 
 function THelperCurrency.ToStrDuasCasasSemPonto: string;
 begin
-  Result := CurrToStr(Self, ffCurrency, 2)
+  Result := FormatFloat('0.,00', Self)
+    .Replace('.', '');
+
 end;
 
 end.

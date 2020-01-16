@@ -22,6 +22,7 @@ type
     function ToTValue: Variant;
     function GetTypeString: string;
     function HasValue: Boolean;
+    procedure FromValue(Value: T);
   end;
 
 implementation
@@ -43,12 +44,17 @@ begin
       Result := TValue.From<T>(FValue).ToString;
   end
   else
-    Result := '(null)';
+    Result := '';
 end;
 
 function TNullable<T>.ToTValue: Variant;
 begin
-    Result := TValue.From<T>(FValue).AsVariant;
+  Result := TValue.From<T>(FValue).AsVariant;
+end;
+
+procedure TNullable<T>.FromValue(Value: T);
+begin
+  SetValue(Value);
 end;
 
 function TNullable<T>.GetTypeString: string;
@@ -57,7 +63,7 @@ var
   Rtti: TRttiContext;
   ltype: TRttiType;
 begin
-  Rtti := TRttiContext.create;
+  Rtti := TRttiContext.Create;
   ltype := Rtti.GetType(TypeInfo(T));
 
   Result := ltype.Name;
@@ -69,7 +75,7 @@ begin
   if FHasValue then
     Result := FValue
   else
-    raise Exception.create('variável é nula');
+    raise Exception.Create('variável é nula');
 end;
 
 function TNullable<T>.HasValue: Boolean;
@@ -98,7 +104,7 @@ begin
   if A = nil then
     Result.Clear
   else
-    raise Exception.create('Pointer value not allowed');
+    raise Exception.Create('Pointer value not allowed');
 end;
 
 end.

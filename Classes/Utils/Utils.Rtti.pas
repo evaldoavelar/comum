@@ -256,23 +256,6 @@ begin
   end;
 end;
 
-// MVCBr.Interf;
-// class function TRttiUtil.New<T>: T;
-// var
-// Context: TRttiContext;
-// Method: TRttiMethod;
-// AType: TRttiType;
-// begin
-// AType := Context.GetType(TClass(T));
-// for Method in AType.GetMethods do
-// if Method.IsConstructor then
-// begin
-// if Length(Method.GetParameters) = 0 then
-// begin
-// result := Method.invoke(TClass(T), []).AsType<T>
-// end;
-// end;
-// end;
 
 class function TRttiUtil.New<T>(aType: TClass): T;
 var

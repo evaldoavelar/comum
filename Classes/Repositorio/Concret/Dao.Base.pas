@@ -9,7 +9,7 @@ uses
   Data.DB, Dao.IQueryBuilder, Dao.TQueryBuilder,
   Dao.IConection, Model.Atributos.Funcoes,
   SQLBuilder4D, Exceptions,
-  System.Generics.Collections, Log.ILog;
+  System.Generics.Collections, Log.ILog, System.StrUtils;
 
 type
   TDaoBase = class(TInterfacedObject)
@@ -283,10 +283,12 @@ var
   context: TRttiContext;
   rType: TRttiType;
   method: TRttiMethod;
+  ARecord: TRttiType;
   prop: TRttiProperty;
   Field: TField;
   Entity: T;
   campo: string;
+  LPropNullable: TValue;
 begin
 
   try
@@ -310,7 +312,19 @@ begin
         begin
           try
 
-            if (CompareText('string', prop.PropertyType.Name)) = 0 then
+            if StartsText('TNullable<', prop.PropertyType.Name) then
+            begin
+              // get Nullable<T> instance...
+              LPropNullable := prop.GetValue(TObject(Entity));
+
+              // invocar FromValue para passar o valor de Field
+              method := context.GetType(LPropNullable.TypeInfo).GetMethod('FromValue');
+              method.Invoke(LPropNullable, [TValue.FromVariant(Field.value)]);
+
+              // passar o valor para a property
+              prop.SetValue(TObject(Entity), LPropNullable);
+            end
+            else if (CompareText('string', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsString)
             else if (CompareText('Char', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsString)
@@ -346,7 +360,7 @@ begin
             else if (CompareText('SmallInt', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsInteger)
             else
-              prop.SetValue(TObject(Entity), TValue.FromVariant(Field.Value));
+              prop.SetValue(TObject(Entity), TValue.FromVariant(Field.value));
 
           except
             on E: Exception do
@@ -599,7 +613,7 @@ begin
   end;
 end;
 
-function TDaoBase.SQLExec<T>(aCmd: string;   aCampoValor: TDictionary<string, Variant>): Integer;
+function TDaoBase.SQLExec<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
 begin
   Result := self.OnExec<T>(aCmd, aCampoValor);
 end;

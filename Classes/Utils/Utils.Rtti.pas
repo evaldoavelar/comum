@@ -37,7 +37,7 @@ implementation
 
 class procedure TRttiUtil.Validation<T>(aExpressao: Boolean; aMessage: string);
 begin
-  if not aExpressao then
+  if aExpressao then
     raise CreateInstance<T>([aMessage]);
 end;
 

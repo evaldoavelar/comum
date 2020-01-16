@@ -6,10 +6,16 @@ unit Utils.Rtti;
 
 interface
 
-uses System.Classes, System.Generics.Collections;
+uses System.Classes,
+  System.TypInfo,
+  System.sysutils,
+  System.Generics.Collections,
+  System.Rtti;
 
 Type
   TRttiUtil = Class
+  private
+
   public
     class procedure Copy<T: Class>(ASource: T; ATarget: T; AIgnore: string = ''); static;
     class function Clone<T: Class>(ASource: T): T; static;
@@ -22,12 +28,50 @@ Type
     class function EnumName<T>(value: integer): string;
     class function StringToEnum<T>(value: string): T;
     class function EnumToString<T>(value: T): String;
+    class function CreateInstance<T>(const Args: array of TValue): T;
+    class procedure Validation<T: Exception>(aExpressao: Boolean; aMessage: string);
   end;
 
 implementation
 
 
-uses System.TypInfo, System.SysUtils, System.Rtti;
+class procedure TRttiUtil.Validation<T>(aExpressao: Boolean; aMessage: string);
+begin
+  if not aExpressao then
+    raise CreateInstance<T>([aMessage]);
+end;
+
+class function TRttiUtil.CreateInstance<T>(const Args: array of TValue): T;
+var
+  AValue: TValue;
+  ctx: TRttiContext;
+  rType: TRttiType;
+  AMethCreate: TRttiMethod;
+  instanceType: TRttiInstanceType;
+begin
+
+  try
+    ctx := TRttiContext.Create;
+    rType := ctx.GetType(TypeInfo(T));
+    for AMethCreate in rType.GetMethods do
+    begin
+      if (AMethCreate.IsConstructor) and (Length(AMethCreate.GetParameters) =  Length(Args) ) then
+      begin
+        instanceType := rType.AsInstance;
+
+        AValue := AMethCreate.Invoke(instanceType.MetaclassType, Args);
+
+        Result := AValue.AsType<T>;
+
+        Exit;
+      end;
+    end;
+  except
+    on E: Exception do
+      raise Exception.Create('TDaoBase.CreateInstance<T>: ' + E.Message);
+  end;
+
+end;
 
 class procedure TRttiUtil.ListDisposeOf<T>(aList: TList<T>);
 var
@@ -53,7 +97,7 @@ end;
 
 class function TRttiUtil.EnumName<T>(value: integer): string;
 begin
-  result := GetEnumName(TypeInfo(T), (value));
+  Result := GetEnumName(TypeInfo(T), (value));
 end;
 
 class procedure TRttiUtil.EnumToValues<T>(Values: TStrings);
@@ -79,11 +123,11 @@ class function TRttiUtil.EnumToString<T>(value: T): String;
 begin
   case Sizeof(T) of
     1:
-      result := GetEnumName(TypeInfo(T), PByte(@value)^);
+      Result := GetEnumName(TypeInfo(T), PByte(@value)^);
     2:
-      result := GetEnumName(TypeInfo(T), PWord(@value)^);
+      Result := GetEnumName(TypeInfo(T), PWord(@value)^);
     4:
-      result := GetEnumName(TypeInfo(T), PCardinal(@value)^);
+      Result := GetEnumName(TypeInfo(T), PCardinal(@value)^);
   end;
 end;
 
@@ -92,11 +136,11 @@ begin
   try
     case Sizeof(T) of
       1:
-        PByte(@result)^ := GetEnumValue(TypeInfo(T), value);
+        PByte(@Result)^ := GetEnumValue(TypeInfo(T), value);
       2:
-        PWord(@result)^ := GetEnumValue(TypeInfo(T), value);
+        PWord(@Result)^ := GetEnumValue(TypeInfo(T), value);
       4:
-        PCardinal(@result)^ := GetEnumValue(TypeInfo(T), value);
+        PCardinal(@Result)^ := GetEnumValue(TypeInfo(T), value);
     end;
 
   except
@@ -248,7 +292,7 @@ begin
 
       AValue := AMethCreate.Invoke(instanceType.MetaclassType, []);
 
-      result := AValue.AsType<T>;
+      Result := AValue.AsType<T>;
 
       Exit;
     end;
@@ -281,11 +325,11 @@ begin
         Break;
     end;
   if Params = nil then
-    result := method.Invoke(ASource.ClassType, []).AsType<T>
+    Result := method.Invoke(ASource.ClassType, []).AsType<T>
   else
-    result := method.Invoke(ASource.ClassType, [TComponent(ASource).Owner])
+    Result := method.Invoke(ASource.ClassType, [TComponent(ASource).Owner])
       .AsType<T>;
-  TRttiUtil.Copy(ASource, result);
+  TRttiUtil.Copy(ASource, Result);
 
 end;
 

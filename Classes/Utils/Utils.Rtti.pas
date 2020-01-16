@@ -1,9 +1,5 @@
 unit Utils.Rtti;
 
-{
-  Auth: Base: https://delphihaven.wordpress.com/2011/06/09/object-cloning-using-rtti/
-}
-
 interface
 
 uses System.Classes,
@@ -19,7 +15,6 @@ Type
   public
     class procedure Copy<T: Class>(ASource: T; ATarget: T; AIgnore: string = ''); static;
     class function Clone<T: Class>(ASource: T): T; static;
-    class function New<T>(aType: TClass): T; static;
 
     class procedure ListDisposeOf<T: Class>(aList: TList<T>); static;
     class procedure Initialize<T: Class>(ASource: T);
@@ -28,19 +23,30 @@ Type
     class function EnumName<T>(value: integer): string;
     class function StringToEnum<T>(value: string): T;
     class function EnumToString<T>(value: T): String;
-    class function CreateInstance<T>(const Args: array of TValue): T;
+    class function CreateInstance<T>(const Args: array of TValue): T; overload;
+    class function CreateInstance<T>(aType: TClass; const Args: array of TValue): T; overload;
     class procedure Validation<T: Exception>(aExpressao: Boolean; aMessage: string);
   end;
 
 implementation
 
 
+/// <summary>
+/// Testa uma expressão e caso seja verdadeira, levanta a exceção informada em T
+/// </summary>
+/// <param name="aExpressao">Expressão booleana para análise</param>
+/// /// <param name="aMessage">Mensagem de excessão</param>
 class procedure TRttiUtil.Validation<T>(aExpressao: Boolean; aMessage: string);
 begin
   if aExpressao then
     raise CreateInstance<T>([aMessage]);
 end;
 
+/// <summary>
+/// Cria um objeto passando os parametros informados no array
+/// </summary>
+/// <param name="Args">array de parametros do método</param>
+/// <return>Objeto de tipo T </return>
 class function TRttiUtil.CreateInstance<T>(const Args: array of TValue): T;
 var
   AValue: TValue;
@@ -55,7 +61,7 @@ begin
     rType := ctx.GetType(TypeInfo(T));
     for AMethCreate in rType.GetMethods do
     begin
-      if (AMethCreate.IsConstructor) and (Length(AMethCreate.GetParameters) =  Length(Args) ) then
+      if (AMethCreate.IsConstructor) and (Length(AMethCreate.GetParameters) = Length(Args)) then
       begin
         instanceType := rType.AsInstance;
 
@@ -68,11 +74,15 @@ begin
     end;
   except
     on E: Exception do
-      raise Exception.Create('TDaoBase.CreateInstance<T>: ' + E.Message);
+      raise Exception.Create('TRttiUtil.CreateInstance<T>: ' + E.Message);
   end;
 
 end;
 
+/// <summary>
+/// Pecorre uma lista e libera da memoria os objetos
+/// </summary>
+/// <param name="aList">Lista do tipo T</param>
 class procedure TRttiUtil.ListDisposeOf<T>(aList: TList<T>);
 var
   item: T;
@@ -95,10 +105,19 @@ begin
   end;
 end;
 
+/// <summary>
+/// Retorna o nome de enum
+/// </summary>
+/// <param name="value">Enum</param>
 class function TRttiUtil.EnumName<T>(value: integer): string;
 begin
   Result := GetEnumName(TypeInfo(T), (value));
 end;
+
+/// <summary>
+/// Pecorre um tipo enum e gera TStrings - util para popular combobx com enuns
+/// </summary>
+/// <param name="Values">TStrings</param>
 
 class procedure TRttiUtil.EnumToValues<T>(Values: TStrings);
 var
@@ -119,6 +138,11 @@ begin
   until (Pos < 0);
 end;
 
+/// <summary>
+/// Retorna o nome de enum em string
+/// </summary>
+/// <param name="value">Enum</param>
+
 class function TRttiUtil.EnumToString<T>(value: T): String;
 begin
   case Sizeof(T) of
@@ -131,6 +155,10 @@ begin
   end;
 end;
 
+/// <summary>
+/// converte uma string em enum
+/// </summary>
+/// <param name="value">string para converter</param>
 class function TRttiUtil.StringToEnum<T>(value: string): T;
 begin
   try
@@ -150,6 +178,10 @@ begin
 
 end;
 
+/// <summary>
+/// Recebe um objeto e inicializa suas propriedades
+/// </summary>
+/// <param name="ASource">Objeto do tipo T</param>
 class procedure TRttiUtil.Initialize<T>(ASource: T);
 var
   context: TRttiContext;
@@ -184,6 +216,12 @@ begin
 
 end;
 
+/// <summary>
+/// Copia as propriedades de um objeto para o outro
+/// </summary>
+/// <param name="ASource">Objeto original</param>
+/// /// <param name="ATarget">Objeto de destino</param>
+/// ///  /// <param name="ATarget">Objeto de destino</param>
 class procedure TRttiUtil.Copy<T>(ASource, ATarget: T;
   AIgnore: string = '');
 var
@@ -199,10 +237,10 @@ var
 begin
   AIgnore := ',' + AIgnore.ToLower + ',';
   RttiType := context.GetType(ASource.ClassType);
-  // find a suitable constructor, though treat components specially
+  // procurar um construtor
   IsComponent := (ASource is TComponent);
   try
-    // loop through the props, copying values across for ones that are read/write
+    // loop nas props, copiando valores que são leitura e escrita
     Move(ASource, SourceAsPointer, Sizeof(Pointer));
     Move(ATarget, ResultAsPointer, Sizeof(Pointer));
 
@@ -220,7 +258,6 @@ begin
     LookOutForNameProp := IsComponent and (TComponent(ASource).Owner <> nil);
     if IsComponent then
       MinVisibility := mvPublished
-      // an alternative is to build an exception list
     else
       MinVisibility := mvPublic;
 
@@ -256,8 +293,13 @@ begin
   end;
 end;
 
-
-class function TRttiUtil.New<T>(aType: TClass): T;
+/// <summary>
+/// Cria um objeto do tipo da classe
+/// </summary>
+/// <param name="aType">Tipo da classe</param>
+/// <param name="Args">Parametros do construtor</param>
+/// <return name="T">Tipo</param>
+class function TRttiUtil.CreateInstance<T>(aType: TClass; const Args: array of TValue): T;
 var
   AValue: TValue;
   ctx: TRttiContext;
@@ -273,7 +315,7 @@ begin
     begin
       instanceType := rType.AsInstance;
 
-      AValue := AMethCreate.Invoke(instanceType.MetaclassType, []);
+      AValue := AMethCreate.Invoke(instanceType.MetaclassType, Args);
 
       Result := AValue.AsType<T>;
 
@@ -282,6 +324,11 @@ begin
   end;
 end;
 
+/// <summary>
+/// Clona um objeto
+/// </summary>
+/// <param name="ASource">Objeto original</param>
+/// <return name="T">Objeto definido<return>
 class function TRttiUtil.Clone<T>(ASource: T): T;
 var
   context: TRttiContext;

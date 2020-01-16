@@ -64,7 +64,7 @@ implementation
 
 function TModelBase.New: IModelBase;
 begin
-  result := TRttiUtil.New<TModelBase>(Self.ClassType);
+  result := TRttiUtil.CreateInstance<TModelBase>(Self.ClassType,[]);
 end;
 
 procedure TModelBase.NotifyBinding(const APropertyName: string);

@@ -314,6 +314,10 @@ begin
 
             if StartsText('TNullable<', prop.PropertyType.Name) then
             begin
+              //se o campo eh nulo
+              if (Field.IsNull = false) then
+                Continue;
+
               // get Nullable<T> instance...
               LPropNullable := prop.GetValue(TObject(Entity));
 

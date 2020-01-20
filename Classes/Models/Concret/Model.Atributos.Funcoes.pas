@@ -9,7 +9,7 @@ uses
   System.Rtti,
   Model.Atributos,
   Model.Atributos.Tipos,
-  Model.IModelBase, Utils.Funcoes, System.StrUtils;
+  Model.IModelBase, Utils.Funcoes, System.StrUtils, System.Variants;
 
 type
 
@@ -160,26 +160,32 @@ begin
           // get Nullable<T> instance...
           v := prop.GetValue(TObject(Model));
 
-          //verificar se tem dado
-          method := Rtti.GetType(v.TypeInfo).GetMethod('HasValue');
-          if (not method.Invoke(v, []).AsBoolean) then
-            Continue;
-
-          // invoke Nullable<T>.ToString() method on that instance...
-          method := Rtti.GetType(v.TypeInfo).GetMethod('ToTValue');
-          value := method.Invoke(v, []).AsVariant;
-
           // pegar o nome da propriedade
           method := Rtti.GetType(v.TypeInfo).GetMethod('GetTypeString');
           propName := method.Invoke(v, []).AsString;
+
+          // verificar se tem dado
+          method := Rtti.GetType(v.TypeInfo).GetMethod('HasValue');
+          if (not method.Invoke(v, []).AsBoolean) then
+          begin
+            value := '(NULL)';
+          end
+          else
+          begin
+            method := Rtti.GetType(v.TypeInfo).GetMethod('ToTValue');
+            value := method.Invoke(v, []).AsVariant;
+          end;
         end
         else
         begin
           value := prop.GetValue(TObject(Model)).AsVariant;
         end;
 
-        if (CompareText('string', propName) = 0) and (isNullable = False)  then
+        if (CompareText('string', propName) = 0) and (isNullable=false) then
           value := prop.GetValue(TObject(Model)).AsString
+        else if (CompareText('string', propName) = 0) then  begin
+          TVarData(value).vType := varString;
+        end
         else if (CompareText('TDateTime', propName)) = 0 then
           TVarData(value).vType := varDate
         else if (CompareText('TDate', propName)) = 0 then

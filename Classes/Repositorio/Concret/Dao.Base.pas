@@ -29,7 +29,6 @@ type
   protected
     FLog: ILog;
     FConnection: IConection;
-    function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
 
     procedure Log(Log: string); overload;
     procedure Log(CampoValor: TDictionary<string, Variant>); overload;
@@ -51,6 +50,7 @@ type
     function SQLToT<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
     function SQLExec<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
 
+    function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
     constructor Create(aConnection: IConection; aLog: ILog = nil);
     destructor destroy; override;
   end;
@@ -314,7 +314,7 @@ begin
 
             if StartsText('TNullable<', prop.PropertyType.Name) then
             begin
-              //se o campo eh nulo
+              // se o campo eh nulo
               if (Field.IsNull = false) then
                 Continue;
 

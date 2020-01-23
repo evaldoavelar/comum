@@ -12,6 +12,7 @@ type
     function ToStrDuasCasas: string;
     function ToStrDuasCasasSemPonto: string;
     function ToReiasExtenco: string;
+    function ToDuasCasas: Currency;
   end;
 
 resourcestring
@@ -29,7 +30,15 @@ const
 
 implementation
 
+uses
+  Utils.Funcoes;
+
 { THelperCurrency }
+
+function THelperCurrency.ToDuasCasas: Currency;
+begin
+  Result := TUtil.Truncar(Self, 2);
+end;
 
 function THelperCurrency.ToReais: string;
 begin

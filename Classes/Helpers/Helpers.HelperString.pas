@@ -20,6 +20,7 @@ type
     function FormataCNPJ: string;
     function ValidaEMAIL: Boolean;
     function GetNumbers: string;
+    function RemoveAcentos:string;
     function Explode(const Ch: char): TStringList;
     function SubString(PosInicial, PosFinal: integer): string;
     function LeftPad(Ch: char; Len: integer): string;
@@ -51,6 +52,14 @@ begin
   end
   else
     RESULT := False;
+end;
+
+function TStringHelper.RemoveAcentos: string;
+type
+  USAscii20127 = type AnsiString(20127);
+begin
+  Result := string(USAscii20127(self));
+
 end;
 
 function TStringHelper.RightPad(Ch: char; Len: integer): string;

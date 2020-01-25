@@ -88,8 +88,14 @@ var
   item: T;
 begin
   try
-    if (Assigned(aList) = False) or (aList.Count <= 0) then
+    if (Assigned(aList) = False) then
       Exit;
+
+    if (aList.Count <= 0) then
+    begin
+      FreeAndNil(aList);
+      Exit;
+    end;
 
     for item in aList do
     begin

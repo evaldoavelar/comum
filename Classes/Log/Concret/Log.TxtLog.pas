@@ -2,7 +2,8 @@ unit Log.TxtLog;
 
 interface
 
-uses Log.ILog, Log.TTipoLog, System.Classes, Winapi.Windows;
+uses Log.ILog, Log.TTipoLog, System.Classes, Winapi.Windows, System.SysUtils,
+  System.Generics.Collections, System.Variants;
 
 type
 
@@ -31,6 +32,8 @@ type
     procedure e(Log: string); overload;
     procedure d(Log: string); overload;
     procedure d(Log: string; const Args: array of const); overload;
+    procedure d(aParamns: TDictionary<string, Variant>); overload;
+    procedure d(e: Exception); overload;
 
     function setOnLog(aOnLog: TOnLog): ILog;
     function setAtivo(): ILog;
@@ -43,9 +46,6 @@ type
   end;
 
 implementation
-
-uses
-  System.SysUtils;
 
 { TLog }
 
@@ -94,7 +94,7 @@ begin
     linha := Format(' %s - %s - %s', [FormatDateTime('dd/mm/yy hh:mm:ss', Now),
       aTipo.ToString, aTexto]);
 
-      OutputDebugString( PWideChar(linha));
+    OutputDebugString(PWideChar(linha));
 
     if Ativo then
     begin
@@ -169,6 +169,36 @@ function TLogTXT.setOnLog(aOnLog: TOnLog): ILog;
 begin
   result := Self;
   FOnLog := aOnLog;
+end;
+
+procedure TLogTXT.d(e: Exception);
+begin
+  d(e.Message);
+end;
+
+procedure TLogTXT.d(aParamns: TDictionary<string, Variant>);
+var
+  builder: TStringBuilder;
+  key: string;
+begin
+  try
+
+    builder := TStringBuilder.Create;
+
+    for key in aParamns.Keys do
+    begin
+      builder.AppendFormat(' %s = %s ', [key, VarToStr(aParamns.Items[key])]);
+    end;
+
+    d(builder.ToString());
+
+    FreeAndNil(builder);
+
+  except
+    on e: Exception do
+      d(e.Message);
+  end;
+
 end;
 
 end.

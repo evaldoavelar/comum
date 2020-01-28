@@ -19,8 +19,9 @@ type
     function FormataCPF: string;
     function FormataCNPJ: string;
     function ValidaEMAIL: Boolean;
+    function ToCurrency: Currency;
     function GetNumbers: string;
-    function RemoveAcentos:string;
+    function RemoveAcentos: string;
     function Explode(const Ch: char): TStringList;
     function SubString(PosInicial, PosFinal: integer): string;
     function LeftPad(Ch: char; Len: integer): string;
@@ -58,7 +59,7 @@ function TStringHelper.RemoveAcentos: string;
 type
   USAscii20127 = type AnsiString(20127);
 begin
-  Result := string(USAscii20127(self));
+  RESULT := string(USAscii20127(Self));
 
 end;
 
@@ -94,6 +95,15 @@ end;
 function TStringHelper.SubString(PosInicial, PosFinal: integer): string;
 begin
   RESULT := Copy(Self, PosInicial, PosFinal - PosInicial);
+end;
+
+function TStringHelper.ToCurrency: Currency;
+var
+  aux: string;
+begin
+  aux := StringReplace(Self, '.', '', [rfReplaceAll]);
+  aux := StringReplace(aux, 'R$', '', [rfReplaceAll]);
+  RESULT := StrToCurr(aux);
 end;
 
 function TStringHelper.ToInt: integer;

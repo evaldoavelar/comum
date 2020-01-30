@@ -12,7 +12,7 @@ type
     class var FInstancia: TLogTXT;
   private
     FDiretorio: string;
-    FAtivo: Boolean;
+   CLASS VAR FAtivo: Boolean;
     FNomeArquivo: String;
     FDecorator: ILog;
     FOnLog: TOnLog;
@@ -20,9 +20,10 @@ type
     procedure GravarLog(aTexto: string; aTipo: TTipoLog);
     function getNomeArquivo: string;
     procedure setNomeArquivo(const Value: string);
+    function GETAtivo: Boolean;
   public
 
-    property Ativo: Boolean read FAtivo write FAtivo;
+    property Ativo: Boolean read GETAtivo ;
     property Diretorio: string read FDiretorio write FDiretorio;
     property NomeArquivo: string read getNomeArquivo write setNomeArquivo;
 
@@ -77,6 +78,11 @@ begin
   GravarLog(Log, TTipoLog.Erro);
   if Assigned(FDecorator) then
     FDecorator.e(Log);
+end;
+
+function TLogTXT.GETAtivo: Boolean;
+begin
+ Result := FAtivo;
 end;
 
 function TLogTXT.getNomeArquivo: string;

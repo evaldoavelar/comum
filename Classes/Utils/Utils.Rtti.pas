@@ -4,7 +4,7 @@ interface
 
 uses System.Classes,
   System.TypInfo,
-  System.sysutils,
+  System.sysutils, db,
   System.Generics.Collections,
   System.Rtti;
 
@@ -18,6 +18,8 @@ Type
 
     class procedure ListDisposeOf<T: Class>(aList: TList<T>); static;
     class procedure Initialize<T: Class>(ASource: T);
+
+    class procedure CopyDataObjectTODataSet<T: class>(aSourceObj: T; aDest: TDataSet);
 
     class procedure EnumToValues<T>(Values: TStrings);
     class function EnumName<T>(value: integer): string;
@@ -296,6 +298,51 @@ begin
         end;
   except
     raise;
+  end;
+end;
+
+class procedure TRttiUtil.CopyDataObjectTODataSet<T>(aSourceObj: T;
+  aDest: TDataSet);
+var
+  context: TRttiContext;
+  rType: TRttiType;
+  prop: TRttiProperty;
+  Field: TField;
+  campo: string;
+
+begin
+  try
+
+    aDest.Append;
+    context := TRttiContext.Create;
+    rType := context.GetType(T.ClassInfo);
+    for prop in rType.GetProperties do
+    begin
+
+      // pegar o campo corresponte a property
+      campo := prop.Name;
+
+      // procurar o campo  no dataset
+      Field := aDest.Fields.FindField(campo);
+      if Field <> nil then
+      begin
+        try
+          Field.value := prop.GetValue(TObject(aSourceObj)).AsVariant;
+        except
+          on E: Exception do
+          begin
+            raise Exception.Create('SetValue: prop.PropertyType.Name=' + prop.PropertyType.Name
+              + ' FieldName=' + Field.FieldName + ' - '
+              + E.Message);
+          end;
+        end;
+      end;
+
+    end;
+    aDest.Post;
+  except
+    on E: Exception do
+      raise Exception.Create('TDaoBase.CopyDataObjectTODataSet: ' + E.Message);
   end;
 end;
 

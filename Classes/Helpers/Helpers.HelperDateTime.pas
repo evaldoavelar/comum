@@ -14,6 +14,7 @@ type
     procedure ReplaceTimer;
     procedure SetDateNow;
     function FormatoDataBr: string;
+    function FormatoDataBrExtenco: string;
     function FormatoDataHoraBr: string;
   end;
 
@@ -37,6 +38,15 @@ end;
 function THelperDateTime.FormatoDataBr: string;
 begin
   Result := FormatDateTime('dd/mm/yyyy', Self);
+end;
+
+function THelperDateTime.FormatoDataBrExtenco: string;
+begin
+  Result := Format('%s de %s de %s', [
+    FormatDateTime('dd', Self),
+    FormatDateTime('mmmm', Self),
+    FormatDateTime('yyyy', Self)
+    ]);
 end;
 
 function THelperDateTime.FormatoDataHoraBr: string;

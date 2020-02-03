@@ -17,14 +17,18 @@ Type
     class function Clone<T: Class>(ASource: T): T; static;
 
     class procedure ListDisposeOf<T: Class>(aList: TList<T>); static;
+    class procedure AssignedFreeAnNil(aObj: TObject); static;
+    class procedure AssignedFree(aObj: TObject); static;
     class procedure Initialize<T: Class>(ASource: T);
 
     class procedure CopyDataObjectTODataSet<T: class>(aSourceObj: T; aDest: TDataSet);
+   // class function TFieldToT<T>(aField: TField): T;
 
     class procedure EnumToValues<T>(Values: TStrings);
     class function EnumName<T>(value: integer): string;
     class function StringToEnum<T>(value: string): T;
     class function EnumToString<T>(value: T): String;
+
     class function CreateInstance<T>(const Args: array of TValue): T; overload;
     class function CreateInstance<T>(aType: TClass; const Args: array of TValue): T; overload;
     class procedure Validation<T: Exception>(aExpressao: Boolean; aMessage: string);
@@ -185,6 +189,43 @@ begin
   end;
 
 end;
+
+//class function TRttiUtil.TFieldToT<T>(aField: TField): T;
+//var
+//  context: TRttiContext;
+//  rType: TRttiType;
+//  nome: string;
+//  Aux: T;
+//begin
+//  context := TRttiContext.Create;
+//  rType := context.GetType(TypeInfo(T));
+//
+//  nome := rType.Name;
+//
+//  if (CompareText('TDate', nome)) = 0 then
+//  begin
+//    nome := string(Aux);
+//    nome  := aField.AsString;
+//  end
+//  // else if (CompareText('TTime',nome)) = 0 then
+//  // begin
+//  // if aField.IsNull = False then
+//  // prop.SetValue(TObject(Entity), aField.AsDateTime)
+//  // else
+//  // prop.SetValue(TObject(Entity), 0);
+//  // end
+//  // else if (CompareText('Boolean',nome)) = 0 then
+//  // prop.SetValue(TObject(Entity), aField.AsBoolean)
+//  // else if (CompareText('Currency',nome)) = 0 then
+//  // prop.SetValue(TObject(Entity), aField.AsCurrency)
+//  // else if (CompareText('Double',nome)) = 0 then
+//  // prop.SetValue(TObject(Entity), aField.AsFloat)
+//  // else if (CompareText('Integer',nome)) = 0 then
+//  // prop.SetValue(TObject(Entity), aField.AsInteger)
+//  // else if (CompareText('SmallInt',nome)) = 0 then
+//  // prop.SetValue(TObject(Entity), aField.AsInteger)
+//
+//end;
 
 /// <summary>
 /// Recebe um objeto e inicializa suas propriedades
@@ -377,11 +418,27 @@ begin
   end;
 end;
 
+class procedure TRttiUtil.AssignedFree(aObj: TObject);
+begin
+  if Assigned(aObj) then
+    aObj.Free;
+end;
+
+class procedure TRttiUtil.AssignedFreeAnNil(aObj: TObject);
+begin
+  if Assigned(aObj) then
+  begin
+    aObj.Free;
+    aObj := nil;
+  end;
+end;
+
 /// <summary>
 /// Clona um objeto
 /// </summary>
 /// <param name="ASource">Objeto original</param>
 /// <return name="T">Objeto definido<return>
+
 class function TRttiUtil.Clone<T>(ASource: T): T;
 var
   context: TRttiContext;

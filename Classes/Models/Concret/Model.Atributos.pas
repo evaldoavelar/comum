@@ -69,7 +69,7 @@ type
   end;
 
   /// ForeignKey
-  ForeignKeyAttribute = class(DescriptionAttribute)
+  ForeignKeyAttribute = class(TCustomAttribute)
   private
     FReferenceTableName: string;
     FReferenceFieldName: string;
@@ -77,6 +77,7 @@ type
     FRuleDelete: TRuleAction;
     FName: string;
     FColumns: string;
+    FDescription: string;
   public
     constructor Create(AName: string; AColumns: string; AReferenceTableName: string; AReferenceFieldName: string; ARuleDelete, ARuleUpdate: TRuleAction; ADescription: string = '');
 
@@ -86,6 +87,7 @@ type
     property ReferenceFieldName: string read FReferenceFieldName;
     property RuleDelete: TRuleAction read FRuleDelete;
     property RuleUpdate: TRuleAction read FRuleUpdate;
+    property Description : string read FDescription;
 
   end;
 
@@ -168,7 +170,7 @@ constructor ForeignKeyAttribute.Create(AName: string; AColumns, AReferenceTableN
   AReferenceFieldName: string; ARuleDelete, ARuleUpdate: TRuleAction;
   ADescription: string);
 begin
-  inherited Create(ADescription);
+  FDescription := ADescription;
   FName := AName;
   FColumns := AColumns;
   FReferenceTableName := AReferenceTableName;

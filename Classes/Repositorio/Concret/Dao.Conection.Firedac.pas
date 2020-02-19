@@ -3,13 +3,38 @@ unit Dao.Conection.Firedac;
 interface
 
 uses
+
   Dao.IConection,
-  System.Rtti, Firedac.Stan.Def, Firedac.Stan.Async, Firedac.Phys.OracleDef,
-  Firedac.Stan.Intf, Firedac.Stan.Option, Firedac.DApt,
-  Data.DB, Firedac.Comp.Client, Firedac.Phys.FBDef, Firedac.Phys, Firedac.Phys.MSSQL,
-  Firedac.UI.Intf, Firedac.VCLUI.Wait, Firedac.Comp.UI, Firedac.Comp.Script, Firedac.Phys.MSSQLDef,
-  System.Classes, System.SysUtils, Dao.Conection.Parametros, Exceptions, Database.SGDB,
-  System.Variants, Firedac.Phys.Oracle,
+  System.Rtti,
+  System.Classes,
+  System.SysUtils,
+  Data.DB,
+  Dao.Conection.Parametros,
+  Exceptions, Database.SGDB,
+  System.Variants,
+  Firedac.Stan.Def,
+  Firedac.Stan.Async,
+  Firedac.Phys.SQLite,
+  Firedac.Phys.SQLiteDef,
+  Firedac.Stan.Intf,
+  Firedac.Stan.Option,
+  Firedac.DApt,
+  Firedac.Comp.Client,
+    Firedac.FMXUI.Wait,
+{$IFDEF   MSWINDOWS}
+
+  Firedac.VCLUI.Wait,
+  Firedac.Phys.Oracle,
+  Firedac.Phys.MSSQLDef,
+  Firedac.Phys.MSSQL,
+  Firedac.Phys.OracleDef,
+  Firedac.UI.Intf,
+  Firedac.Comp.UI,
+  Firedac.Comp.Script,
+  Firedac.Phys.FBDef,
+  Firedac.Phys,
+
+{$ENDIF}
   System.Generics.Collections;
 
 type
@@ -76,6 +101,15 @@ begin
     FConnection := TFDConnection.Create(nil);
 
     case FParametros.SGBD of
+      tpSQLite:
+        begin
+          FConnection.DriverName := 'SQLite';
+          FConnection.Params.UserName := '';
+          FConnection.Params.Password := '';
+          FConnection.Params.Database := FParametros.Database;
+        end;
+
+{$IFDEF  MSWINDOWS}
       tpSqlServer:
         begin
           FConnection.DriverName := 'MSSQL';
@@ -102,6 +136,7 @@ begin
             ApplicationName := ExtractFileName(ApplicationName);
           end;
         end;
+{$ENDIF}
     end;
 
     FConnection.FetchOptions.Mode := fmAll;

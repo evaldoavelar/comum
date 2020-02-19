@@ -87,7 +87,7 @@ type
       { Update the hash buffer with Size bytes of data from Buffer }
     procedure UpdateStream(Stream: TStream; Size: longword);
       { Update the hash buffer with Size bytes of data from the stream }
-    procedure UpdateStr(const Str: AnsiString);
+    procedure UpdateStr(const Str: string);
       { Update the hash buffer with the string }
 
     destructor Destroy; override;
@@ -137,7 +137,7 @@ type
 
     procedure Init(const Key; Size: longword; InitVector: pointer); virtual;
       { Do key setup based on the data in Key, size is in bits }
-    procedure InitStr(const Key: AnsiString; HashType: TDCP_hashclass);
+    procedure InitStr(const Key: string; HashType: TDCP_hashclass);
       { Do key setup based on a hash of the key string }
     procedure Burn; virtual;
       { Clear all stored key information }
@@ -151,9 +151,9 @@ type
       { Encrypt size bytes of data from InStream and place in OutStream }
     function DecryptStream(InStream, OutStream: TStream; Size: longword): longword;
       { Decrypt size bytes of data from InStream and place in OutStream }
-    function EncryptString(const Str: AnsiString): AnsiString; virtual;
+    function EncryptString(const Str: string): string; virtual;
       { Encrypt a string and return Base64 encoded }
-    function DecryptString(const Str: AnsiString): AnsiString; virtual;
+    function DecryptString(const Str: string): string; virtual;
       { Decrypt a Base64 encoded string }
 
     constructor Create(AOwner: TComponent); override;
@@ -199,9 +199,9 @@ type
       { Encrypt size bytes of data and place in Outdata using CipherMode }
     procedure Decrypt(const Indata; var Outdata; Size: longword); override;
       { Decrypt size bytes of data and place in Outdata using CipherMode }
-    function EncryptString(const Str: AnsiString): AnsiString; override;
+    function EncryptString(const Str: string): string; override;
       { Encrypt a string and return Base64 encoded }
-    function DecryptString(const Str: AnsiString): AnsiString; override;
+    function DecryptString(const Str: string): string; override;
       { Decrypt a Base64 encoded string }
     procedure EncryptECB(const Indata; var Outdata); virtual; 
       { Encrypt a block of data using the ECB method of encryption }
@@ -327,7 +327,7 @@ begin
   end;
 end;
 
-procedure TDCP_hash.UpdateStr(const Str: AnsiString);
+procedure TDCP_hash.UpdateStr(const Str: string);
 begin
   Update(Str[1],Length(Str));
 end;
@@ -395,7 +395,7 @@ begin
     fInitialized:= true;
 end;
 
-procedure TDCP_cipher.InitStr(const Key: AnsiString; HashType: TDCP_hashclass);
+procedure TDCP_cipher.InitStr(const Key: string; HashType: TDCP_hashclass);
 var
   Hash: TDCP_hash;
   Digest: pointer;
@@ -481,14 +481,14 @@ begin
   end;
 end;
 
-function TDCP_cipher.EncryptString(const Str: AnsiString): AnsiString;
+function TDCP_cipher.EncryptString(const Str: string): string;
 begin
   SetLength(Result,Length(Str));
   Encrypt(Str[1],Result[1],Length(Str));
   Result:= Base64EncodeStr(Result);
 end;
 
-function TDCP_cipher.DecryptString(const Str: AnsiString): AnsiString;
+function TDCP_cipher.DecryptString(const Str: string): string;
 begin
   Result:= Base64DecodeStr(Str);
   Decrypt(Result[1],Result[1],Length(Result));
@@ -543,14 +543,14 @@ begin
   end;
 end;
 
-function TDCP_blockcipher.EncryptString(const Str: AnsiString): AnsiString;
+function TDCP_blockcipher.EncryptString(const Str: string): string;
 begin
   SetLength(Result,Length(Str));
   EncryptCFB8bit(Str[1],Result[1],Length(Str));
   Result:= Base64EncodeStr(Result);
 end;
 
-function TDCP_blockcipher.DecryptString(const Str: AnsiString): AnsiString;
+function TDCP_blockcipher.DecryptString(const Str: string): string;
 begin
   Result:= Base64DecodeStr(Str);
   DecryptCFB8bit(Result[1],Result[1],Length(Result));

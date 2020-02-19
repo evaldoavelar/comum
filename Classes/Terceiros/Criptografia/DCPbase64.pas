@@ -28,9 +28,9 @@ interface
 uses
   Sysutils;
 
-function Base64EncodeStr(const Value: AnsiString): AnsiString;
+function Base64EncodeStr(const Value: string): string;
   { Encode a string into Base64 format }
-function Base64DecodeStr(const Value: AnsiString): AnsiString;
+function Base64DecodeStr(const Value: string): string;
   { Decode a Base64 format string }
 function Base64Encode(pInput: pointer; pOutput: pointer; Size: longint): longint;
   { Encode a lump of raw data (output is (4/3) times bigger than input) }
@@ -81,7 +81,7 @@ begin
   Result:= ((Size+2) div 3) * 4;
 end;
 
-function Base64EncodeStr(const Value: AnsiString): AnsiString;
+function Base64EncodeStr(const Value: string): string;
 begin
   SetLength(Result,((Length(Value)+2) div 3) * 4);
   Base64Encode(@Value[1],@Result[1],Length(Value));
@@ -129,7 +129,7 @@ begin
   end;
 end;
 
-function Base64DecodeStr(const Value: AnsiString): AnsiString;
+function Base64DecodeStr(const Value: string): string;
 begin
   SetLength(Result,(Length(Value) div 4) * 3);
   SetLength(Result,Base64Decode(@Value[1],@Result[1],Length(Value)));

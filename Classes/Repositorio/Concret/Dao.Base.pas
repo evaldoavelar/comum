@@ -9,7 +9,11 @@ uses
   Data.DB, Dao.IQueryBuilder, Dao.TQueryBuilder,
   Dao.IConection, Model.Atributos.Funcoes,
   SQLBuilder4D, Exceptions,
-  System.Generics.Collections, Log.ILog;
+  System.Generics.Collections, Log.ILog
+{$IFDEF MSWINDOWS}
+    , Winapi.Windows
+{$ENDIF}
+    ;
 
 type
   TDaoBase = class(TInterfacedObject)
@@ -160,13 +164,18 @@ procedure TDaoBase.Log(Log: string);
 begin
   if Assigned(FLog) then
     FLog.d(Log);
+{$IFDEF MSWINDOWS}
+  OutputDebugString(PChar(Log));
+{$ENDIF}
 end;
 
 procedure TDaoBase.Log(Log: string; const Args: array of const);
 begin
   if Assigned(FLog) then
     FLog.d(Log, Args);
-
+{$IFDEF MSWINDOWS}
+  OutputDebugString(PChar(Format(Log, Args)));
+{$ENDIF}
 end;
 
 function TDaoBase.OnExec<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): LongInt;
@@ -314,7 +323,7 @@ begin
               prop.SetValue(TObject(Entity), Field.AsString)
             else if (CompareText('TDateTime', prop.PropertyType.Name)) = 0 then
             begin
-              if (Field.IsNull = false) or (Field.AsString <> '' ) then
+              if (Field.IsNull = false) or (Field.AsString <> '') then
                 prop.SetValue(TObject(Entity), Field.AsDateTime)
               else
                 prop.SetValue(TObject(Entity), 0)
@@ -403,22 +412,31 @@ var
   key: string;
 begin
   try
+
+    builder := TStringBuilder.Create;
+
+    for key in CampoValor.Keys do
+    begin
+      builder.AppendFormat(' %s = %s ', [key, VarToStr(CampoValor.Items[key])]);
+    end;
+
     if Assigned(FLog) then
     begin
-      builder := TStringBuilder.Create;
-
-      for key in CampoValor.Keys do
-      begin
-        builder.AppendFormat(' %s = %s ', [key, VarToStr(CampoValor.Items[key])]);
-      end;
-
       FLog.d(builder.ToString());
-
-      FreeAndNil(builder);
     end;
+
+    {$IFDEF MSWINDOWS}
+    OutputDebugString(PChar(builder.ToString()));
+    {$ENDIF}
+
+    FreeAndNil(builder);
+
   except
     on E: Exception do
-      FLog.d(E.Message);
+    begin
+      if Assigned(FLog) then
+        FLog.d(E.Message);
+    end;
   end;
 end;
 
@@ -517,7 +535,7 @@ begin
 
     end;
 
-    CampoValor := TAtributosFuncoes.CampoValor<T>(Model);
+    CampoValor := TAtributosFuncoes.CampoValor<T>(Model, True);
 
     Into := SQL
       .Insert
@@ -714,7 +732,7 @@ begin
     tabela := TAtributosFuncoes.tabela<T>;
 
     // campos e valores
-    CampoValor := TAtributosFuncoes.CampoValor<T>(Model);
+    CampoValor := TAtributosFuncoes.CampoValor<T>(Model, True);
 
     // primary keys
     pks := TAtributosFuncoes.PropertiePk<T>;

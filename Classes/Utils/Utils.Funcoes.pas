@@ -3,15 +3,18 @@ unit Utils.Funcoes;
 interface
 
 uses
+{$IF  MSWINDOWS}
   Winapi.Windows,
   Winapi.ImageHlp,
+  Winapi.ShellAPI,
+{$IFEND}
   System.StrUtils,
   System.SysUtils,
   System.IOUtils,
   System.Classes,
   System.TypInfo,
   System.Generics.Defaults,
-  Winapi.ShellAPI,
+
   IdHashMessageDigest, System.Variants;
 
 type
@@ -22,8 +25,7 @@ type
   private
 
   public
-    class function FileVersionInfo(Arquivo: string): string;
-    class function GetVersionInfo: string;
+
     class function Explode(text: string; const Ch: char): TStringList; overload; static;
     class function ExplodeTrim(text: string; const Ch: char): TStringList; static;
     class function Explode(var AFields: TStrArray; ADelimiter, ATexto: String): Integer; overload; static;
@@ -36,14 +38,28 @@ type
     class function MD5String(text: string): string;
     class function ExtrairNumeros(text: string): string;
     class function DiretorioAplicacao: string;
+{$IF  MSWINDOWS}
     class procedure AbrirDiretorio(aHandle: HWND; aDir: string);
     class function DataCriacaoAplicacao(): TDate;
-    class function RemoveChar(text: string; Caracter: char): string;
-
     class function AppIsRunning(ActivateIt: Boolean; ApplicationTitle: string): Boolean;
+    class function FileVersionInfo(Arquivo: string): string;
+
+{$IFEND}
+    class function RemoveChar(text: string; Caracter: char): string;
+    class function GetVersionInfo: string;
   end;
 
 implementation
+
+class function TUtil.GetVersionInfo: string;
+begin
+{$IF  MSWINDOWS}
+  Result := FileVersionInfo(ParamStr(0));
+{$ENDIF}
+end;
+
+{$IF  MSWINDOWS}
+
 
 class function TUtil.DataCriacaoAplicacao(): TDate;
 var
@@ -53,25 +69,6 @@ begin
   Result := LI.FileHeader.FileHeader.TimeDateStamp / SecsPerDay +
     UnixDateDelta;
   UnMapAndLoad(@LI);
-end;
-
-class function TUtil.DiretorioAplicacao: string;
-begin
-  Result := ExtractFileDir(ParamStr(0)) + TPath.DirectorySeparatorChar;
-end;
-
-class function TUtil.RemoveChar(text: string; Caracter: char): string;
-var
-  i: Integer;
-begin
-  Result := '';
-  for i := 1 to Length(text) do
-  begin
-    if text[i] <> Caracter then
-    begin
-      Result := Result + text[i];
-    end;
-  end;
 end;
 
 class procedure TUtil.AbrirDiretorio(aHandle: HWND; aDir: string);
@@ -111,6 +108,58 @@ begin
     end;
   end;
 
+end;
+
+class function TUtil.FileVersionInfo(Arquivo: string): string;
+var
+  VerInfoSize: Cardinal;
+  VerValueSize: Cardinal;
+  Dummy: Cardinal;
+  PVerInfo: Pointer;
+  PVerValue: PVSFixedFileInfo;
+begin
+  Result := '';
+  VerInfoSize := GetFileVersionInfoSize(PWideChar(Arquivo), Dummy);
+  GetMem(PVerInfo, VerInfoSize);
+  try
+    if GetFileVersionInfo(PChar(Arquivo), 0, VerInfoSize, PVerInfo) then
+      if VerQueryValue(PVerInfo, '\', Pointer(PVerValue), VerValueSize) then
+        with PVerValue^ do
+          Result := Format('%d.%d.%d.%d', [
+            HiWord(dwFileVersionMS), // Major
+            LoWord(dwFileVersionMS), // Minor
+            HiWord(dwFileVersionLS), // Release
+            LoWord(dwFileVersionLS)]); // Build
+  finally
+    FreeMem(PVerInfo, VerInfoSize);
+  end;
+
+end;
+
+{$IFEND}
+
+
+class function TUtil.DiretorioAplicacao: string;
+begin
+{$IF DEFINED(iOS) or DEFINED(ANDROID)}
+  Result := TPath.GetDocumentsPath;
+{$ELSE}
+  Result := ExtractFileDir(ParamStr(0)) + TPath.DirectorySeparatorChar;
+{$ENDIF}
+end;
+
+class function TUtil.RemoveChar(text: string; Caracter: char): string;
+var
+  i: Integer;
+begin
+  Result := '';
+  for i := 1 to Length(text) do
+  begin
+    if text[i] <> Caracter then
+    begin
+      Result := Result + text[i];
+    end;
+  end;
 end;
 
 class function TUtil.CompararVersao(const versao1: TFileName; const versao2: TFileName): TComparaVersao;
@@ -159,37 +208,6 @@ begin
   stValor := stValor + '0000';
   stValor := Copy(stValor, 1, Pos(FormatSettings.DecimalSeparator, stValor) + casas);
   Result := StrToCurr(stValor);
-end;
-
-class function TUtil.FileVersionInfo(Arquivo: string): string;
-var
-  VerInfoSize: Cardinal;
-  VerValueSize: Cardinal;
-  Dummy: Cardinal;
-  PVerInfo: Pointer;
-  PVerValue: PVSFixedFileInfo;
-begin
-  Result := '';
-  VerInfoSize := GetFileVersionInfoSize(PWideChar(Arquivo), Dummy);
-  GetMem(PVerInfo, VerInfoSize);
-  try
-    if GetFileVersionInfo(PChar(Arquivo), 0, VerInfoSize, PVerInfo) then
-      if VerQueryValue(PVerInfo, '\', Pointer(PVerValue), VerValueSize) then
-        with PVerValue^ do
-          Result := Format('%d.%d.%d.%d', [
-            HiWord(dwFileVersionMS), // Major
-            LoWord(dwFileVersionMS), // Minor
-            HiWord(dwFileVersionLS), // Release
-            LoWord(dwFileVersionLS)]); // Build
-  finally
-    FreeMem(PVerInfo, VerInfoSize);
-  end;
-
-end;
-
-class function TUtil.GetVersionInfo: string;
-begin
-  Result := FileVersionInfo(ParamStr(0));
 end;
 
 class function TUtil.IFF<T>(aExpressao: Boolean; aResultFalse, aResultTrue: T): T;

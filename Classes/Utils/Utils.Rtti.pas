@@ -6,7 +6,7 @@ unit Utils.Rtti;
 
 interface
 
-uses System.Classes, System.Generics.Collections;
+uses System.Classes, System.Generics.Collections, System.Rtti;
 
 Type
   TRttiUtil = Class
@@ -23,11 +23,13 @@ Type
     class function EnumName<T>(value: integer): string;
     class function StringToEnum<T>(value: string): T;
     class function EnumToString<T>(value: T): String;
+
+    class function GetPropertyValue(aObj: TObject; aProp: string): TValue;
   end;
 
 implementation
 
-uses System.TypInfo, System.SysUtils, System.Rtti;
+uses System.TypInfo, System.SysUtils;
 
 class function TRttiUtil.EnumName<T>(value: integer): string;
 begin
@@ -51,6 +53,31 @@ begin
       Values.ADD(Aux);
     inc(i);
   until (Pos < 0);
+end;
+
+class function TRttiUtil.GetPropertyValue(aObj: TObject; aProp: string): TValue;
+var
+  context: TRttiContext;
+  rType: TRttiType;
+  Field: TRttiField;
+  method: TRttiMethod;
+  prop: TRttiProperty;
+  oSource: TObject;
+begin
+  context := TRttiContext.Create;
+  rType := context.GetType(aObj.ClassType);
+  oSource := TObject(aObj);
+
+  for prop in rType.GetProperties do
+  begin
+
+    if prop.Name.ToUpper = aProp.ToUpper then
+    begin
+      result := prop.GetValue(TObject(aObj));
+      Break;
+    end;
+  end;
+
 end;
 
 class function TRttiUtil.EnumToString<T>(value: T): String;
@@ -94,12 +121,18 @@ begin
 
     for item in aList do
     begin
+{$IFDEF  ANDROID}
+      item.DisposeOf;
+{$ELSE}
       item.Free;
+{$ENDIF}
+
+
     end;
 
     aList.Clear;
-    aList.Free;
-
+    aList.DisposeOf;
+    aList := nil;
   except
     on E: Exception do
       raise Exception.Create('TRttiUtil.ListDisposeOf ' + E.Message);

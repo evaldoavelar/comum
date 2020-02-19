@@ -56,11 +56,14 @@ begin
 end;
 
 function TStringHelper.RemoveAcentos: string;
+{$IF  MSWINDOWS}
 type
   USAscii20127 = type AnsiString(20127);
+{$ENDIF}
 begin
+{$IF  MSWINDOWS}
   RESULT := string(USAscii20127(Self));
-
+{$ENDIF}
 end;
 
 function TStringHelper.RightPad(Ch: char; Len: integer): string;

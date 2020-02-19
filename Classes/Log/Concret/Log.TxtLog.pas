@@ -2,8 +2,15 @@ unit Log.TxtLog;
 
 interface
 
-uses Log.ILog, Log.TTipoLog, System.Classes, Winapi.Windows, System.SysUtils,
-  System.Generics.Collections, System.Variants;
+uses Log.ILog,
+  Log.TTipoLog,
+  System.Classes,
+{$IF Defined(MSWINDOWS)}
+  Winapi.Windows,
+{$ENDIF}
+  System.SysUtils,
+  System.Generics.Collections,
+  System.Variants;
 
 type
 
@@ -12,7 +19,9 @@ type
     class var FInstancia: TLogTXT;
   private
     FDiretorio: string;
-   CLASS VAR FAtivo: Boolean;
+
+  CLASS VAR
+    FAtivo: Boolean;
     FNomeArquivo: String;
     FDecorator: ILog;
     FOnLog: TOnLog;
@@ -23,7 +32,7 @@ type
     function GETAtivo: Boolean;
   public
 
-    property Ativo: Boolean read GETAtivo ;
+    property Ativo: Boolean read GETAtivo;
     property Diretorio: string read FDiretorio write FDiretorio;
     property NomeArquivo: string read getNomeArquivo write setNomeArquivo;
 
@@ -82,12 +91,12 @@ end;
 
 function TLogTXT.GETAtivo: Boolean;
 begin
- Result := FAtivo;
+  Result := FAtivo;
 end;
 
 function TLogTXT.getNomeArquivo: string;
 begin
-  result := FDiretorio + '\' + FNomeArquivo;
+  Result := FDiretorio + '\' + FNomeArquivo;
 end;
 
 procedure TLogTXT.GravarLog(aTexto: string; aTipo: TTipoLog);
@@ -99,9 +108,9 @@ begin
 
     linha := Format(' %s - %s - %s', [FormatDateTime('dd/mm/yy hh:mm:ss', Now),
       aTipo.ToString, aTexto]);
-
+{$IF Defined(MSWINDOWS)}
     OutputDebugString(PWideChar(linha));
-
+{$ENDIF}
     if Ativo then
     begin
       AssignFile(tft, NomeArquivo);
@@ -146,23 +155,23 @@ class function TLogTXT.New(aDiretorio: string; aNomeArquivo: string;
 aDecorator: ILog): ILog;
 begin
   if Assigned(FInstancia) then
-    result := FInstancia
+    Result := FInstancia
   else
   begin
     FInstancia := TLogTXT.Create(aDiretorio, aNomeArquivo, aDecorator);
-    result := FInstancia
+    Result := FInstancia
   end;
 end;
 
 function TLogTXT.setAtivo: ILog;
 begin
-  result := Self;
+  Result := Self;
   FAtivo := True;
 end;
 
 function TLogTXT.setInativo: ILog;
 begin
-  result := Self;
+  Result := Self;
   FAtivo := false;
 end;
 
@@ -173,7 +182,7 @@ end;
 
 function TLogTXT.setOnLog(aOnLog: TOnLog): ILog;
 begin
-  result := Self;
+  Result := Self;
   FOnLog := aOnLog;
 end;
 

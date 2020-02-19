@@ -20,6 +20,8 @@ type
     FNomeExe: string;
 
     FObserves: TList<IAtualizacaoObserve>;
+    FOnNotifyObservers: TOnNotifyObservers;
+    FOnUpdate: TOnUpdate;
 
     function ConectarAoServidorFTP: IAtualizacaoFTP;
     function ObterNumeroVersaoFTP: integer;
@@ -29,7 +31,10 @@ type
     function VerificarExisteConexaoComInternet: boolean;
 
     procedure OnIndyFTP(ASender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
-
+    function getTOnUpdate: TOnUpdate;
+    procedure setTOnUpdate(aValue: TOnUpdate);
+    function getTOnNotifyObservers: TOnNotifyObservers;
+    procedure setTOnNotifyObservers(aValue: TOnNotifyObservers);
   public
 
     property ArquivoDeVersaoFTP: string read FArquivoDeVersaoFTP write SetArquivoDeVersaoFTP;
@@ -41,6 +46,9 @@ type
     procedure addObserver(obs: IAtualizacaoObserve);
     procedure NotifyObservers(aStatus: string; const aProgress: integer);
     procedure removeObserver(obs: IAtualizacaoObserve);
+
+    property OnUpdate: TOnUpdate read getTOnUpdate write setTOnUpdate;
+    property OnNotifyObservers: TOnNotifyObservers read getTOnNotifyObservers write setTOnNotifyObservers;
 
   public
     constructor Create();
@@ -59,7 +67,7 @@ begin
   for i := 0 to Pred(FObserves.Count) do
   begin
     try
-      FObserves[i].OnUpdate(aStatus, aProgress);
+      FObserves[i].OnUpdateProgress(aStatus, aProgress);
     except
     end;
   end;
@@ -225,6 +233,16 @@ begin
   inherited;
 end;
 
+function TAtualizacaoFTP.getTOnNotifyObservers: TOnNotifyObservers;
+begin
+  result := FOnNotifyObservers;
+end;
+
+function TAtualizacaoFTP.getTOnUpdate: TOnUpdate;
+begin
+  result := FOnUpdate;
+end;
+
 class
   function TAtualizacaoFTP.New: IAtualizacaoFTP;
 begin
@@ -299,6 +317,16 @@ end;
 procedure TAtualizacaoFTP.SetArquivoDeVersaoFTP(const Value: string);
 begin
   FArquivoDeVersaoFTP := Value;
+end;
+
+procedure TAtualizacaoFTP.setTOnNotifyObservers(aValue: TOnNotifyObservers);
+begin
+  FOnNotifyObservers := aValue;
+end;
+
+procedure TAtualizacaoFTP.setTOnUpdate(aValue: TOnUpdate);
+begin
+  FOnUpdate := aValue;
 end;
 
 function TAtualizacaoFTP.SetUpClient(aDiretorioFTP, aArquivoVersaoFTP: string; aNomeExe: string; aVersaoExeLocal: string): IAtualizacaoFTP;

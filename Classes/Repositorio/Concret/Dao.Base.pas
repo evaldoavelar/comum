@@ -5,15 +5,22 @@ interface
 
 uses
   System.Rtti,
-  System.SysUtils, System.Classes, System.Variants,
-  Data.DB, Dao.IQueryBuilder, Dao.TQueryBuilder,
-  Dao.IConection, Model.Atributos.Funcoes,
-  SQLBuilder4D, Exceptions,
-  System.Generics.Collections, Log.ILog
+  System.SysUtils,
+  System.Classes,
+  System.Variants,
+  Data.DB,
+  Dao.IQueryBuilder,
+  Dao.TQueryBuilder,
+  Dao.IConection,
+  Model.Atributos.Funcoes,
+  SQLBuilder4D,
+  Exceptions,
+  System.Generics.Collections,
+  Log.ILog,
 {$IFDEF MSWINDOWS}
-    , Winapi.Windows
+  Winapi.Windows,
 {$ENDIF}
-    ;
+  System.StrUtils;
 
 type
   TDaoBase = class(TInterfacedObject)
@@ -33,7 +40,6 @@ type
   protected
     FLog: ILog;
     FConnection: IConection;
-    function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
 
     procedure Log(Log: string); overload;
     procedure Log(CampoValor: TDictionary<string, Variant>); overload;
@@ -52,7 +58,10 @@ type
     function Delete<T: class>(): IQueryBuilder<T>; overload;
 
     function SQLToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
+    function SQLToT<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
+    function SQLExec<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
 
+    function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
     constructor Create(aConnection: IConection; aLog: ILog = nil);
     destructor destroy; override;
   end;
@@ -290,10 +299,12 @@ var
   context: TRttiContext;
   rType: TRttiType;
   method: TRttiMethod;
+  ARecord: TRttiType;
   prop: TRttiProperty;
   Field: TField;
   Entity: T;
   campo: string;
+  LPropNullable: TValue;
 begin
 
   try
@@ -317,7 +328,23 @@ begin
         begin
           try
 
-            if (CompareText('string', prop.PropertyType.Name)) = 0 then
+            if StartsText('TNullable<', prop.PropertyType.Name) then
+            begin
+              // se o campo eh nulo
+              if (Field.IsNull = false) then
+                Continue;
+
+              // get Nullable<T> instance...
+              LPropNullable := prop.GetValue(TObject(Entity));
+
+              // invocar FromValue para passar o valor de Field
+              method := context.GetType(LPropNullable.TypeInfo).GetMethod('FromValue');
+              method.Invoke(LPropNullable, [TValue.FromVariant(Field.value)]);
+
+              // passar o valor para a property
+              prop.SetValue(TObject(Entity), LPropNullable);
+            end
+            else if (CompareText('string', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsString)
             else if (CompareText('Char', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsString)
@@ -353,7 +380,7 @@ begin
             else if (CompareText('SmallInt', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsInteger)
             else
-              prop.SetValue(TObject(Entity), TValue.FromVariant(Field.Value));
+              prop.SetValue(TObject(Entity), TValue.FromVariant(Field.value));
 
           except
             on E: Exception do
@@ -425,10 +452,9 @@ begin
       FLog.d(builder.ToString());
     end;
 
-    {$IFDEF MSWINDOWS}
+{$IFDEF MSWINDOWS}
     OutputDebugString(PChar(builder.ToString()));
-    {$ENDIF}
-
+{$ENDIF}
     FreeAndNil(builder);
 
   except
@@ -615,9 +641,19 @@ begin
   end;
 end;
 
+function TDaoBase.SQLExec<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
+begin
+  Result := self.OnExec<T>(aCmd, aCampoValor);
+end;
+
 function TDaoBase.SQLToList<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
 begin
   Result := self.OnToList<T>(aCmd, aCampoValor);
+end;
+
+function TDaoBase.SQLToT<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
+begin
+  Result := self.OnGet<T>(aCmd, aCampoValor);
 end;
 
 function TDaoBase.Update<T>: IQueryBuilder<T>;

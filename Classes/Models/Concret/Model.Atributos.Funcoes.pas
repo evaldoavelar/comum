@@ -9,7 +9,7 @@ uses
   System.Rtti,
   Model.Atributos,
   Model.Atributos.Tipos,
-  Model.IModelBase, Utils.Funcoes;
+  Model.IModelBase, Utils.Funcoes, System.StrUtils, System.Variants;
 
 type
 
@@ -154,12 +154,16 @@ var
   Rtti: TRttiContext;
   ltype: TRttiType;
   prop: TRttiProperty;
+  method: TRttiMethod;
   index: integer;
   Campo: string;
   attr: TCustomAttribute;
   attrCampo: CampoAttribute;
   value: Variant;
-
+  LRecord: TRttiRecordType;
+  v: TValue;
+  propName: string;
+  isNullable: Boolean;
 begin
   try
 
@@ -171,17 +175,67 @@ begin
     // pecorrer as propriedades
     for prop in ltype.GetProperties do
     begin
-
       attr := indexOfAttribute(prop, CampoAttribute);
 
       if (attr <> nil) then
       begin
         attrCampo := CampoAttribute(attr);
         Campo := attrCampo.Campo;
-        value := prop.GetValue(TObject(Model)).AsVariant;
+        propName := prop.PropertyType.Name;
+        isNullable := StartsText('TNullable<', propName);
+
+        // verificar se eh do tipo Nullable
+        if isNullable then
+        begin
+          // get Nullable<T> instance...
+          v := prop.GetValue(TObject(Model));
+
+          // pegar o nome da propriedade
+          method := Rtti.GetType(v.TypeInfo).GetMethod('GetTypeString');
+          propName := method.Invoke(v, []).AsString;
+
+          // verificar se tem dado
+          method := Rtti.GetType(v.TypeInfo).GetMethod('HasValue');
+          if (not method.Invoke(v, []).AsBoolean) then
+          begin
+            value := '(NULL)';
+          end
+          else
+          begin
+            method := Rtti.GetType(v.TypeInfo).GetMethod('ToTValue');
+            value := method.Invoke(v, []).AsVariant;
+          end;
+        end
+        else
+        begin
+          value := prop.GetValue(TObject(Model)).AsVariant;
+        end;
+
 
         // definir o tipo da variant
         value := SetTypeVariant(value, prop);
+
+        if (CompareText('string', propName) = 0) and (isNullable=false) then
+          value := prop.GetValue(TObject(Model)).AsString
+        else if (CompareText('string', propName) = 0) then  begin
+          TVarData(value).vType := varString;
+        end
+        else if (CompareText('TDateTime', propName)) = 0 then
+          TVarData(value).vType := varDate
+        else if (CompareText('TDate', propName)) = 0 then
+          TVarData(value).vType := varDate
+        else if (CompareText('TTime', propName)) = 0 then
+          TVarData(value).vType := varDate
+        else if (CompareText('Boolean', propName)) = 0 then
+          TVarData(value).vType := varBoolean
+        else if (CompareText('Currency', propName)) = 0 then
+          TVarData(value).vType := varCurrency
+        else if (CompareText('Integer', propName)) = 0 then
+          TVarData(value).vType := varInteger
+        else if (CompareText('Smallint', propName)) = 0 then
+          TVarData(value).vType := varSmallint
+        else if (CompareText('Double', propName)) = 0 then
+          TVarData(value).vType := varDouble;
 
         Result.Add(Campo, value);
       end;

@@ -46,6 +46,7 @@ type
     function Conexao(nova: Boolean = false): TFDConnection;
     function Query(): TFDQuery;
     procedure SetQueryParamns(qry: TFDQuery; aNamedParamns: TDictionary<string, Variant>);
+    function VariantIsEmptyOrNull(const Value: Variant): Boolean;
   public
 
     procedure StartTransaction;
@@ -162,6 +163,13 @@ begin
   inherited;
 end;
 
+function TFiredacConection.VariantIsEmptyOrNull(const Value: Variant): Boolean;
+begin
+  result := VarIsClear(Value) or VarIsEmpty(Value) or VarIsNull(Value) or (VarCompareValue(Value, Unassigned) = vrEqual);
+  if (not result) and VarIsStr(Value) then
+    result := Value = '';
+end;
+
 /// <summary>
 /// Peccorrer os parametros e seta o seu valor na TFDQuery de acordo com o seu nome e tipo
 /// </summary>
@@ -170,8 +178,9 @@ end;
 procedure TFiredacConection.SetQueryParamns(qry: TFDQuery; aNamedParamns: TDictionary<string, Variant>);
 var
   key: string;
-  value: Variant;
+  Value: Variant;
   basicType: Integer;
+  paramIsNull: Boolean;
 begin
 
   // pecorrrer os parametros
@@ -182,10 +191,12 @@ begin
       Continue;
 
     // pegar o valor do parametro
-    value := aNamedParamns.Items[key];
+    Value := aNamedParamns.Items[key];
+
+    paramIsNull := VarToStr(Value) = '(NULL)';
 
     // com o valor do parametro, verificar o seu tipo primitido
-    basicType := VarType(value) and VarTypeMask;
+    basicType := VarType(Value) and VarTypeMask;
     case basicType of
       varEmpty:
         begin
@@ -197,35 +208,77 @@ begin
         end;
       varSmallInt:
         begin
-          qry.ParamByName(key).AsSmallInt := value;
+          if paramIsNull then
+          begin
+            qry.ParamByName(key).DataType := TFieldType.ftSmallint;
+            qry.ParamByName(key).Clear();
+          end
+          else
+            qry.ParamByName(key).AsSmallInt := Value;
         end;
       varInteger:
         begin
-          qry.ParamByName(key).AsInteger := value;
+          if paramIsNull then
+          begin
+            qry.ParamByName(key).DataType := TFieldType.ftInteger;
+            qry.ParamByName(key).Clear();
+          end
+          else
+            qry.ParamByName(key).AsInteger := Value;
         end;
       varSingle:
         begin
-          qry.ParamByName(key).AsSingle := value;
+          if paramIsNull then
+          begin
+            qry.ParamByName(key).DataType := TFieldType.ftSingle;
+            qry.ParamByName(key).Clear();
+          end
+          else
+            qry.ParamByName(key).AsSingle := Value;
         end;
       varDouble:
         begin
-          qry.ParamByName(key).AsFloat := value;
+          if paramIsNull then
+          begin
+            qry.ParamByName(key).DataType := TFieldType.ftFloat;
+            qry.ParamByName(key).Clear();
+          end
+          else
+            qry.ParamByName(key).AsFloat := Value;
         end;
       varCurrency:
         begin
-          qry.ParamByName(key).AsCurrency := value;
+          if paramIsNull then
+          begin
+            qry.ParamByName(key).DataType := TFieldType.ftCurrency;
+            qry.ParamByName(key).Clear();
+          end
+          else
+            qry.ParamByName(key).AsCurrency := Value;
         end;
       varDate:
         begin
-          qry.ParamByName(key).AsDateTime := value;
+          if paramIsNull then
+          begin
+            qry.ParamByName(key).DataType := TFieldType.ftDate;
+            qry.ParamByName(key).Clear();
+          end
+          else
+            qry.ParamByName(key).AsDateTime := Value;
         end;
       varBoolean:
         begin
-          qry.ParamByName(key).AsBoolean := value;
+          if paramIsNull then
+          begin
+            qry.ParamByName(key).DataType := TFieldType.ftBoolean;
+            qry.ParamByName(key).Clear();
+          end
+          else
+            qry.ParamByName(key).AsBoolean := Value;
         end;
       varVariant:
         begin
-          qry.ParamByName(key).value := value;
+          qry.ParamByName(key).Value := Value;
         end;
       varUnknown:
         begin
@@ -233,24 +286,38 @@ begin
         end;
       varByte:
         begin
-          qry.ParamByName(key).AsVarByteStr := value;
+          qry.ParamByName(key).AsVarByteStr := Value;
         end;
       varUString:
         begin
-          qry.ParamByName(key).AsString := value;
-          // campos grandes, mudar o tipo para ftMemo
-          if qry.ParamByName(key).AsString.Length > 2000 then
+          if paramIsNull then
           begin
-            qry.ParamByName(key).DataType := ftMemo;
-            qry.ParamByName(key).AsMemo := value;
+            qry.ParamByName(key).DataType := TFieldType.ftString;
+            qry.ParamByName(key).Clear();
+          end
+          else
+          begin
+            qry.ParamByName(key).AsString := Value;
+            // campos grandes, mudar o tipo para ftMemo
+            if qry.ParamByName(key).AsString.Length > 2000 then
+            begin
+              qry.ParamByName(key).DataType := ftMemo;
+              qry.ParamByName(key).AsMemo := Value;
 
+            end;
           end;
 
         end;
       varString:
         begin
           // qry.ParamByName(key).Size := 100000;
-          qry.ParamByName(key).AsString := value;
+          if paramIsNull then
+          begin
+            qry.ParamByName(key).DataType := TFieldType.ftString;
+            qry.ParamByName(key).Clear();
+          end
+          else
+            qry.ParamByName(key).AsString := Value;
         end;
       VarTypeMask, varArray, varByRef, varOleStr, varDispatch, varError:
         begin
@@ -258,7 +325,7 @@ begin
         end;
     else
       begin
-        qry.ParamByName(key).value := value;
+        qry.ParamByName(key).Value := Value;
       end;
     end;
   end;

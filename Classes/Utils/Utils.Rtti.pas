@@ -1,23 +1,29 @@
 unit Utils.Rtti;
 
-{
-  Auth: Base: https://delphihaven.wordpress.com/2011/06/09/object-cloning-using-rtti/
-}
-
 interface
 
-uses System.Classes, System.Generics.Collections, System.Rtti;
+
+uses System.Classes,
+  System.Generics.Collections,
+  System.TypInfo,
+  System.sysutils, db,
+  System.Rtti;
 
 Type
   TRttiUtil = Class
+  private
+
   public
     class procedure Copy<T: Class>(ASource: T; ATarget: T; AIgnore: string = ''); static;
     class function Clone<T: Class>(ASource: T): T; static;
-    class function New<T>(aType: TClass): T; static;
 
     class procedure ListDisposeOf<T: Class>(aList: TList<T>); static;
-
+    class procedure AssignedFreeAnNil(aObj: TObject); static;
+    class procedure AssignedFree(aObj: TObject); static;
     class procedure Initialize<T: Class>(ASource: T);
+
+    class procedure CopyDataObjectTODataSet<T: class>(aSourceObj: T; aDest: TDataSet);
+    // class function TFieldToT<T>(aField: TField): T;
 
     class procedure EnumToValues<T>(Values: TStrings);
     class function EnumName<T>(value: integer): string;
@@ -25,16 +31,112 @@ Type
     class function EnumToString<T>(value: T): String;
 
     class function GetPropertyValue(aObj: TObject; aProp: string): TValue;
+
+    class function CreateInstance<T>(const Args: array of TValue): T; overload;
+    class function CreateInstance<T>(aType: TClass; const Args: array of TValue): T; overload;
+    class procedure Validation<T: Exception>(aExpressao: Boolean; aMessage: string);
+
   end;
 
 implementation
 
-uses System.TypInfo, System.SysUtils;
+/// <summary>
+/// Testa uma expressão e caso seja verdadeira, levanta a exceção informada em T
+/// </summary>
+/// <param name="aExpressao">Expressão booleana para análise</param>
+/// /// <param name="aMessage">Mensagem de excessão</param>
+class procedure TRttiUtil.Validation<T>(aExpressao: Boolean; aMessage: string);
+begin
+  if aExpressao then
+    raise CreateInstance<T>([aMessage]);
+end;
 
+/// <summary>
+/// Cria um objeto passando os parametros informados no array
+/// </summary>
+/// <param name="Args">array de parametros do método</param>
+/// <return>Objeto de tipo T </return>
+class function TRttiUtil.CreateInstance<T>(const Args: array of TValue): T;
+var
+  AValue: TValue;
+  ctx: TRttiContext;
+  rType: TRttiType;
+  AMethCreate: TRttiMethod;
+  instanceType: TRttiInstanceType;
+begin
+
+  try
+    ctx := TRttiContext.Create;
+    rType := ctx.GetType(TypeInfo(T));
+    for AMethCreate in rType.GetMethods do
+    begin
+      if (AMethCreate.IsConstructor) and (Length(AMethCreate.GetParameters) = Length(Args)) then
+      begin
+        instanceType := rType.AsInstance;
+
+        AValue := AMethCreate.Invoke(instanceType.MetaclassType, Args);
+
+        Result := AValue.AsType<T>;
+
+        Exit;
+      end;
+    end;
+  except
+    on E: Exception do
+      raise Exception.Create('TRttiUtil.CreateInstance<T>: ' + E.Message);
+  end;
+
+end;
+
+/// <summary>
+/// Pecorre uma lista e libera da memoria os objetos
+/// </summary>
+/// <param name="aList">Lista do tipo T</param>
+class procedure TRttiUtil.ListDisposeOf<T>(aList: TList<T>);
+var
+  item: T;
+begin
+  try
+    if (Assigned(aList) = False) then
+      Exit;
+
+    if (aList.Count <= 0) then
+    begin
+      FreeAndNil(aList);
+      Exit;
+    end;
+
+    for item in aList do
+    begin
+{$IFDEF  ANDROID}
+      item.DisposeOf;
+{$ELSE}
+      item.Free;
+{$ENDIF}
+    end;
+
+    aList.Clear;
+    aList.Free;
+
+  except
+    on E: Exception do
+      raise Exception.Create('TRttiUtil.ListDisposeOf ' + E.Message);
+  end;
+end;
+
+/// <summary>
+/// Retorna o nome de enum
+/// </summary>
+/// <param name="value">Enum</param>
 class function TRttiUtil.EnumName<T>(value: integer): string;
 begin
-  result := GetEnumName(TypeInfo(T), (value));
+  Result := GetEnumName(TypeInfo(T), (value));
 end;
+
+/// <summary>
+/// Pecorre um tipo enum e gera TStrings - util para popular combobx com enuns
+/// </summary>
+/// <param name="Values">TStrings</param>
 
 class procedure TRttiUtil.EnumToValues<T>(Values: TStrings);
 var
@@ -73,35 +175,44 @@ begin
 
     if prop.Name.ToUpper = aProp.ToUpper then
     begin
-      result := prop.GetValue(TObject(aObj));
+      Result := prop.GetValue(TObject(aObj));
       Break;
     end;
   end;
 
 end;
 
+/// <summary>
+/// Retorna o nome de enum em string
+/// </summary>
+/// <param name="value">Enum</param>
+
 class function TRttiUtil.EnumToString<T>(value: T): String;
 begin
   case Sizeof(T) of
     1:
-      result := GetEnumName(TypeInfo(T), PByte(@value)^);
+      Result := GetEnumName(TypeInfo(T), PByte(@value)^);
     2:
-      result := GetEnumName(TypeInfo(T), PWord(@value)^);
+      Result := GetEnumName(TypeInfo(T), PWord(@value)^);
     4:
-      result := GetEnumName(TypeInfo(T), PCardinal(@value)^);
+      Result := GetEnumName(TypeInfo(T), PCardinal(@value)^);
   end;
 end;
 
+/// <summary>
+/// converte uma string em enum
+/// </summary>
+/// <param name="value">string para converter</param>
 class function TRttiUtil.StringToEnum<T>(value: string): T;
 begin
   try
     case Sizeof(T) of
       1:
-        PByte(@result)^ := GetEnumValue(TypeInfo(T), value);
+        PByte(@Result)^ := GetEnumValue(TypeInfo(T), value);
       2:
-        PWord(@result)^ := GetEnumValue(TypeInfo(T), value);
+        PWord(@Result)^ := GetEnumValue(TypeInfo(T), value);
       4:
-        PCardinal(@result)^ := GetEnumValue(TypeInfo(T), value);
+        PCardinal(@Result)^ := GetEnumValue(TypeInfo(T), value);
     end;
 
   except
@@ -111,33 +222,48 @@ begin
 
 end;
 
-class procedure TRttiUtil.ListDisposeOf<T>(aList: TList<T>);
-var
-  item: T;
-begin
-  try
-    if Assigned(aList) = False then
-      Exit;
 
-    for item in aList do
-    begin
-{$IFDEF  ANDROID}
-      item.DisposeOf;
-{$ELSE}
-      item.Free;
-{$ENDIF}
+// class function TRttiUtil.TFieldToT<T>(aField: TField): T;
+// var
+// context: TRttiContext;
+// rType: TRttiType;
+// nome: string;
+// Aux: T;
+// begin
+// context := TRttiContext.Create;
+// rType := context.GetType(TypeInfo(T));
+//
+// nome := rType.Name;
+//
+// if (CompareText('TDate', nome)) = 0 then
+// begin
+// nome := string(Aux);
+// nome  := aField.AsString;
+// end
+// // else if (CompareText('TTime',nome)) = 0 then
+// // begin
+// // if aField.IsNull = False then
+// // prop.SetValue(TObject(Entity), aField.AsDateTime)
+// // else
+// // prop.SetValue(TObject(Entity), 0);
+// // end
+// // else if (CompareText('Boolean',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsBoolean)
+// // else if (CompareText('Currency',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsCurrency)
+// // else if (CompareText('Double',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsFloat)
+// // else if (CompareText('Integer',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsInteger)
+// // else if (CompareText('SmallInt',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsInteger)
+//
+// end;
 
-
-    end;
-
-    aList.Clear;
-    aList.DisposeOf;
-    aList := nil;
-  except
-    on E: Exception do
-      raise Exception.Create('TRttiUtil.ListDisposeOf ' + E.Message);
-  end;
-end;
+/// <summary>
+/// Recebe um objeto e inicializa suas propriedades
+/// </summary>
+/// <param name="ASource">Objeto do tipo T</param>
 
 class procedure TRttiUtil.Initialize<T>(ASource: T);
 var
@@ -173,6 +299,12 @@ begin
 
 end;
 
+/// <summary>
+/// Copia as propriedades de um objeto para o outro
+/// </summary>
+/// <param name="ASource">Objeto original</param>
+/// /// <param name="ATarget">Objeto de destino</param>
+/// ///  /// <param name="ATarget">Objeto de destino</param>
 class procedure TRttiUtil.Copy<T>(ASource, ATarget: T;
   AIgnore: string = '');
 var
@@ -188,10 +320,10 @@ var
 begin
   AIgnore := ',' + AIgnore.ToLower + ',';
   RttiType := context.GetType(ASource.ClassType);
-  // find a suitable constructor, though treat components specially
+  // procurar um construtor
   IsComponent := (ASource is TComponent);
   try
-    // loop through the props, copying values across for ones that are read/write
+    // loop nas props, copiando valores que são leitura e escrita
     Move(ASource, SourceAsPointer, Sizeof(Pointer));
     Move(ATarget, ResultAsPointer, Sizeof(Pointer));
 
@@ -209,7 +341,6 @@ begin
     LookOutForNameProp := IsComponent and (TComponent(ASource).Owner <> nil);
     if IsComponent then
       MinVisibility := mvPublished
-      // an alternative is to build an exception list
     else
       MinVisibility := mvPublic;
 
@@ -245,25 +376,58 @@ begin
   end;
 end;
 
-// MVCBr.Interf;
-// class function TRttiUtil.New<T>: T;
-// var
-// Context: TRttiContext;
-// Method: TRttiMethod;
-// AType: TRttiType;
-// begin
-// AType := Context.GetType(TClass(T));
-// for Method in AType.GetMethods do
-// if Method.IsConstructor then
-// begin
-// if Length(Method.GetParameters) = 0 then
-// begin
-// result := Method.invoke(TClass(T), []).AsType<T>
-// end;
-// end;
-// end;
+class procedure TRttiUtil.CopyDataObjectTODataSet<T>(aSourceObj: T;
+  aDest: TDataSet);
+var
+  context: TRttiContext;
+  rType: TRttiType;
+  prop: TRttiProperty;
+  Field: TField;
+  campo: string;
 
-class function TRttiUtil.New<T>(aType: TClass): T;
+begin
+  try
+
+    aDest.Append;
+    context := TRttiContext.Create;
+    rType := context.GetType(T.ClassInfo);
+    for prop in rType.GetProperties do
+    begin
+
+      // pegar o campo corresponte a property
+      campo := prop.Name;
+
+      // procurar o campo  no dataset
+      Field := aDest.Fields.FindField(campo);
+      if Field <> nil then
+      begin
+        try
+          Field.value := prop.GetValue(TObject(aSourceObj)).AsVariant;
+        except
+          on E: Exception do
+          begin
+            raise Exception.Create('SetValue: prop.PropertyType.Name=' + prop.PropertyType.Name
+              + ' FieldName=' + Field.FieldName + ' - '
+              + E.Message);
+          end;
+        end;
+      end;
+
+    end;
+    aDest.Post;
+  except
+    on E: Exception do
+      raise Exception.Create('TDaoBase.CopyDataObjectTODataSet: ' + E.Message);
+  end;
+end;
+
+/// <summary>
+/// Cria um objeto do tipo da classe
+/// </summary>
+/// <param name="aType">Tipo da classe</param>
+/// <param name="Args">Parametros do construtor</param>
+/// <return name="T">Tipo</param>
+class function TRttiUtil.CreateInstance<T>(aType: TClass; const Args: array of TValue): T;
 var
   AValue: TValue;
   ctx: TRttiContext;
@@ -279,14 +443,35 @@ begin
     begin
       instanceType := rType.AsInstance;
 
-      AValue := AMethCreate.Invoke(instanceType.MetaclassType, []);
+      AValue := AMethCreate.Invoke(instanceType.MetaclassType, Args);
 
-      result := AValue.AsType<T>;
+      Result := AValue.AsType<T>;
 
       Exit;
     end;
   end;
 end;
+
+class procedure TRttiUtil.AssignedFree(aObj: TObject);
+begin
+  if Assigned(aObj) then
+    aObj.Free;
+end;
+
+class procedure TRttiUtil.AssignedFreeAnNil(aObj: TObject);
+begin
+  if Assigned(aObj) then
+  begin
+    aObj.Free;
+    aObj := nil;
+  end;
+end;
+
+/// <summary>
+/// Clona um objeto
+/// </summary>
+/// <param name="ASource">Objeto original</param>
+/// <return name="T">Objeto definido<return>
 
 class function TRttiUtil.Clone<T>(ASource: T): T;
 var
@@ -314,11 +499,11 @@ begin
         Break;
     end;
   if Params = nil then
-    result := method.Invoke(ASource.ClassType, []).AsType<T>
+    Result := method.Invoke(ASource.ClassType, []).AsType<T>
   else
-    result := method.Invoke(ASource.ClassType, [TComponent(ASource).Owner])
+    Result := method.Invoke(ASource.ClassType, [TComponent(ASource).Owner])
       .AsType<T>;
-  TRttiUtil.Copy(ASource, result);
+  TRttiUtil.Copy(ASource, Result);
 
 end;
 

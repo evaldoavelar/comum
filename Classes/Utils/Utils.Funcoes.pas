@@ -41,6 +41,10 @@ type
 {$IF  MSWINDOWS}
     class procedure AbrirDiretorio(aHandle: HWND; aDir: string);
     class function DataCriacaoAplicacao(): TDate;
+
+    class function RemoveChar(text: string; Caracter: char): string;
+    class function PathWithDelim(const APath: String): String;
+
     class function AppIsRunning(ActivateIt: Boolean; ApplicationTitle: string): Boolean;
     class function FileVersionInfo(Arquivo: string): string;
 
@@ -51,6 +55,7 @@ type
 
 implementation
 
+
 class function TUtil.GetVersionInfo: string;
 begin
 {$IF  MSWINDOWS}
@@ -59,6 +64,18 @@ begin
 end;
 
 {$IF  MSWINDOWS}
+
+
+
+class function TUtil.PathWithDelim(const APath: String): String;
+begin
+  Result := Trim(APath);
+  if Result <> '' then
+  begin
+    if RightStr(Result, 1) <> PathDelim then { Tem delimitador no final ? }
+      Result := Result + PathDelim;
+  end;
+end;
 
 
 class function TUtil.DataCriacaoAplicacao(): TDate;

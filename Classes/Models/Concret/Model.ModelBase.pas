@@ -64,7 +64,7 @@ implementation
 
 function TModelBase.New: IModelBase;
 begin
-  result := TRttiUtil.New<TModelBase>(Self.ClassType);
+  result := TRttiUtil.CreateInstance<TModelBase>(Self.ClassType,[]);
 end;
 
 procedure TModelBase.NotifyBinding(const APropertyName: string);
@@ -86,10 +86,13 @@ end;
 
 destructor TModelBase.Destroy;
 begin
-  FObserves.Clear;
-  FreeAndNil(FObserves);
+  if Assigned(FObserves) then
+  begin
+    FObserves.Clear;
+    FreeAndNil(FObserves);
+  end;
   ClearBindings;
-  if assigned(FBindings) then
+  if Assigned(FBindings) then
     FreeAndNil(FBindings);
   inherited;
 end;
@@ -186,7 +189,7 @@ var
   i: TBindingExpression;
   j: Integer;
 begin
-  if assigned(FBindings) then
+  if Assigned(FBindings) then
   begin
     for i in FBindings do
       TBindings.RemoveBinding(i);

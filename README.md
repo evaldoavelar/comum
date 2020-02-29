@@ -1,2 +1,2 @@
 # comum
-Framework Delphi com as classes bases para desnvolvimento
+Framework Delphi com as classes bases para desenvolvimento orientado a objeto

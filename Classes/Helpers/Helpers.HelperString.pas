@@ -30,17 +30,25 @@ type
     function TrimAll(): string;
     function Count: integer;
     function IsEmpty: Boolean;
+    function Replace(const OldValue, NewValue: string): string;
   end;
 
 implementation
 
 { TStringHelper }
 
+
+
+function TStringHelper.Replace(const OldValue, NewValue: string): string;
+begin
+  Result := System.SysUtils.StringReplace(Self, OldValue, NewValue, [rfReplaceAll]);
+end;
+
 function TStringHelper.ValidaEMAIL: Boolean;
 var
   aStr: string;
 begin
-  RESULT := True;
+  Result := True;
   aStr := Self.TrimAll;
 
   if aStr.IsEmpty then
@@ -49,17 +57,17 @@ begin
   if Pos('@', aStr) > 1 then
   begin
     Delete(aStr, 1, Pos('@', aStr));
-    RESULT := (Length(aStr) > 0) and (Pos('.', aStr) > 2);
+    Result := (Length(aStr) > 0) and (Pos('.', aStr) > 2);
   end
   else
-    RESULT := False;
+    Result := False;
 end;
 
 function TStringHelper.RemoveAcentos: string;
 type
   USAscii20127 = type AnsiString(20127);
 begin
-  RESULT := string(USAscii20127(Self));
+  Result := string(USAscii20127(Self));
 
 end;
 
@@ -67,34 +75,34 @@ function TStringHelper.RightPad(Ch: char; Len: integer): string;
 var
   RestLen: integer;
 begin
-  RESULT := Self;
+  Result := Self;
   RestLen := Len - Length(Self);
   if RestLen > 0 then
-    RESULT := StringOfChar(Ch, RestLen) + Self
+    Result := StringOfChar(Ch, RestLen) + Self
   else
-    RESULT := LeftStr(Self, Len);; // StrCopy(PWideChar(S), 1, len);
+    Result := LeftStr(Self, Len);; // StrCopy(PWideChar(S), 1, len);
 end;
 
 function TStringHelper.LeftPad(Ch: char; Len: integer): string;
 var
   RestLen: integer;
 begin
-  RESULT := Self;
+  Result := Self;
   RestLen := Len - Length(Self);
   if RestLen > 0 then
-    RESULT := Self + StringOfChar(Ch, RestLen)
+    Result := Self + StringOfChar(Ch, RestLen)
   else
-    RESULT := LeftStr(Self, Len); // StrCopy(PWideChar(S), 1, len);
+    Result := LeftStr(Self, Len); // StrCopy(PWideChar(S), 1, len);
 end;
 
 function TStringHelper.Count: integer;
 begin
-  RESULT := Length(Self)
+  Result := Length(Self)
 end;
 
 function TStringHelper.SubString(PosInicial, PosFinal: integer): string;
 begin
-  RESULT := Copy(Self, PosInicial, PosFinal - PosInicial);
+  Result := Copy(Self, PosInicial, PosFinal - PosInicial);
 end;
 
 function TStringHelper.ToCurrency: Currency;
@@ -103,17 +111,17 @@ var
 begin
   aux := StringReplace(Self, '.', '', [rfReplaceAll]);
   aux := StringReplace(aux, 'R$', '', [rfReplaceAll]);
-  RESULT := StrToCurr(aux);
+  Result := StrToCurr(aux);
 end;
 
 function TStringHelper.ToInt: integer;
 begin
-  RESULT := strToInt(Self);
+  Result := strToInt(Self);
 end;
 
 function TStringHelper.TrimAll: string;
 begin
-  RESULT := Trim(Self);
+  Result := Trim(Self);
 end;
 
 function TStringHelper.Explode(const Ch: char): TStringList;
@@ -121,7 +129,7 @@ var
   c: word;
   Source: string;
 begin
-  RESULT := TStringList.Create;
+  Result := TStringList.Create;
   c := 0;
 
   Source := Self;
@@ -129,12 +137,12 @@ begin
   begin
     if Pos(Ch, Source) > 0 then
     begin
-      RESULT.ADD(Copy(Source, 1, Pos(Ch, Source) - 1));
-      Delete(Source, 1, Length(RESULT[c]) + Length(Ch));
+      Result.ADD(Copy(Source, 1, Pos(Ch, Source) - 1));
+      Delete(Source, 1, Length(Result[c]) + Length(Ch));
     end
     else
     begin
-      RESULT.ADD(Source);
+      Result.ADD(Source);
       Source := '';
     end;
     inc(c);
@@ -143,32 +151,32 @@ end;
 
 function TStringHelper.FormataCNPJ: string;
 begin
-  RESULT := FormatmaskText('00\.000\.000\/0000\-00;0;', Self.GetNumbers());
+  Result := FormatmaskText('00\.000\.000\/0000\-00;0;', Self.GetNumbers());
 end;
 
 function TStringHelper.FormataCPF: string;
 begin
-  RESULT := FormatmaskText('000\.000\.000\-00;0', Self.GetNumbers());
+  Result := FormatmaskText('000\.000\.000\-00;0', Self.GetNumbers());
 end;
 
 function TStringHelper.GetNumbers: string;
 begin
-  RESULT := TRegEx.Replace(Self, '\D', '');
+  Result := TRegEx.Replace(Self, '\D', '');
 end;
 
 function TStringHelper.IsEmpty: Boolean;
 begin
-  RESULT := Self = ''
+  Result := Self = ''
 end;
 
 function TStringHelper.ValidaCNPJ: Boolean;
 begin
-  RESULT := TUtil.ValidaCNPJ(Self);
+  Result := TUtil.ValidaCNPJ(Self);
 end;
 
 function TStringHelper.ValidaCPF: Boolean;
 begin
-  RESULT := TUtil.ValidaCPF(Self);
+  Result := TUtil.ValidaCPF(Self);
 end;
 
 end.

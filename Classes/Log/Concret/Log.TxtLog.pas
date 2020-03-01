@@ -9,10 +9,12 @@ type
 
   TLogTXT = class(TInterfacedObject, ILog)
   private
-    class var FInstancia: TLogTXT;
+    class var FInstancia: ILog;
   private
     FDiretorio: string;
-   CLASS VAR FAtivo: Boolean;
+
+  CLASS VAR
+    FAtivo: Boolean;
     FNomeArquivo: String;
     FDecorator: ILog;
     FOnLog: TOnLog;
@@ -23,7 +25,7 @@ type
     function GETAtivo: Boolean;
   public
 
-    property Ativo: Boolean read GETAtivo ;
+    property Ativo: Boolean read GETAtivo;
     property Diretorio: string read FDiretorio write FDiretorio;
     property NomeArquivo: string read getNomeArquivo write setNomeArquivo;
 
@@ -40,10 +42,12 @@ type
     function setAtivo(): ILog;
     function setInativo(): ILog;
 
-    constructor Create(aDiretorio: string; aNomeArquivo: string;
-      aDecorator: ILog);
-    class function New(aDiretorio: string; aNomeArquivo: string;
-      aDecorator: ILog): ILog;
+    class procedure ClearInstance;
+
+    constructor Create(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog);
+    class function New(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog): ILog;
+
+    destructor Destroy; override;
   end;
 
 implementation
@@ -56,6 +60,12 @@ begin
 
   if Assigned(FDecorator) then
     FDecorator.d(Log);
+end;
+
+class procedure TLogTXT.ClearInstance;
+begin
+  if Assigned(FInstancia) then
+    freeAndNil(FInstancia);
 end;
 
 constructor TLogTXT.Create(aDiretorio: string; aNomeArquivo: string;
@@ -82,12 +92,12 @@ end;
 
 function TLogTXT.GETAtivo: Boolean;
 begin
- Result := FAtivo;
+  Result := FAtivo;
 end;
 
 function TLogTXT.getNomeArquivo: string;
 begin
-  result := FDiretorio + '\' + FNomeArquivo;
+  Result := FDiretorio + '\' + FNomeArquivo;
 end;
 
 procedure TLogTXT.GravarLog(aTexto: string; aTipo: TTipoLog);
@@ -145,24 +155,25 @@ end;
 class function TLogTXT.New(aDiretorio: string; aNomeArquivo: string;
 aDecorator: ILog): ILog;
 begin
-  if Assigned(FInstancia) then
-    result := FInstancia
+
+  if Assigned(FInstancia)  then
+    Result := FInstancia
   else
   begin
     FInstancia := TLogTXT.Create(aDiretorio, aNomeArquivo, aDecorator);
-    result := FInstancia
+    Result := FInstancia
   end;
 end;
 
 function TLogTXT.setAtivo: ILog;
 begin
-  result := Self;
+  Result := Self;
   FAtivo := True;
 end;
 
 function TLogTXT.setInativo: ILog;
 begin
-  result := Self;
+  Result := Self;
   FAtivo := false;
 end;
 
@@ -173,13 +184,19 @@ end;
 
 function TLogTXT.setOnLog(aOnLog: TOnLog): ILog;
 begin
-  result := Self;
+  Result := Self;
   FOnLog := aOnLog;
 end;
 
 procedure TLogTXT.d(e: Exception);
 begin
   d(e.Message);
+end;
+
+destructor TLogTXT.Destroy;
+begin
+
+  inherited;
 end;
 
 procedure TLogTXT.d(aParamns: TDictionary<string, Variant>);
@@ -198,7 +215,7 @@ begin
 
     d(builder.ToString());
 
-    FreeAndNil(builder);
+    freeAndNil(builder);
 
   except
     on e: Exception do
@@ -206,5 +223,10 @@ begin
   end;
 
 end;
+
+// initialization
+//
+// finalization
+// TLogTXT.ClearInstance;
 
 end.

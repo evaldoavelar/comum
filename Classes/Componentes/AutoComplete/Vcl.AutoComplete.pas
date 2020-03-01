@@ -89,12 +89,11 @@ type
     property Items: TStrings read GetItens write SetItens;
     function GetSelectObject: TObject;
 
-    constructor Create(AOwner: TComponent);
-      override;
-    destructor Destroy;
-      override;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     procedure ShowList;
     procedure HideList(InsertSelection: boolean);
+    procedure ClearAll;
   published
     property DropDownWidth: Integer read FDropDownWidth write SetDropDownWidth;
     property MaxRowCount: Integer read FMaxRowCount write SetMaxRowCount default 10;
@@ -127,32 +126,37 @@ begin
     FMenu := TMenu.Create(self);
     PopupMenu := FMenu;
     FDropDown := TDropDown.Create(self);
-     FDropDown.Height := 80;
+    FDropDown.Height := 80;
     LoadDictionary;
   end;
 
 end;
 
 destructor TAutoComplete.Destroy;
-var
-  i: Integer;
-
 begin
-  if not(csDesigning in ComponentState) then
-  begin
-    // Удаляем все динамически созданные объекты.
-    FMenu.Free;
-    FDropDown.Free;
-    for i := Pred(FDictionary.Count) downto 0 do
-      FDictionary.Objects[i].Free;
-
-    FDictionary.Free;
-  end;
+  ClearAll;
+  FMenu.Free;
+  FDropDown.Free;
+  FDictionary.Free;
   inherited Destroy;
 end;
 
-// Вызывается из метода FindStrings для каждого элемента списка FDictionary.
-// Используется для сравнения строк.
+procedure TAutoComplete.ClearAll;
+var
+  i: Integer;
+begin
+
+  if not(csDesigning in ComponentState) then
+  begin
+    // Удаляем все динамически созданные объекты.
+    for i := Pred(FDictionary.Count) downto 0 do
+      FDictionary.Objects[i].Free;
+
+    FDropDown.Clear;
+
+  end;
+end;
+
 function TAutoComplete.CompareString(const EditText, DictionaryString: string): boolean;
 var
   i, l: Integer;
@@ -298,7 +302,7 @@ begin
       // Временно блокируем показ окна автозаполения, т. к. оно срабатывает
       // на событие OnChange.
       InsertText := true;
-      Text := {RightTrim(lString) +} FDropDown.Items[FItemIndex] {+ rString};
+      Text := { RightTrim(lString) + } FDropDown.Items[FItemIndex] { + rString };
       // Разрешаем.
       InsertText := false;
       // Устанавливаем курсор в строку поля ввода.
@@ -344,7 +348,7 @@ begin
     FDropped := true;
     // Показываем окно автозавершения под TAutoComplete.
     p.x := 0;
-    p.y := height - 1;
+    p.y := Height - 1;
     p := ClientToScreen(p);
     SetWindowPos(FDropDown.Handle, HWND_TOPMOST, p.x, p.y,
       width - GetSystemMetrics(SM_CXVSCROLL),
@@ -415,6 +419,9 @@ end;
 procedure TAutoComplete.SetItemIndex(const Value: Integer);
 begin
   FItemIndex := Value;
+
+  if (FDictionary.Count > FItemIndex) then
+    FSelectObject := FDictionary.Objects[FItemIndex];
 end;
 
 procedure TAutoComplete.SetItens(const Value: TStrings);

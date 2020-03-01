@@ -7,9 +7,13 @@ uses System.JSON,
   System.TypInfo,
   System.SysUtils,
   System.Rtti, System.DateUtils, Winapi.Windows,
-  Vcl.Graphics,
   Soap.EncdDecd,
+{$IF DECLARED(FireMonkeyVersion)}
+  FMX.Graphics,
+{$ELSE}
+  Vcl.Graphics,
   Vcl.ExtCtrls,
+{$IFEND}
   JSON.Atributes.Funcoes,
   JSON.Utils.ConverterTypes;
 

@@ -2,10 +2,11 @@ unit Utils.Rtti;
 
 interface
 
+
 uses System.Classes,
+  System.Generics.Collections,
   System.TypInfo,
   System.sysutils, db,
-  System.Generics.Collections,
   System.Rtti;
 
 Type
@@ -22,20 +23,22 @@ Type
     class procedure Initialize<T: Class>(ASource: T);
 
     class procedure CopyDataObjectTODataSet<T: class>(aSourceObj: T; aDest: TDataSet);
-   // class function TFieldToT<T>(aField: TField): T;
+    // class function TFieldToT<T>(aField: TField): T;
 
     class procedure EnumToValues<T>(Values: TStrings);
     class function EnumName<T>(value: integer): string;
     class function StringToEnum<T>(value: string): T;
     class function EnumToString<T>(value: T): String;
 
+    class function GetPropertyValue(aObj: TObject; aProp: string): TValue;
+
     class function CreateInstance<T>(const Args: array of TValue): T; overload;
     class function CreateInstance<T>(aType: TClass; const Args: array of TValue): T; overload;
     class procedure Validation<T: Exception>(aExpressao: Boolean; aMessage: string);
+
   end;
 
 implementation
-
 
 /// <summary>
 /// Testa uma expressão e caso seja verdadeira, levanta a exceção informada em T
@@ -105,7 +108,11 @@ begin
 
     for item in aList do
     begin
+{$IFDEF  ANDROID}
+      item.DisposeOf;
+{$ELSE}
       item.Free;
+{$ENDIF}
     end;
 
     aList.Clear;
@@ -150,6 +157,31 @@ begin
   until (Pos < 0);
 end;
 
+class function TRttiUtil.GetPropertyValue(aObj: TObject; aProp: string): TValue;
+var
+  context: TRttiContext;
+  rType: TRttiType;
+  Field: TRttiField;
+  method: TRttiMethod;
+  prop: TRttiProperty;
+  oSource: TObject;
+begin
+  context := TRttiContext.Create;
+  rType := context.GetType(aObj.ClassType);
+  oSource := TObject(aObj);
+
+  for prop in rType.GetProperties do
+  begin
+
+    if prop.Name.ToUpper = aProp.ToUpper then
+    begin
+      Result := prop.GetValue(TObject(aObj));
+      Break;
+    end;
+  end;
+
+end;
+
 /// <summary>
 /// Retorna o nome de enum em string
 /// </summary>
@@ -190,47 +222,49 @@ begin
 
 end;
 
-//class function TRttiUtil.TFieldToT<T>(aField: TField): T;
-//var
-//  context: TRttiContext;
-//  rType: TRttiType;
-//  nome: string;
-//  Aux: T;
-//begin
-//  context := TRttiContext.Create;
-//  rType := context.GetType(TypeInfo(T));
+
+// class function TRttiUtil.TFieldToT<T>(aField: TField): T;
+// var
+// context: TRttiContext;
+// rType: TRttiType;
+// nome: string;
+// Aux: T;
+// begin
+// context := TRttiContext.Create;
+// rType := context.GetType(TypeInfo(T));
 //
-//  nome := rType.Name;
+// nome := rType.Name;
 //
-//  if (CompareText('TDate', nome)) = 0 then
-//  begin
-//    nome := string(Aux);
-//    nome  := aField.AsString;
-//  end
-//  // else if (CompareText('TTime',nome)) = 0 then
-//  // begin
-//  // if aField.IsNull = False then
-//  // prop.SetValue(TObject(Entity), aField.AsDateTime)
-//  // else
-//  // prop.SetValue(TObject(Entity), 0);
-//  // end
-//  // else if (CompareText('Boolean',nome)) = 0 then
-//  // prop.SetValue(TObject(Entity), aField.AsBoolean)
-//  // else if (CompareText('Currency',nome)) = 0 then
-//  // prop.SetValue(TObject(Entity), aField.AsCurrency)
-//  // else if (CompareText('Double',nome)) = 0 then
-//  // prop.SetValue(TObject(Entity), aField.AsFloat)
-//  // else if (CompareText('Integer',nome)) = 0 then
-//  // prop.SetValue(TObject(Entity), aField.AsInteger)
-//  // else if (CompareText('SmallInt',nome)) = 0 then
-//  // prop.SetValue(TObject(Entity), aField.AsInteger)
+// if (CompareText('TDate', nome)) = 0 then
+// begin
+// nome := string(Aux);
+// nome  := aField.AsString;
+// end
+// // else if (CompareText('TTime',nome)) = 0 then
+// // begin
+// // if aField.IsNull = False then
+// // prop.SetValue(TObject(Entity), aField.AsDateTime)
+// // else
+// // prop.SetValue(TObject(Entity), 0);
+// // end
+// // else if (CompareText('Boolean',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsBoolean)
+// // else if (CompareText('Currency',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsCurrency)
+// // else if (CompareText('Double',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsFloat)
+// // else if (CompareText('Integer',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsInteger)
+// // else if (CompareText('SmallInt',nome)) = 0 then
+// // prop.SetValue(TObject(Entity), aField.AsInteger)
 //
-//end;
+// end;
 
 /// <summary>
 /// Recebe um objeto e inicializa suas propriedades
 /// </summary>
 /// <param name="ASource">Objeto do tipo T</param>
+
 class procedure TRttiUtil.Initialize<T>(ASource: T);
 var
   context: TRttiContext;

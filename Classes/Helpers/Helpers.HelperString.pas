@@ -64,10 +64,15 @@ begin
 end;
 
 function TStringHelper.RemoveAcentos: string;
+{$IFdef  MSWINDOWS}
 type
   USAscii20127 = type AnsiString(20127);
+{$ENDIF}
 begin
-  Result := string(USAscii20127(Self));
+
+{$IFdef  MSWINDOWS}
+  RESULT := string(USAscii20127(Self));
+{$ENDIF}
 
 end;
 

@@ -2,8 +2,15 @@ unit Log.TxtLog;
 
 interface
 
-uses Log.ILog, Log.TTipoLog, System.Classes, Winapi.Windows, System.SysUtils,
-  System.Generics.Collections, System.Variants;
+uses Log.ILog,
+  Log.TTipoLog,
+  System.Classes,
+{$IF Defined(MSWINDOWS)}
+  Winapi.Windows,
+{$ENDIF}
+  System.SysUtils,
+  System.Generics.Collections,
+  System.Variants;
 
 type
 
@@ -109,9 +116,9 @@ begin
 
     linha := Format(' %s - %s - %s', [FormatDateTime('dd/mm/yy hh:mm:ss', Now),
       aTipo.ToString, aTexto]);
-
+{$IF Defined(MSWINDOWS)}
     OutputDebugString(PWideChar(linha));
-
+{$ENDIF}
     if Ativo then
     begin
       AssignFile(tft, NomeArquivo);
@@ -155,8 +162,7 @@ end;
 class function TLogTXT.New(aDiretorio: string; aNomeArquivo: string;
 aDecorator: ILog): ILog;
 begin
-
-  if Assigned(FInstancia)  then
+  if Assigned(FInstancia) then
     Result := FInstancia
   else
   begin

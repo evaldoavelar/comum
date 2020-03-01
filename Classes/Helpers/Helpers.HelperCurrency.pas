@@ -12,6 +12,7 @@ type
     function ToStrDuasCasas: string;
     function ToStrDuasCasasSemPonto: string;
     function ToReiasExtenco: string;
+    function ToStr: string;
     function ToDuasCasas: Currency;
   end;
 
@@ -135,6 +136,11 @@ begin
 
 end;
 
+function THelperCurrency.ToStr: string;
+begin
+  Result := CurrToStr(Self);
+end;
+
 function THelperCurrency.ToStrDuasCasas: string;
 begin
   Result := FormatFloat('0.,00', Self);
@@ -142,8 +148,7 @@ end;
 
 function THelperCurrency.ToStrDuasCasasSemPonto: string;
 begin
-  Result := FormatFloat('0.,00', Self)
-    .Replace('.', '');
+  Result := FormatFloat('0.,00', Self).Replace('.', '');
 
 end;
 

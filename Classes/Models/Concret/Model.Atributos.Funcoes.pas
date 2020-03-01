@@ -23,6 +23,7 @@ type
   private
     class function indexOfAttribute(prop: TRttiObject; Attribute: TClass): TCustomAttribute;
     class function GetPropertyByCampo(aCampo: string; properties: TArray<TRttiProperty>): TRttiProperty;
+    class function SetTypeVariant(value: Variant; prop: TRttiProperty): Variant; static;
 
   public
     class function Tabela<T: class>: string; static;
@@ -30,7 +31,8 @@ type
     class function PropertiePk<T: class>: TProperties; static;
     class function TabelaAutoInc<T: class>(prop: TRttiProperty): string; static;
     class function Campo<T: class>(prop: TRttiProperty): string; static;
-    class function CampoValor<T: class>(Model: T): TDictionary<string, Variant>; static;
+    class function CampoValor<T: class>(Model: T): TDictionary<string, Variant>; overload; static;
+    class function CampoValor<T: class>(Model: T; ValidaForeinkey: Boolean): TDictionary<string, Variant>; overload; static;
 
   end;
 
@@ -119,6 +121,34 @@ begin
   end;
 end;
 
+class function TAtributosFuncoes.SetTypeVariant(value: Variant; prop: TRttiProperty): Variant;
+begin
+  Result := value;
+
+//  if (CompareText('string', prop.PropertyType.Name)) = 0 then
+//  BEGIN
+//    TVarData(Result).vType := varString;
+//
+//  END ELSE
+  if (CompareText('TDateTime', prop.PropertyType.Name)) = 0 then
+    TVarData(Result).vType := varDate
+  else if (CompareText('TDate', prop.PropertyType.Name)) = 0 then
+    TVarData(Result).vType := varDate
+  else if (CompareText('TTime', prop.PropertyType.Name)) = 0 then
+    TVarData(Result).vType := varDate
+  else if (CompareText('Boolean', prop.PropertyType.Name)) = 0 then
+    TVarData(Result).vType := varBoolean
+  else if (CompareText('Currency', prop.PropertyType.Name)) = 0 then
+    TVarData(Result).vType := varCurrency
+  else if (CompareText('Integer', prop.PropertyType.Name)) = 0 then
+    TVarData(Result).vType := varInteger
+  else if (CompareText('Smallint', prop.PropertyType.Name)) = 0 then
+    TVarData(Result).vType := varSmallint
+  else if (CompareText('Double', prop.PropertyType.Name)) = 0 then
+    TVarData(Result).vType := varDouble;
+
+end;
+
 class function TAtributosFuncoes.CampoValor<T>(Model: T): TDictionary<string, Variant>;
 var
   Rtti: TRttiContext;
@@ -181,6 +211,10 @@ begin
           value := prop.GetValue(TObject(Model)).AsVariant;
         end;
 
+
+        // definir o tipo da variant
+        value := SetTypeVariant(value, prop);
+
         if (CompareText('string', propName) = 0) and (isNullable=false) then
           value := prop.GetValue(TObject(Model)).AsString
         else if (CompareText('string', propName) = 0) then  begin
@@ -210,6 +244,62 @@ begin
     on E: Exception do
       raise Exception.create('TModelHelper.CampoValor: ' + E.Message);
   end;
+end;
+
+class function TAtributosFuncoes.CampoValor<T>(Model: T; ValidaForeinkey: Boolean): TDictionary<string, Variant>;
+var
+  Rtti: TRttiContext;
+  ltype: TRttiType;
+  prop: TRttiProperty;
+  index: integer;
+  Campo: string;
+  attr: TCustomAttribute;
+  attrCampo: CampoAttribute;
+  value: Variant;
+  fk: TCustomAttribute;
+  blIncluir: Boolean;
+begin
+  try
+
+    Result := TDictionary<string, Variant>.create();
+    Rtti := TRttiContext.create;
+    ltype := Rtti.GetType(TypeInfo(T));
+    index := 0;
+
+    // pecorrer as propriedades
+    for prop in ltype.GetProperties do
+    begin
+
+      attr := indexOfAttribute(prop, CampoAttribute);
+
+      if (attr <> nil) then
+      begin
+        attrCampo := CampoAttribute(attr);
+        Campo := attrCampo.Campo;
+        value := prop.GetValue(TObject(Model)).AsVariant;
+
+        // definir o tipo da variant
+        value := SetTypeVariant(value, prop);
+
+        blIncluir := True;
+
+        fk := indexOfAttribute(prop, ForeignKeyAttribute);
+        if fk <> nil then
+        begin
+          if TVarData(value).vType = varInteger then
+            if value = 0 then
+              blIncluir := False;
+        end;
+
+        if blIncluir then
+          Result.Add(Campo, value);
+      end;
+    end;
+  except
+    on E: Exception do
+      raise Exception.create('TModelHelper.CampoValor: ' + E.Message);
+  end;
+
 end;
 
 class function TAtributosFuncoes.GetPropertyByCampo(aCampo: string; properties: TArray<TRttiProperty>): TRttiProperty;

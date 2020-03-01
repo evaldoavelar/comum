@@ -151,7 +151,7 @@ begin
     // Удаляем все динамически созданные объекты.
     for i := Pred(FDictionary.Count) downto 0 do
       FDictionary.Objects[i].Free;
-
+    FDictionary.Clear;
     FDropDown.Clear;
 
   end;

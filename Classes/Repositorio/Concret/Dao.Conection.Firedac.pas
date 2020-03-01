@@ -3,6 +3,7 @@ unit Dao.Conection.Firedac;
 interface
 
 uses
+
   Dao.IConection,
   System.Rtti,
   System.Classes,
@@ -105,6 +106,15 @@ begin
     FConnection := TFDConnection.Create(nil);
 
     case FParametros.SGBD of
+      tpSQLite:
+        begin
+          FConnection.DriverName := 'SQLite';
+          FConnection.Params.UserName := '';
+          FConnection.Params.Password := '';
+          FConnection.Params.Database := FParametros.Database;
+        end;
+
+{$IFDEF  MSWINDOWS}
       tpSqlServer:
         begin
           FConnection.DriverName := 'MSSQL';
@@ -131,6 +141,7 @@ begin
             ApplicationName := ExtractFileName(ApplicationName);
           end;
         end;
+{$ENDIF}
     end;
 
     FConnection.FetchOptions.Mode := fmAll;

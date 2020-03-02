@@ -561,7 +561,7 @@ begin
 
     end;
 
-    CampoValor := TAtributosFuncoes.CampoValor<T>(Model, True);
+    CampoValor := TAtributosFuncoes.CampoValor<T>(Model);
 
     Into := SQL
       .Insert

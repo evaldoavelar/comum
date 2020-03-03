@@ -32,7 +32,8 @@ type
     procedure NotifyBinding(const APropertyName: string);
 
   public
-    [JSONMarshalled(false)]
+    [JSONMarshalled(True)]
+    [JSONFieldIgnore(True)]
     property StatusBD: TStatusBD read FStatusBD write SetStatusBD;
     procedure Clean(); virtual;
 
@@ -64,7 +65,7 @@ implementation
 
 function TModelBase.New: IModelBase;
 begin
-  result := TRttiUtil.CreateInstance<TModelBase>(Self.ClassType,[]);
+  result := TRttiUtil.CreateInstance<TModelBase>(Self.ClassType, []);
 end;
 
 procedure TModelBase.NotifyBinding(const APropertyName: string);

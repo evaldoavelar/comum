@@ -55,7 +55,8 @@ type
     class function JsonDateToDatetime(JSONDate: string): TDateTime; static;
   public
     class function ToJSON<T: Class>(obj: T; ConverterTypes: TConverterTypes = []): TJSONObject;
-    class function FromJSON<T: Class>(jsonStr: string): T;
+    class function FromJSON<T: Class>(jsonStr: string): T; overload;
+    class procedure FromJSON<T: Class>(jsonStr: string; aObj: T); overload;
   end;
 
 const
@@ -83,6 +84,24 @@ begin
     PopulateFields(tipo, TJSONObject(objJson), obj);
 
     Result := obj;
+  except
+    raise
+  end;
+
+end;
+
+class procedure TJSONUtil.FromJSON<T>(jsonStr: string; aObj: T);
+var
+  objJson: TJSONValue;
+  context: TRttiContext;
+  tipo: TRttiType;
+
+begin
+  objJson := TJSONObject.ParseJSONValue(jsonStr);
+  context := TRttiContext.Create;
+  tipo := context.GetType(typeInfo(T));
+  try
+    PopulateFields(tipo, TJSONObject(objJson), aObj);
   except
     raise
   end;
@@ -121,6 +140,8 @@ begin
     LPopulated := True;
     jsonFieldVal := JsonPairField.JsonValue;
     FieldName := JsonPairField.JsonString.value;
+    if jsonFieldVal.Null then
+      Continue;
 
     obj := TObject(Data);
     prop := rttiType.GetProperty(FieldName);

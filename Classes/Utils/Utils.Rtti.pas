@@ -17,7 +17,7 @@ Type
     class procedure Copy<T: Class>(ASource: T; ATarget: T; AIgnore: string = ''); static;
     class function Clone<T: Class>(ASource: T): T; static;
 
-    class procedure ListDisposeOf<T: Class>(aList: TList<T>); static;
+    class procedure ListDisposeOf<T: Class>(const aList: TList<T>); static;
     class procedure AssignedFreeAnNil(aObj: TObject); static;
     class procedure AssignedFree(aObj: TObject); static;
     class procedure Initialize<T: Class>(ASource: T);
@@ -92,7 +92,7 @@ end;
 /// Pecorre uma lista e libera da memoria os objetos
 /// </summary>
 /// <param name="aList">Lista do tipo T</param>
-class procedure TRttiUtil.ListDisposeOf<T>(aList: TList<T>);
+class procedure TRttiUtil.ListDisposeOf<T>(const aList: TList<T>);
 var
   item: T;
 begin
@@ -102,7 +102,8 @@ begin
 
     if (aList.Count <= 0) then
     begin
-      FreeAndNil(aList);
+      aList.Clear;
+      aList.Free;
       Exit;
     end;
 

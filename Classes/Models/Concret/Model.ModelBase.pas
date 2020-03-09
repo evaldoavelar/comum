@@ -2,11 +2,24 @@ unit Model.ModelBase;
 
 interface
 
-uses System.Classes, System.Rtti, System.Generics.Collections, System.SysUtils,
+uses System.Classes,
+  System.Rtti,
+  System.Generics.Collections,
+  System.SysUtils,
   Data.DBXJSONReflect,
-  System.Bindings.Expression, System.Bindings.Helper, Model.IModelBase,
-  Model.IObserve, Model.IObservable, Model.Atributos, Model.Atributos.Tipos,
-  Model.IPrototype, System.TypInfo, Model.Atributos.Funcoes, Utils.Rtti;
+  System.JSON,
+  System.Bindings.Expression,
+  System.Bindings.Helper,
+  Model.IModelBase,
+  Model.IObserve,
+  Model.IObservable,
+  Model.Atributos,
+  Model.Atributos.Tipos,
+  Model.IPrototype, System.TypInfo,
+  Model.Atributos.Funcoes,
+  Utils.Rtti,
+  JSON.Atributes,
+  JSON.Utils;
 
 type
 
@@ -32,8 +45,7 @@ type
     procedure NotifyBinding(const APropertyName: string);
 
   public
-    [JSONMarshalled(True)]
-    [JSONFieldIgnore(True)]
+    [JSONFieldIgnoreAttribute()]
     property StatusBD: TStatusBD read FStatusBD write SetStatusBD;
     procedure Clean(); virtual;
 
@@ -51,6 +63,9 @@ type
 
     function Prototype: IModelPrototype<IModelBase>;
     function Clone: IModelBase; virtual;
+
+    procedure LoadFromJson(aJson: string); virtual;
+    function ToJson(): TJSonObject;
 
     function New: IModelBase; virtual;
     function AsType: TValue;
@@ -98,6 +113,11 @@ begin
   inherited;
 end;
 
+procedure TModelBase.LoadFromJson(aJson: string);
+begin
+  TJSONUtil.FromJSON(aJson, Self);
+end;
+
 procedure TModelBase.Clean;
 begin
   TRttiUtil.Initialize<TModelBase>(Self);
@@ -130,6 +150,11 @@ end;
 procedure TModelBase.SetStatusBD(const Value: TStatusBD);
 begin
   FStatusBD := Value;
+end;
+
+function TModelBase.ToJson: TJSonObject;
+begin
+  result := TJSONUtil.ToJson(Self);
 end;
 
 function TModelBase.Clone: IModelBase;
@@ -188,7 +213,6 @@ end;
 procedure TModelBase.ClearBindings;
 var
   i: TBindingExpression;
-  j: Integer;
 begin
   if Assigned(FBindings) then
   begin

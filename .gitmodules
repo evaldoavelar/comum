@@ -1,0 +1,3 @@
+[submodule "DbConnector"]
+path = Classes/Terceiros/delphi-neon
+url = https://github.com/evaldoavelar/delphi-neon.git

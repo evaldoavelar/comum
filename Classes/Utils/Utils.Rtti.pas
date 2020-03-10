@@ -10,15 +10,15 @@ uses System.Classes,
   System.Rtti;
 
 Type
+
   TRttiUtil = Class
-  private
 
   public
     class procedure Copy<T: Class>(ASource: T; ATarget: T; AIgnore: string = ''); static;
     class function Clone<T: Class>(ASource: T): T; static;
 
     class procedure ListDisposeOf<T: Class>(const aList: TList<T>); static;
-    class procedure AssignedFreeAnNil(aObj: TObject); static;
+    class procedure AssignedFreeAndNil(var aObj); static;
     class procedure AssignedFree(aObj: TObject); static;
     class procedure Initialize<T: Class>(ASource: T);
 
@@ -31,6 +31,9 @@ Type
     class function EnumToString<T>(value: T): String;
 
     class function GetPropertyValue(aObj: TObject; aProp: string): TValue;
+
+    class procedure ForEachProperties(aObj: TObject; const aCall: TProc<string>); overload;
+    class procedure ForEachProperties(aObj: TObject; const aCall: TProc<TRttiProperty>); overload;
 
     class function CreateInstance<T>(const Args: array of TValue): T; overload;
     class function CreateInstance<T>(aType: TClass; const Args: array of TValue): T; overload;
@@ -158,18 +161,40 @@ begin
   until (Pos < 0);
 end;
 
+class procedure TRttiUtil.ForEachProperties(aObj: TObject;
+  const aCall: TProc<string>);
+begin
+  TRttiUtil.ForEachProperties(aObj,
+    procedure(aProp: TRttiProperty)
+    begin
+      aCall(aProp.Name);
+    end);
+end;
+
+class procedure TRttiUtil.ForEachProperties(aObj: TObject; const aCall: TProc<TRttiProperty>);
+var
+  context: TRttiContext;
+  rType: TRttiType;
+  prop: TRttiProperty;
+begin
+  context := TRttiContext.Create;
+  rType := context.GetType(aObj.ClassType);
+
+  for prop in rType.GetProperties do
+  begin
+    aCall(prop)
+  end;
+
+end;
+
 class function TRttiUtil.GetPropertyValue(aObj: TObject; aProp: string): TValue;
 var
   context: TRttiContext;
   rType: TRttiType;
-  Field: TRttiField;
-  method: TRttiMethod;
   prop: TRttiProperty;
-  oSource: TObject;
 begin
   context := TRttiContext.Create;
   rType := context.GetType(aObj.ClassType);
-  oSource := TObject(aObj);
 
   for prop in rType.GetProperties do
   begin
@@ -307,7 +332,7 @@ end;
 /// /// <param name="ATarget">Objeto de destino</param>
 /// ///  /// <param name="ATarget">Objeto de destino</param>
 class procedure TRttiUtil.Copy<T>(ASource, ATarget: T;
-  AIgnore: string = '');
+AIgnore: string = '');
 var
   context: TRttiContext;
   IsComponent, LookOutForNameProp: Boolean;
@@ -378,7 +403,7 @@ begin
 end;
 
 class procedure TRttiUtil.CopyDataObjectTODataSet<T>(aSourceObj: T;
-  aDest: TDataSet);
+aDest: TDataSet);
 var
   context: TRttiContext;
   rType: TRttiType;
@@ -459,12 +484,11 @@ begin
     aObj.Free;
 end;
 
-class procedure TRttiUtil.AssignedFreeAnNil(aObj: TObject);
+class procedure TRttiUtil.AssignedFreeAndNil(var aObj);
 begin
-  if Assigned(aObj) then
+  if Assigned(TObject(aObj)) then
   begin
-    aObj.Free;
-    aObj := nil;
+    FreeAndNil(aObj);
   end;
 end;
 

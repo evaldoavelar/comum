@@ -3,7 +3,7 @@ unit Utils.Funcoes;
 interface
 
 uses
-{$IFdef  MSWINDOWS}
+{$IFDEF  MSWINDOWS}
   Winapi.Windows,
   Winapi.ImageHlp,
   Winapi.ShellAPI,
@@ -42,13 +42,13 @@ type
     class procedure AbrirDiretorio(aHandle: HWND; aDir: string);
     class function DataCriacaoAplicacao(): TDate;
 
-    class function RemoveChar(text: string; Caracter: char): string;
     class function PathWithDelim(const APath: String): String;
 
     class function AppIsRunning(ActivateIt: Boolean; ApplicationTitle: string): Boolean;
     class function FileVersionInfo(Arquivo: string): string;
 
 {$ENDIF}
+    class function RemoveChar(text: string; Caracter: char): string;
     class function GetVersionInfo: string;
   end;
 
@@ -57,12 +57,13 @@ implementation
 
 class function TUtil.GetVersionInfo: string;
 begin
-{$IFdef  MSWINDOWS}
+{$IFDEF  MSWINDOWS}
   Result := FileVersionInfo(ParamStr(0));
 {$ENDIF}
 end;
 
-{$IFdef  MSWINDOWS}
+{$IFDEF  MSWINDOWS}
+
 
 class function TUtil.PathWithDelim(const APath: String): String;
 begin
@@ -73,7 +74,6 @@ begin
       Result := Result + PathDelim;
   end;
 end;
-
 
 class function TUtil.DataCriacaoAplicacao(): TDate;
 var

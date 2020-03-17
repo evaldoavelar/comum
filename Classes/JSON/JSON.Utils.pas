@@ -76,7 +76,7 @@ begin
     result := TJSONObject(LReader.ObjectToJSON(obj));
     // LogError(LReader.Errors);
   finally
-    LReader.Free;
+    FreeAndNil(LReader);
   end;
 
 end;

@@ -3,7 +3,7 @@ unit Util.Thread;
 interface
 
 uses
-  System.SysUtils, Winapi.Windows, System.Classes;
+  System.SysUtils,    System.Classes;
 
 type
 

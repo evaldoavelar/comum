@@ -7,13 +7,14 @@ uses
   System.TypInfo,
   System.SysUtils,
   System.Generics.Collections,
-  System.Rtti, System.DateUtils, Winapi.Windows,
+  System.Rtti, System.DateUtils,
   Soap.EncdDecd,
 {$IF DECLARED(FireMonkeyVersion)}
-  FMX.Graphics,
-{$ELSE}
   Vcl.Graphics,
   Vcl.ExtCtrls,
+  Winapi.Windows,
+{$ELSE}
+  FMX.Graphics,
 {$IFEND}
   Neon.Core.Persistence,
   Neon.Core.Persistence.JSON,
@@ -91,6 +92,7 @@ begin
   Serializer := TNeonDeserializerJSON.Create(BuildSerializerConfig);
   Serializer.JSONToObject(aObj, objJson);
   Serializer.Free;
+  objJson.Free;
 end;
 
 class function TJSONUtil.ClassTypeOf<T>(Field: string): TClass;

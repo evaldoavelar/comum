@@ -13,6 +13,7 @@ uses
   Androidapi.JNI.Widget,
   FMX.Helpers.Android,
 {$ENDIF}
+  FMX.types,
   FMX.VirtualKeyboard,
   FMX.PlatForm;
 
@@ -23,8 +24,11 @@ type
 {$IFDEF ANDROID}
     class procedure ShowMessageToast(const pMsg: String; pDuration: Integer); static;
     class procedure Vibrate(aTime: Int64); static;
+
 {$ENDIF}
     class procedure HideKeyVirtualBoard();
+    class procedure ShowKeyVirtualBoard(const AControl: TFmxObject);
+    class function Mascara(edt: String; str: String): string;
   end;
 
 implementation
@@ -79,6 +83,32 @@ begin
   begin
     FService.HideVirtualKeyboard;
   end;
+end;
+
+class function TMobileUtils.Mascara(edt: String; str: String): string;
+var
+  i: Integer;
+begin
+  for i := 1 to Length(edt) do
+  begin
+    if (str[i] = '9') and not(edt[i] in ['0' .. '9']) and (Length(edt) = Length(str) + 1) then
+      delete(edt, i, 1);
+    if (str[i] <> '9') and (edt[i] in ['0' .. '9']) then
+      insert(str[i], edt, i);
+  end;
+  result := edt;
+end;
+
+class procedure TMobileUtils.ShowKeyVirtualBoard(const AControl: TFmxObject);
+var
+  FService: IFMXVirtualKeyboardService;
+begin
+  TPlatformServices.Current.SupportsPlatformService(IFMXVirtualKeyboardService, IInterface(FService));
+  if (FService <> nil) { and (vksVisible in FService.VirtualKeyBoardState) } then
+  begin
+    FService.ShowVirtualKeyboard(AControl);
+  end;
+
 end;
 
 end.

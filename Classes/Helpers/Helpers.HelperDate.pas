@@ -3,7 +3,7 @@ unit Helpers.HelperDate;
 interface
 
 uses
-  System.SysUtils;
+  System.SysUtils, System.DateUtils;
 
 type
 
@@ -15,9 +15,75 @@ type
     procedure ReplaceTimer; overload;
     procedure ReplaceTimer(aHora, aMin, aSec, aMil: Word); overload;
     function ToString: string;
+
+    function DiaSemana: Integer;
+    function PrimeiroDiaSemana: TDate;
+    function UltimoDiaSemana: TDate;
+    function PrimeiroDiaMes: Integer;
+    function ano: Integer;
+    function mes: Integer;
+    function UltimoDiaMes: Integer;
   end;
 
 implementation
+
+function THelperDate.DiaSemana: Integer;
+begin
+  Result := DayOfTheWeek(Self)
+end;
+
+function THelperDate.UltimoDiaMes: Integer;
+var
+  ano, mes, Dia: Word;
+  temp: TDate;
+begin
+  DecodeDate(Self, ano, mes, Dia);
+
+  mes := mes + 1;
+  if mes = 13 then
+  begin
+    mes := 1;
+    ano := ano + 1;
+  end;
+  temp := EncodeDate(ano, mes, 1) - 1;
+
+  Result := DayOf(temp);
+end;
+
+function THelperDate.PrimeiroDiaSemana: TDate;
+var
+  dtSunday: TDateTime;
+begin
+  Result := StartOfTheWeek(Self);
+end;
+
+function THelperDate.UltimoDiaSemana: TDate;
+var
+  dtSunday: TDateTime;
+begin
+  Result := EndOfTheWeek(Self);
+end;
+
+function THelperDate.PrimeiroDiaMes: Integer;
+begin
+  Result := 1;
+end;
+
+function THelperDate.ano: Integer;
+var
+  ano, mes, Dia: Word;
+begin
+  DecodeDate(Self, ano, mes, Dia);
+  Result := ano;
+end;
+
+function THelperDate.mes: Integer;
+var
+  ano, mes, Dia: Word;
+begin
+  DecodeDate(Self, ano, mes, Dia);
+  Result := mes;
+end;
 
 procedure THelperDate.Encode(Dia, mes, ano: Word);
 begin
@@ -64,7 +130,7 @@ end;
 
 function THelperDate.ToString: string;
 begin
-  result := DateToStr(Self);
+  Result := DateToStr(Self);
 end;
 
 end.

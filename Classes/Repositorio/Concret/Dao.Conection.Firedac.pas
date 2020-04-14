@@ -22,13 +22,11 @@ uses
   Firedac.Comp.Client,
 
 {$IFDEF   MSWINDOWS}
-
 {$IF DECLARED(FireMonkeyVersion)}
-  Firedac.FMXUI.Wait,
-{$ELSE}
   Firedac.VCLUI.Wait,
-{$IFEND}
-
+{$ELSE}
+  Firedac.FMXUI.Wait,
+{$ENDIF}
   Firedac.Phys.Oracle,
   Firedac.Phys.MSSQLDef,
   Firedac.Phys.MSSQL,

@@ -125,11 +125,11 @@ class function TAtributosFuncoes.SetTypeVariant(value: Variant; prop: TRttiPrope
 begin
   Result := value;
 
-//  if (CompareText('string', prop.PropertyType.Name)) = 0 then
-//  BEGIN
-//    TVarData(Result).vType := varString;
-//
-//  END ELSE
+  // if (CompareText('string', prop.PropertyType.Name)) = 0 then
+  // BEGIN
+  // TVarData(Result).vType := varString;
+  //
+  // END ELSE
   if (CompareText('TDateTime', prop.PropertyType.Name)) = 0 then
     TVarData(Result).vType := varDate
   else if (CompareText('TDate', prop.PropertyType.Name)) = 0 then
@@ -175,6 +175,14 @@ begin
     // pecorrer as propriedades
     for prop in ltype.GetProperties do
     begin
+      // IgnoreNoInsertAttribute
+
+      attr := indexOfAttribute(prop, IgnoreNoInsertAttribute);
+
+      //ignorar a propriedade
+      if attr is IgnoreNoInsertAttribute then
+        continue;
+
       attr := indexOfAttribute(prop, CampoAttribute);
 
       if (attr <> nil) then
@@ -211,13 +219,13 @@ begin
           value := prop.GetValue(TObject(Model)).AsVariant;
         end;
 
-
         // definir o tipo da variant
         value := SetTypeVariant(value, prop);
 
-        if (CompareText('string', propName) = 0) and (isNullable=false) then
+        if (CompareText('string', propName) = 0) and (isNullable = false) then
           value := prop.GetValue(TObject(Model)).AsString
-        else if (CompareText('string', propName) = 0) then  begin
+        else if (CompareText('string', propName) = 0) then
+        begin
           TVarData(value).vType := varString;
         end
         else if (CompareText('TDateTime', propName)) = 0 then
@@ -288,7 +296,7 @@ begin
         begin
           if TVarData(value).vType = varInteger then
             if value = 0 then
-              blIncluir := False;
+              blIncluir := false;
         end;
 
         if blIncluir then

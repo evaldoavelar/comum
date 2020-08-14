@@ -7,7 +7,7 @@ uses Utils.Funcoes,
   System.RegularExpressions,
   System.Classes,
   System.StrUtils,
-  System.SysUtils;
+  System.SysUtils, IdHashMessageDigest;
 
 type
 
@@ -28,7 +28,9 @@ type
     function RightPad(Ch: char; Len: integer): string;
     function ToInt(): integer;
     function TrimAll(): string;
+    function MD5: string;
     function Count: integer;
+    function Upper: string;
     function IsEmpty: Boolean;
     function Replace(const OldValue, NewValue: string): string;
   end;
@@ -36,8 +38,6 @@ type
 implementation
 
 { TStringHelper }
-
-
 
 function TStringHelper.Replace(const OldValue, NewValue: string): string;
 begin
@@ -64,14 +64,14 @@ begin
 end;
 
 function TStringHelper.RemoveAcentos: string;
-{$IFdef  MSWINDOWS}
+{$IFDEF  MSWINDOWS}
 type
   USAscii20127 = type AnsiString(20127);
 {$ENDIF}
 begin
 
-{$IFdef  MSWINDOWS}
-  RESULT := string(USAscii20127(Self));
+{$IFDEF  MSWINDOWS}
+  Result := string(USAscii20127(Self));
 {$ENDIF}
 
 end;
@@ -98,6 +98,16 @@ begin
     Result := Self + StringOfChar(Ch, RestLen)
   else
     Result := LeftStr(Self, Len); // StrCopy(PWideChar(S), 1, len);
+end;
+
+function TStringHelper.MD5: string;
+begin
+  with TIdHashMessageDigest5.Create do
+    try
+      Result := HashStringAsHex(Self);
+    finally
+      Free;
+    end;
 end;
 
 function TStringHelper.Count: integer;
@@ -127,6 +137,11 @@ end;
 function TStringHelper.TrimAll: string;
 begin
   Result := Trim(Self);
+end;
+
+function TStringHelper.Upper: string;
+begin
+  Result := UpperCase(Self);
 end;
 
 function TStringHelper.Explode(const Ch: char): TStringList;

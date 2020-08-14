@@ -15,6 +15,7 @@ type
     procedure ReplaceTimer; overload;
     procedure ReplaceTimer(aHora, aMin, aSec, aMil: Word); overload;
     function ToString: string;
+    function FormatoDataBr: string;
 
     function DiaSemana: Integer;
     function PrimeiroDiaSemana: TDate;
@@ -97,6 +98,11 @@ begin
   except
     raise Exception.Create('TCSTDate: encode inválido!');
   end;
+end;
+
+function THelperDate.FormatoDataBr: string;
+begin
+  Result := FormatDateTime('dd/mm/yyyy', Self);
 end;
 
 procedure THelperDate.ReplaceTimer(aHora, aMin, aSec, aMil: Word);

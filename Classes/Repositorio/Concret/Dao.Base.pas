@@ -30,12 +30,10 @@ type
     FLog: ILog;
     FConnection: IConection;
     function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
-
+  public
     procedure Log(Log: string); overload;
     procedure Log(CampoValor: TDictionary<string, Variant>); overload;
     procedure Log(Log: string; const Args: array of const); overload;
-
-  public
 
     property LastSql: string read FLastSql;
 
@@ -599,7 +597,7 @@ begin
   end;
 end;
 
-function TDaoBase.SQLExec<T>(aCmd: string;   aCampoValor: TDictionary<string, Variant>): Integer;
+function TDaoBase.SQLExec<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
 begin
   Result := self.OnExec<T>(aCmd, aCampoValor);
 end;

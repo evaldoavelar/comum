@@ -13,6 +13,9 @@ type
     procedure EncodeStr(Dia, mes, ano: string);
     procedure ReplaceTimer;
     procedure SetDateNow;
+    function FormatoDataBr: string;
+    function FormatoDataBrExtenco: string;
+    function FormatoDataHoraBr: string;
   end;
 
 implementation
@@ -25,11 +28,30 @@ end;
 
 procedure THelperDateTime.EncodeStr(Dia, mes, ano: string);
 begin
-   try
-   Self := EncodeDate( StrToInt(ano), StrToInt( mes),StrToInt(dia));
-   except
-       raise Exception.Create('TCSTDate: encode inválido!');
-   end;
+  try
+    Self := EncodeDate(StrToInt(ano), StrToInt(mes), StrToInt(Dia));
+  except
+    raise Exception.Create('TCSTDate: encode inválido!');
+  end;
+end;
+
+function THelperDateTime.FormatoDataBr: string;
+begin
+  Result := FormatDateTime('dd/mm/yyyy', Self);
+end;
+
+function THelperDateTime.FormatoDataBrExtenco: string;
+begin
+  Result := Format('%s de %s de %s', [
+    FormatDateTime('dd', Self),
+    FormatDateTime('mmmm', Self),
+    FormatDateTime('yyyy', Self)
+    ]);
+end;
+
+function THelperDateTime.FormatoDataHoraBr: string;
+begin
+  Result := FormatDateTime('dd/mm/yyyy hh:mm:ss', Self);
 end;
 
 procedure THelperDateTime.ReplaceTimer;
@@ -44,4 +66,5 @@ procedure THelperDateTime.SetDateNow;
 begin
   Self := Now;
 end;
+
 end.

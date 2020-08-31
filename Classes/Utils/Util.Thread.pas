@@ -3,6 +3,7 @@ unit Util.Thread;
 interface
 
 uses
+
   System.SysUtils, Winapi.Windows, System.Classes;
 
 type
@@ -53,6 +54,7 @@ implementation
 constructor TThreadProcesso.Create(CreateSuspended: Boolean);
 begin
   inherited;
+  NameThreadForDebugging('TThreadProcesso');
 end;
 
 destructor TThreadProcesso.destroy;
@@ -64,21 +66,22 @@ end;
 procedure TThreadProcesso.Execute;
 begin
   inherited;
-
   try
-    Synchronize(syncOnAntesEnvio);
+    try
+      Synchronize(syncOnAntesEnvio);
 
-    (syncOnExecultar);
+      (syncOnExecultar);
 
-    Synchronize(syncOnDepoisExecutar);
-  except
-    on e: Exception do
-    begin
-      FException := e;
-      Synchronize(syncException);
+    except
+      on e: Exception do
+      begin
+        FException := e;
+        Synchronize(syncException);
+      end;
     end;
+  finally
+    Synchronize(syncOnDepoisExecutar);
   end;
-
 end;
 
 procedure TThreadProcesso.syncException;

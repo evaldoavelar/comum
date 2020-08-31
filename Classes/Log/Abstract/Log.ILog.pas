@@ -2,7 +2,7 @@ unit Log.ILog;
 
 interface
 
-uses Log.TTipoLog;
+uses Log.TTipoLog, System.Generics.Collections, System.SysUtils;
 
 type
 
@@ -23,6 +23,8 @@ type
 
     procedure d(Log: string); overload;
     procedure d(Log: string; const Args: array of const); overload;
+    procedure d(aParamns: TDictionary<string, Variant>); overload;
+    procedure d(e:Exception); overload;
 
   end;
 

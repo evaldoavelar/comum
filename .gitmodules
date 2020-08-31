@@ -4,3 +4,6 @@
 [submodule "Classes/Terceiros/FastMM4"]
 	path = Classes/Terceiros/FastMM4
 	url = https://github.com/pleriche/FastMM4.git
+[submodule "Classes/Terceiros/DataSetConverter4Delphi"]
+	path = Classes/Terceiros/DataSetConverter4Delphi
+	url = https://github.com/evaldoavelar/DataSetConverter4Delphi.git

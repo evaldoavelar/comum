@@ -2,12 +2,24 @@ unit Model.ModelBase;
 
 interface
 
-uses System.Classes, System.Rtti, System.Generics.Collections, System.SysUtils,
+uses System.Classes,
+  System.Rtti,
+  System.Generics.Collections,
+  System.SysUtils,
   Data.DBXJSONReflect,
-  System.Bindings.Expression, System.Bindings.Helper, Model.IModelBase,
-  Model.IObserve, Model.IObservable, Model.Atributos, Model.Atributos.Tipos,
-  Model.IPrototype, System.TypInfo, Model.Atributos.Funcoes, Utils.Rtti, JSON.Atributes,
-  JSON.Utils, System.JSON;
+  System.JSON,
+  System.Bindings.Expression,
+  System.Bindings.Helper,
+  Model.IModelBase,
+  Model.IObserve,
+  Model.IObservable,
+  Model.Atributos,
+  Model.Atributos.Tipos,
+  Model.IPrototype, System.TypInfo,
+  Model.Atributos.Funcoes,
+  Utils.Rtti,
+  JSON.Atributes,
+  JSON.Utils;
 
 type
 
@@ -201,7 +213,6 @@ end;
 procedure TModelBase.ClearBindings;
 var
   i: TBindingExpression;
-  j: Integer;
 begin
   if Assigned(FBindings) then
   begin

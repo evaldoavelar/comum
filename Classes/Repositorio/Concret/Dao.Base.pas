@@ -5,11 +5,22 @@ interface
 
 uses
   System.Rtti,
-  System.SysUtils, System.Classes, System.Variants,
-  Data.DB, Dao.IQueryBuilder, Dao.TQueryBuilder,
-  Dao.IConection, Model.Atributos.Funcoes,
-  SQLBuilder4D, Exceptions,
-  System.Generics.Collections, Log.ILog;
+  System.SysUtils,
+  System.Classes,
+  System.Variants,
+  Data.DB,
+  Dao.IQueryBuilder,
+  Dao.TQueryBuilder,
+  Dao.IConection,
+  Model.Atributos.Funcoes,
+  SQLBuilder4D,
+  Exceptions,
+  System.Generics.Collections,
+  Log.ILog,
+{$IFDEF MSWINDOWS}
+  Winapi.Windows,
+{$ENDIF}
+  System.StrUtils;
 
 type
   TDaoBase = class(TInterfacedObject)
@@ -29,8 +40,9 @@ type
   protected
     FLog: ILog;
     FConnection: IConection;
-    function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
+
   public
+
     procedure Log(Log: string); overload;
     procedure Log(CampoValor: TDictionary<string, Variant>); overload;
     procedure Log(Log: string; const Args: array of const); overload;
@@ -49,6 +61,7 @@ type
     function SQLToT<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
     function SQLExec<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
 
+    function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
     constructor Create(aConnection: IConection; aLog: ILog = nil);
     destructor destroy; override;
   end;
@@ -160,13 +173,18 @@ procedure TDaoBase.Log(Log: string);
 begin
   if Assigned(FLog) then
     FLog.d(Log);
+{$IFDEF MSWINDOWS}
+  OutputDebugString(PChar(Log));
+{$ENDIF}
 end;
 
 procedure TDaoBase.Log(Log: string; const Args: array of const);
 begin
   if Assigned(FLog) then
     FLog.d(Log, Args);
-
+{$IFDEF MSWINDOWS}
+  OutputDebugString(PChar(Format(Log, Args)));
+{$ENDIF}
 end;
 
 function TDaoBase.OnExec<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): LongInt;
@@ -281,10 +299,12 @@ var
   context: TRttiContext;
   rType: TRttiType;
   method: TRttiMethod;
+  ARecord: TRttiType;
   prop: TRttiProperty;
   Field: TField;
   Entity: T;
   campo: string;
+  LPropNullable: TValue;
 begin
 
   try
@@ -308,7 +328,23 @@ begin
         begin
           try
 
-            if (CompareText('string', prop.PropertyType.Name)) = 0 then
+            if StartsText('TNullable<', prop.PropertyType.Name) then
+            begin
+              // se o campo eh nulo
+              if (Field.IsNull = false) then
+                Continue;
+
+              // get Nullable<T> instance...
+              LPropNullable := prop.GetValue(TObject(Entity));
+
+              // invocar FromValue para passar o valor de Field
+              method := context.GetType(LPropNullable.TypeInfo).GetMethod('FromValue');
+              method.Invoke(LPropNullable, [TValue.FromVariant(Field.value)]);
+
+              // passar o valor para a property
+              prop.SetValue(TObject(Entity), LPropNullable);
+            end
+            else if (CompareText('string', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsString)
             else if (CompareText('Char', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsString)
@@ -344,7 +380,7 @@ begin
             else if (CompareText('SmallInt', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsInteger)
             else
-              prop.SetValue(TObject(Entity), TValue.FromVariant(Field.Value));
+              prop.SetValue(TObject(Entity), TValue.FromVariant(Field.value));
 
           except
             on E: Exception do
@@ -403,22 +439,30 @@ var
   key: string;
 begin
   try
+
+    builder := TStringBuilder.Create;
+
+    for key in CampoValor.Keys do
+    begin
+      builder.AppendFormat(' %s = %s ', [key, VarToStr(CampoValor.Items[key])]);
+    end;
+
     if Assigned(FLog) then
     begin
-      builder := TStringBuilder.Create;
-
-      for key in CampoValor.Keys do
-      begin
-        builder.AppendFormat(' %s = %s ', [key, VarToStr(CampoValor.Items[key])]);
-      end;
-
       FLog.d(builder.ToString());
-
-      FreeAndNil(builder);
     end;
+
+{$IFDEF MSWINDOWS}
+    OutputDebugString(PChar(builder.ToString()));
+{$ENDIF}
+    FreeAndNil(builder);
+
   except
     on E: Exception do
-      FLog.d(E.Message);
+    begin
+      if Assigned(FLog) then
+        FLog.d(E.Message);
+    end;
   end;
 end;
 
@@ -724,7 +768,7 @@ begin
     tabela := TAtributosFuncoes.tabela<T>;
 
     // campos e valores
-    CampoValor := TAtributosFuncoes.CampoValor<T>(Model);
+    CampoValor := TAtributosFuncoes.CampoValor<T>(Model, True);
 
     // primary keys
     pks := TAtributosFuncoes.PropertiePk<T>;

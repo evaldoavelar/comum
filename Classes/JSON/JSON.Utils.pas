@@ -15,6 +15,8 @@ uses
   Vcl.Graphics,
   Vcl.ExtCtrls,
   Winapi.Windows,
+{$ELSE}
+  FMX.Graphics,
 {$IFEND}
   Neon.Core.Persistence,
   Neon.Core.Persistence.JSON,

@@ -250,6 +250,12 @@ begin
 
 end;
 
+class procedure TRttiUtil.IFNotNull(aObj: TObject; aExecute: TProc);
+begin
+  if aObj <> nil then
+    aExecute();
+end;
+
 
 // class function TRttiUtil.TFieldToT<T>(aField: TField): T;
 // var
@@ -292,12 +298,6 @@ end;
 /// Recebe um objeto e inicializa suas propriedades
 /// </summary>
 /// <param name="ASource">Objeto do tipo T</param>
-
-class procedure TRttiUtil.IFNotNull(aObj: TObject; aExecute: TProc);
-begin
-  if aObj <> nil then
-    aExecute();
-end;
 
 class procedure TRttiUtil.Initialize<T>(ASource: T);
 var
@@ -418,7 +418,6 @@ var
   prop: TRttiProperty;
   Field: TField;
   campo: string;
-
 begin
   try
 
@@ -446,7 +445,6 @@ begin
           end;
         end;
       end;
-
     end;
     aDest.Post;
   except

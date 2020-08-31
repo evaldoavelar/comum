@@ -10,7 +10,10 @@ type
   THelperCurrency = record helper for Currency
     function ToReais: string;
     function ToStrDuasCasas: string;
+    function ToStrDuasCasasSemPonto: string;
     function ToReiasExtenco: string;
+    function ToStr: string;
+    function ToDuasCasas: Currency;
   end;
 
 resourcestring
@@ -28,7 +31,15 @@ const
 
 implementation
 
+uses
+  Utils.Funcoes;
+
 { THelperCurrency }
+
+function THelperCurrency.ToDuasCasas: Currency;
+begin
+  Result := TUtil.Truncar(Self, 2);
+end;
 
 function THelperCurrency.ToReais: string;
 begin
@@ -125,9 +136,20 @@ begin
 
 end;
 
+function THelperCurrency.ToStr: string;
+begin
+  Result := CurrToStr(Self);
+end;
+
 function THelperCurrency.ToStrDuasCasas: string;
 begin
-    Result := FormatFloat('0.,00', Self);
+  Result := FormatFloat('0.,00', Self);
+end;
+
+function THelperCurrency.ToStrDuasCasasSemPonto: string;
+begin
+  Result := FormatFloat('0.,00', Self).Replace('.', '');
+
 end;
 
 end.

@@ -7,7 +7,9 @@ uses
   System.Generics.Collections,
   System.Rtti,
   Database.IDataseMigration,
-  Database.TTabelaBD, Model.Atributos, Model.Atributos.Tipos;
+  Database.TTabelaBD,
+  Model.Atributos,
+  Model.Atributos.Tipos;
 
 type
 
@@ -23,6 +25,8 @@ type
 
 implementation
 
+uses
+  Helpers.HelperString;
 
 { TTabelaBDFB }
 
@@ -31,6 +35,7 @@ var
   default: string;
   NotNull: string;
   tipoSQl: string;
+  identify: string;
 begin
   if campo.DefaultValue <> '' then
     if (campo.Tipo = tpVARCHAR) or (campo.Tipo = tpCHAR) then
@@ -44,6 +49,11 @@ begin
     NotNull := ' NOT NULL'
   else
     NotNull := '';
+
+  if campo.IDENTITY then
+    identify := 'IDENTITY(1,1)'
+  else
+    identify := '';
 
   case campo.Tipo of
     tpNull:
@@ -71,18 +81,33 @@ begin
     tpCHAR:
       tipoSQl := Format('CHAR(%d)', [campo.Tamanho]);
     tpVARCHAR:
-      tipoSQl := Format('VARCHAR(%d)', [campo.Tamanho]);
+      begin
+        if campo.Tamanho > 5000 then
+          tipoSQl := 'VARCHAR(max)'
+        else
+          tipoSQl := Format('VARCHAR(%d)', [campo.Tamanho]);
+      end;
     tpBLOB:
       tipoSQl := Format('VARBINARY(%d)', [campo.Tamanho]);
     tpBIT:
       tipoSQl := 'BIT';
-     tpXML  : tipoSQl := 'XML';
+    tpXML:
+      tipoSQl := 'XML';
+    tpJSON:
+      tipoSQl := 'JSON';
+    tpNVARCHAR:
+      begin
+        if campo.Tamanho > 5000 then
+          tipoSQl := 'NVARCHAR(max)'
+        else
+          tipoSQl := Format('NVARCHAR(%d)', [campo.Tamanho]);
+      end
   else
     raise Exception.Create('TTabelaSqlServer: Campo não mapeado');
 
   end;
 
-  result := Format(' %s %s %s %s', [campo.campo, tipoSQl, default, NotNull]);
+  result := Format(' %s %s %s %s %s', [campo.campo, tipoSQl, identify, default, NotNull]);
 end;
 
 function TTabelaSqlServer.FkToSql(fk: ForeignKeyAttribute): string;

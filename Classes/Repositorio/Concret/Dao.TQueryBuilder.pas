@@ -168,7 +168,12 @@ function TQueryBuilder<T>.Get: T;
 var
   cmd: string;
 begin
-  cmd := FSQLSelect.ToString + '' + FSQLWhere.ToString;
+  cmd := FSQLSelect.ToString ;
+
+
+  if (Assigned(FSQLWhere)) then
+    cmd := cmd + FSQLWhere.ToString;
+
   result := OnGet(cmd, FCampoValor);
 end;
 

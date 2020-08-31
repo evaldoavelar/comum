@@ -5,7 +5,7 @@ interface
 type
 
 
-  TTipoCampo = (tpNull, tpSMALLINT, tpINTEGER, tpBIGINT, tpDECIMAL, tpNUMERIC, tpFLOAT, tpDOUBLE, tpDATE, tpTIME, tpTIMESTAMP, tpCHAR, tpVARCHAR, tpBLOB,tpBIT,tpXML);
+  TTipoCampo = (tpNull, tpSMALLINT, tpINTEGER, tpBIGINT, tpDECIMAL, tpNUMERIC, tpFLOAT, tpDOUBLE, tpDATE, tpTIME, tpTIMESTAMP, tpCHAR, tpVARCHAR, tpBLOB,tpBIT,tpXML, tpJSON, tpNVARCHAR);
   TSortingOrder = (NoSort, Ascending, Descending);
   TSequenceType = (NotInc, AutoInc, TableInc, GuidInc);
   TRuleAction = (None, Cascade, SetNull, SetDefault);
@@ -39,6 +39,8 @@ begin
      tpBLOB: result := 'BLOB';
      tpBIT : result := 'BIT';
      tpXML : result := 'XML';
+     tpJSON : result := 'JSON';
+     tpNVARCHAR : result := 'NVARCHAR';
    end;
 end;
 

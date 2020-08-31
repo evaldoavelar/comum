@@ -12,6 +12,8 @@ uses
   Dao.IQueryBuilder,
   Dao.TQueryBuilder,
   Dao.IConection,
+  Dao.IResultAdapter,
+  Dao.ResultAdapter,
   Model.Atributos.Funcoes,
   SQLBuilder4D,
   Exceptions,
@@ -20,7 +22,7 @@ uses
 {$IFDEF MSWINDOWS}
   Winapi.Windows,
 {$ENDIF}
-  System.StrUtils;
+  System.StrUtils, Dao.DataSet;
 
 type
   TDaoBase = class(TInterfacedObject)
@@ -33,9 +35,6 @@ type
     function OnExec<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): LongInt;
     function OnGet<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
     function OnToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
-
-    function DataSetToObject<T: class>(ds: TDataSet): T;
-    function CreateInstance<T: class>: T;
 
   protected
     FLog: ILog;
@@ -57,8 +56,10 @@ type
     function Delete<T: class>(Model: T): LongInt; overload;
     function Delete<T: class>(): IQueryBuilder<T>; overload;
 
-    function SQLToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
-    function SQLToT<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
+    function SQLToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>; overload;
+    function SQLToT<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T; overload;
+    function SQLToAdapter<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): IDaoResultAdapter<T>; overload;
+
     function SQLExec<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
 
     function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
@@ -218,7 +219,7 @@ begin
 
     ds := FConnection.Open(FLastSql, aCampoValor);
     if (ds.IsEmpty = false) then
-      Result := self.DataSetToObject<T>(ds)
+      Result := TDaoDataSet<T>.New.DataSetToObject(ds)
     else
       Result := nil;
 
@@ -249,7 +250,7 @@ begin
 
     while not ds.Eof do
     begin
-      Model := self.DataSetToObject<T>(ds);
+      Model := TDaoDataSet<T>.New.DataSetToObject(ds);
       Result.Add(Model);
       ds.Next;
     end;
@@ -260,147 +261,6 @@ begin
       raise Exception.Create('TDaoBase.OnToList<T>: ' + E.Message);
   end;
   self.Log('<<< Saindo de TDaoBase.OnToList<T> ');
-end;
-
-function TDaoBase.CreateInstance<T>: T;
-var
-  AValue: TValue;
-  ctx: TRttiContext;
-  rType: TRttiType;
-  AMethCreate: TRttiMethod;
-  instanceType: TRttiInstanceType;
-begin
-
-  try
-    ctx := TRttiContext.Create;
-    rType := ctx.GetType(TypeInfo(T));
-    for AMethCreate in rType.GetMethods do
-    begin
-      if (AMethCreate.IsConstructor) and (Length(AMethCreate.GetParameters) = 0) then
-      begin
-        instanceType := rType.AsInstance;
-
-        AValue := AMethCreate.Invoke(instanceType.MetaclassType, []);
-
-        Result := AValue.AsType<T>;
-
-        Exit;
-      end;
-    end;
-  except
-    on E: Exception do
-      raise Exception.Create('TDaoBase.CreateInstance<T>: ' + E.Message);
-  end;
-
-end;
-
-function TDaoBase.DataSetToObject<T>(ds: TDataSet): T;
-var
-  context: TRttiContext;
-  rType: TRttiType;
-  method: TRttiMethod;
-  ARecord: TRttiType;
-  prop: TRttiProperty;
-  Field: TField;
-  Entity: T;
-  campo: string;
-  LPropNullable: TValue;
-begin
-
-  try
-
-    context := TRttiContext.Create;
-    rType := context.GetType(T.ClassInfo);
-
-    Entity := CreateInstance<T>();
-
-    for prop in rType.GetProperties do
-    begin
-      // a propriedade é de escrita
-      if prop.IsWritable then
-      begin
-        // pegar o campo corresponte a property
-        campo := TAtributosFuncoes.campo<T>(prop);
-
-        // procurar o campo  no dataset
-        Field := ds.Fields.FindField(campo);
-        if Field <> nil then
-        begin
-          try
-
-            if StartsText('TNullable<', prop.PropertyType.Name) then
-            begin
-              // se o campo eh nulo
-              if (Field.IsNull = false) then
-                Continue;
-
-              // get Nullable<T> instance...
-              LPropNullable := prop.GetValue(TObject(Entity));
-
-              // invocar FromValue para passar o valor de Field
-              method := context.GetType(LPropNullable.TypeInfo).GetMethod('FromValue');
-              method.Invoke(LPropNullable, [TValue.FromVariant(Field.value)]);
-
-              // passar o valor para a property
-              prop.SetValue(TObject(Entity), LPropNullable);
-            end
-            else if (CompareText('string', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsString)
-            else if (CompareText('Char', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsString)
-            else if (CompareText('TDateTime', prop.PropertyType.Name)) = 0 then
-            begin
-              if (Field.IsNull = false) or (Field.AsString <> '') then
-                prop.SetValue(TObject(Entity), Field.AsDateTime)
-              else
-                prop.SetValue(TObject(Entity), 0)
-            end
-            else if (CompareText('TDate', prop.PropertyType.Name)) = 0 then
-            begin
-              if Field.IsNull = false then
-                prop.SetValue(TObject(Entity), Field.AsDateTime)
-              else
-                prop.SetValue(TObject(Entity), 0);
-            end
-            else if (CompareText('TTime', prop.PropertyType.Name)) = 0 then
-            begin
-              if Field.IsNull = false then
-                prop.SetValue(TObject(Entity), Field.AsDateTime)
-              else
-                prop.SetValue(TObject(Entity), 0);
-            end
-            else if (CompareText('Boolean', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsBoolean)
-            else if (CompareText('Currency', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsCurrency)
-            else if (CompareText('Double', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsFloat)
-            else if (CompareText('Integer', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsInteger)
-            else if (CompareText('SmallInt', prop.PropertyType.Name)) = 0 then
-              prop.SetValue(TObject(Entity), Field.AsInteger)
-            else
-              prop.SetValue(TObject(Entity), TValue.FromVariant(Field.value));
-
-          except
-            on E: Exception do
-            begin
-              raise Exception.Create('SetValue: prop.PropertyType.Name=' + prop.PropertyType.Name
-                + ' FieldName=' + Field.FieldName + ' - '
-                + E.Message);
-            end;
-          end;
-        end;
-
-      end;
-    end;
-
-    Result := Entity;
-  except
-    on E: Exception do
-      raise Exception.Create('TDaoBase.DataSetToObject: ' + E.Message);
-  end;
-
 end;
 
 function TDaoBase.Delete<T>(): IQueryBuilder<T>;
@@ -602,6 +462,7 @@ begin
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
+    builder.OnToAdapter := self.SQLToAdapter<T>;
 
     Result := builder;
 
@@ -630,7 +491,7 @@ begin
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
-
+    builder.OnToAdapter := self.SQLToAdapter<T>;
     Result := builder;
 
   except
@@ -811,6 +672,25 @@ begin
     end;
   end;
 
+end;
+
+function TDaoBase.SQLToAdapter<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): IDaoResultAdapter<T>;
+var
+  ds: TDataSet;
+begin
+  try
+    FLastSql := aCmd;
+
+    self.Log(FLastSql);
+    self.Log(aCampoValor);
+
+    ds := FConnection.Open(FLastSql, aCampoValor);
+
+    Result := TDaoResultAdapter<T>.New(ds);
+  except
+    on E: Exception do
+      raise Exception.Create('TDaoBase.OnToList<T>: ' + E.Message);
+  end;
 end;
 
 end.

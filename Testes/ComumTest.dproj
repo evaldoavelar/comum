@@ -125,7 +125,6 @@
         <DCCReference Include="..\Classes\Models\Abstract\Model.IModelBase.pas"/>
         <DCCReference Include="..\Classes\Models\Abstract\Model.IObserve.pas"/>
         <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.IConection.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.Conection.Parametros.pas"/>
         <DCCReference Include="Model\Test.Model.Pedido.pas"/>
         <DCCReference Include="..\Classes\Models\Concret\Model.Atributos.pas"/>
         <DCCReference Include="..\Classes\Models\Concret\Model.Atributos.Tipos.pas"/>
@@ -157,17 +156,13 @@
         <DCCReference Include="..\Classes\Utils\Utils.Crypt.pas"/>
         <DCCReference Include="TestUtils.pas"/>
         <DCCReference Include="Model\Test.Model.TMOV.pas"/>
-        <DCCReference Include="..\Classes\Licenca\Concret\Licenca.Concret.Validador.pas"/>
         <DCCReference Include="..\Classes\Helpers\Helpers.HelperDateTime.pas"/>
         <DCCReference Include="..\Classes\Helpers\Helpers.HelperDate.pas"/>
-        <DCCReference Include="..\Classes\Licenca\Abstract\Licenca.Abstract.Validador.pas"/>
         <DCCReference Include="..\Classes\Models\Abstract\Model.IJSON.pas"/>
         <DCCReference Include="TestJSonUtils.pas"/>
         <DCCReference Include="..\Classes\Repositorio\Concret\Database.Tabela.Oracle.pas"/>
         <DCCReference Include="..\Classes\Helpers\Helpers.HelperObject.pas"/>
         <DCCReference Include="..\Classes\JSON\JSON.Atributes.pas"/>
-        <DCCReference Include="..\Classes\JSON\JSON.Atributes.Funcoes.pas"/>
-        <DCCReference Include="..\Classes\JSON\JSON.Utils.ConverterTypes.pas"/>
         <DCCReference Include="..\Classes\JSON\JSON.Utils.pas"/>
         <DCCReference Include="..\Classes\Repositorio\Concret\Dao.Conection.Firedac.pas"/>
         <DCCReference Include="..\Classes\Helpers\Helpers.HelperCurrency.pas"/>
@@ -182,6 +177,18 @@
         <DCCReference Include="Model\Test.Model.Log.pas"/>
         <DCCReference Include="..\Classes\Atualizacao\Abstract\Atualizacao.Abstract.FTP.pas"/>
         <DCCReference Include="..\Classes\Types\Types.Nullable.pas"/>
+        <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.IResultAdapter.pas"/>
+        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.ResultAdapter.pas"/>
+        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Attributes.pas"/>
+        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.DynamicTypes.pas"/>
+        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Types.pas"/>
+        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Persistence.pas"/>
+        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Utils.pas"/>
+        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Persistence.JSON.pas"/>
+        <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.Abstract.Parametros.pas"/>
+        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.Conection.Parametros.pas"/>
+        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.DataSet.pas"/>
+        <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.IDataSet.pas"/>
         <None Include="ModelSupport_ComumTest\default.txaPackage"/>
         <None Include="ModelSupport_ComumTest\default.txvpck"/>
         <None Include="ModelSupport_ComumTest\Utils\default.txvpck"/>
@@ -413,13 +420,13 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Licenca\Abstract\default.txaPackage" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Exceptions\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Exceptions\default.txvpck" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Licenca\Abstract\default.txaPackage" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -548,7 +555,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\TestDatabaseMigration\default.txvpck" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Log\TxtLog\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -560,7 +567,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Log\TxtLog\default.txvpck" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\TestDatabaseMigration\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

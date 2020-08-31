@@ -11,7 +11,7 @@ unit TestDaoBase;
 
 interface
 
-uses
+uses Firedac.VCLUI.Wait,
   TestFramework, System.SysUtils, System.DateUtils, Model.ModelBase, Dao.Base, Dao.IConection,
   System.Classes, Dao.Conection.Firedac, Data.DB, System.Rtti, Dao.Conection.Parametros,
   Database.SGDB, Test.Model.Produto, Test.Model.Pedido, Test.Model.Item, System.Generics.Collections,
@@ -47,6 +47,8 @@ type
     procedure PodeAtualizarProduto;
     procedure PodeExcluirProduto;
     procedure PodeExcluirProdutoSQLBuilder;
+
+    procedure PodeRetornarClientDataSet;
 
     procedure PodeDarSelectEmObjetoSemAnotacao;
 
@@ -305,9 +307,9 @@ procedure TestTDaoBase.PodeDarSelectEmObjetoSemAnotacao;
 var
   tmovs: TList<TMOV>;
 begin
- // tmovs := FDaoBase.SelectALL<TMOV>      .ToList;
+  // tmovs := FDaoBase.SelectALL<TMOV>      .ToList;
 
-  //CheckTrue(tmovs.Count > 0);
+  // CheckTrue(tmovs.Count > 0);
 end;
 
 procedure TestTDaoBase.PodeExcluirProduto;
@@ -640,6 +642,19 @@ begin
   CheckProdutos(Produto, ProdutoBD);
   CheckEquals(Produto.TESTENULLSTRING.HasValue, ProdutoBD.TESTENULLSTRING.HasValue);
 
+end;
+
+procedure TestTDaoBase.PodeRetornarClientDataSet;
+begin
+  var
+  cd := FDaoBase
+    .SelectALL<TProduto>
+    .ToAdapter
+    .AsClientDataset;
+
+  CheckNotNull(cd);
+  CheckTrue(cd.RecordCount > 0);
+  cd.Free;
 end;
 
 function TestTDaoBase.ProdutoTeste(): TProduto;

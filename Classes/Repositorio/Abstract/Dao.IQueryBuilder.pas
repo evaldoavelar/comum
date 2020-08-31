@@ -2,7 +2,8 @@ unit Dao.IQueryBuilder;
 
 interface
 
-uses System.Generics.Collections, SQLBuilder4D, System.Rtti;
+uses System.Generics.Collections, SQLBuilder4D, System.Rtti,
+  Dao.IResultAdapter;
 
 type
 
@@ -12,6 +13,7 @@ type
     function Get(): T;
     function ToList(): TList<T>;
     function Exec(): LongInt;
+    function ToAdapter: IDaoResultAdapter<T>;
 
     function AllColumns: IQueryBuilder<T>; overload;
     function Column(const pColumn: ISQLAggregate): IQueryBuilder<T>; overload;

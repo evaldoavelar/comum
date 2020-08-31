@@ -5,7 +5,7 @@ interface
 uses
   Data.DB, System.Classes, System.Generics.Collections, System.Rtti,
   System.SysUtils, Dao.IConection, SQLBuilder4D, Dao.IQueryBuilder,
-  Model.Atributos.Funcoes;
+  Model.Atributos.Funcoes, Dao.IResultAdapter;
 
 type
 
@@ -15,6 +15,7 @@ type
     TOnGet = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): T of object;
     TOnExec = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer of object;
     TOnToList = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T> of object;
+    TOnAdapter = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): IDaoResultAdapter<T> of object;
 
   private
     FSQLSelect: ISQLSelect;
@@ -27,19 +28,23 @@ type
     FCampoValor: TDictionary<string, Variant>;
     FOnGet: TOnGet;
     FOnToList: TOnToList;
+    FOnToAdapter: TOnAdapter;
     FOnExec: TOnExec;
 
     function VariantToISQLValue(const pValue: Variant): ISQLValue;
     function ReturnParamName(aColumn: string): string;
     procedure Inicilize(aConn: IConection);
+    procedure SetOnToAdapter(const Value: TOnAdapter);
 
   public
     property OnGet: TOnGet read FOnGet write FOnGet;
     property OnExec: TOnExec read FOnExec write FOnExec;
     property OnToList: TOnToList read FOnToList write FOnToList;
+    property OnToAdapter:TOnAdapter read FOnToAdapter write SetOnToAdapter;
   public
     function Get(): T;
     function ToList(): TList<T>;
+    function ToAdapter: IDaoResultAdapter<T>;
     function Exec(): LongInt;
 
     function From(const pTable: string): IQueryBuilder<T>; overload;
@@ -168,8 +173,7 @@ function TQueryBuilder<T>.Get: T;
 var
   cmd: string;
 begin
-  cmd := FSQLSelect.ToString ;
-
+  cmd := FSQLSelect.ToString;
 
   if (Assigned(FSQLWhere)) then
     cmd := cmd + FSQLWhere.ToString;
@@ -208,6 +212,11 @@ function TQueryBuilder<T>.RightJoin(const pTable, pCondition: string): IQueryBui
 begin
   FSQLSelect := FSQLSelect.RightJoin(pTable, pCondition);
   result := Self;
+end;
+
+procedure TQueryBuilder<T>.SetOnToAdapter(const Value: TOnAdapter);
+begin
+  FOnToAdapter := Value;
 end;
 
 /// <summary>
@@ -287,7 +296,7 @@ end;
 function TQueryBuilder<T>.NotIn(const pValues: string): IQueryBuilder<T>;
 begin
   FSQLWhere := FSQLWhere
-  .NotIn(pValues ) ;
+    .NotIn(pValues);
 
   result := Self;
 end;
@@ -351,6 +360,23 @@ begin
   result := Self;
 end;
 
+function TQueryBuilder<T>.ToAdapter: IDaoResultAdapter<T>;
+var
+  cmd: string;
+begin
+
+  cmd := FSQLSelect.ToString;
+
+  if (Assigned(FSQLWhere)) then
+    cmd := cmd + FSQLWhere.ToString;
+
+  if (Assigned(FSQLOrderBy)) then
+    cmd := cmd + FSQLOrderBy.ToString;
+
+  result := Self.OnToAdapter(cmd, FCampoValor);
+
+end;
+
 function TQueryBuilder<T>.ToList: TList<T>;
 var
   cmd: string;
@@ -383,8 +409,8 @@ end;
 
 function TQueryBuilder<T>.Different(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>;
 begin
- if isParam then
-  FSQLWhere := FSQLWhere.Different(VariantToISQLValue(pValue))
+  if isParam then
+    FSQLWhere := FSQLWhere.Different(VariantToISQLValue(pValue))
   else
     FSQLWhere := FSQLWhere.Different(TValue.FromVariant(pValue));
   result := Self;

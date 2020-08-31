@@ -159,7 +159,7 @@ var
 begin
   // TODO: Setup method call parameters
   obj := PedidoTeste();
-  ReturnValue := TJSONUtil.ToJSON<TPedido>(obj);
+  ReturnValue := TJSONUtil.ToJSON(obj);
   CheckTrue(ReturnValue.ToString <> '');
 end;
 
@@ -169,7 +169,7 @@ var
   obj: TJSONObject;
 begin
   // TODO: Setup method call parameters
-  ReturnValue := TJSONUtil.FromJSON<TPedido>(PedidoJson());
+  ReturnValue := TJSONUtil.FromJSON<Tpedido>(PedidoJson());
   CheckNotNull(ReturnValue);
   CheckEquals(ReturnValue.Itens[0].SEQ, 1);
   // TODO: Validate method results

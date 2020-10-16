@@ -16,6 +16,8 @@ type
 
   TAtualizacaoException = class(Exception);
 
+  TEFileNotFound = class(Exception);
+
 implementation
 
 end.

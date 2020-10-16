@@ -5,12 +5,11 @@ interface
 uses
   Classes,
   SysUtils,
-  Rtti,
-  Neon.Core.Attributes;
+  Rtti;
 
 type
 
-  JSONFieldIgnoreAttribute = class(NeonIgnoreAttribute)
+  JSONFieldIgnoreAttribute = class(TCustomAttribute)
   private
     FIgnore: Boolean;
     procedure SetIgnore(const Value: Boolean);

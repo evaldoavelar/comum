@@ -3,7 +3,7 @@ unit Test.Model.Log;
 interface
 
 uses
-  Log.ILog;
+  Log.ILog, System.SysUtils, System.Generics.Collections;
 
 type
   TLogTeste = class(TInterfacedObject, ILog)
@@ -20,6 +20,9 @@ type
 
     procedure d(Log: string); overload;
     procedure d(Log: string; const Args: array of const); overload;
+    procedure d(aParamns: TDictionary<string, Variant>); overload;
+    procedure d(e:Exception); overload;
+
 
   public
     constructor Create();
@@ -83,6 +86,16 @@ begin
 end;
 
 function TLogTeste.setOnLog(OnLog: TOnLog): ILog;
+begin
+
+end;
+
+procedure TLogTeste.d(e: Exception);
+begin
+
+end;
+
+procedure TLogTeste.d(aParamns: TDictionary<string, Variant>);
 begin
 
 end;

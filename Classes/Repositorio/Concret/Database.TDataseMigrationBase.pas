@@ -55,7 +55,7 @@ type
   public
     constructor create(aConection: IConection; aVersao: IDatabaseVersion; ATipo:
       TSGBD; aLog: ILog);
-    destructor destroy();
+    destructor destroy(); override;
   end;
 
   { TDataseMigrationFB }
@@ -195,8 +195,8 @@ end;
 
 destructor TDataseMigrationBase.destroy;
 begin
-  Self.FErros.clear;
-  Self.FErros.Free;
+ // Self.FConection.Close;
+  inherited;
 end;
 
 function TDataseMigrationBase.getTipoTabela: TTabelaBD;

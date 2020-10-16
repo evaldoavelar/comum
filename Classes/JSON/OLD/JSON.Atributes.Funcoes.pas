@@ -6,7 +6,9 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  System.Rtti, JSON.Atributes;
+  System.Rtti,
+  Data.DBXJSONReflect,
+  JSON.Atributes;
 
 type
   TProperties = array of TRttiProperty;
@@ -30,6 +32,11 @@ begin
       if attr is JSONFieldIgnoreAttribute then
       begin
         Result := JSONFieldIgnoreAttribute(attr).Ignore;
+        Break;
+      end
+      else if attr is JSONMarshalled then
+      begin
+        Result := JSONMarshalled(attr).value;
         Break;
       end;
     end;

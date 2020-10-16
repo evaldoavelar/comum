@@ -36,16 +36,19 @@ type
     FTipo: TTipoCampo;
     FNotNull: Boolean;
     FDefaultValue: string;
+    FIDENTITY: Boolean;
+    procedure SetIDENTITY(const Value: Boolean);
   public
 
     constructor Create(ACampo: string = ''; ATipo: TTipoCampo = tpNull; ATamanho: Integer = 0; APrecisao: Integer = 0; ANotNull: Boolean = False;
-      ADefaultValue: string = '');
+      ADefaultValue: string = ''; aIDENTITY: Boolean = false);
     property Campo: string read FCampo write FCampo;
     property Tipo: TTipoCampo read FTipo write FTipo;
     property Tamanho: Integer read FTamanho write FTamanho;
     property Precisao: Integer read FPrecisao write FPrecisao;
     property NotNull: Boolean read FNotNull write FNotNull;
     property DefaultValue: string read FDefaultValue write FDefaultValue;
+    property IDENTITY: Boolean read FIDENTITY write SetIDENTITY;
   end;
 
   PrimaryKeyAttribute = class(DescriptionAttribute)
@@ -69,7 +72,7 @@ type
   end;
 
   /// ForeignKey
-  ForeignKeyAttribute = class(DescriptionAttribute)
+  ForeignKeyAttribute = class(TCustomAttribute)
   private
     FReferenceTableName: string;
     FReferenceFieldName: string;
@@ -77,6 +80,7 @@ type
     FRuleDelete: TRuleAction;
     FName: string;
     FColumns: string;
+    FDescription: string;
   public
     constructor Create(AName: string; AColumns: string; AReferenceTableName: string; AReferenceFieldName: string; ARuleDelete, ARuleUpdate: TRuleAction; ADescription: string = '');
 
@@ -86,6 +90,7 @@ type
     property ReferenceFieldName: string read FReferenceFieldName;
     property RuleDelete: TRuleAction read FRuleDelete;
     property RuleUpdate: TRuleAction read FRuleUpdate;
+    property Description: string read FDescription;
 
   end;
 
@@ -107,12 +112,14 @@ type
     constructor Create(AIgnore: Boolean);
   end;
 
+  IgnoreNoInsertAttribute = class(TCustomAttribute);
+
 implementation
 
 { CampoAttribute }
 
 constructor CampoAttribute.Create(ACampo: string; ATipo: TTipoCampo; ATamanho,
-  APrecisao: Integer; ANotNull: Boolean; ADefaultValue: string);
+  APrecisao: Integer; ANotNull: Boolean; ADefaultValue: string; aIDENTITY: Boolean);
 begin
   Self.FCampo := ACampo;
   Self.FTamanho := ATamanho;
@@ -120,6 +127,7 @@ begin
   Self.Tipo := ATipo;
   Self.FNotNull := ANotNull;
   Self.DefaultValue := ADefaultValue;
+  Self.IDENTITY := aIDENTITY;
 end;
 
 { PrimaryKey }
@@ -162,13 +170,18 @@ begin
   FUnique := AUnique;
 end;
 
+procedure CampoAttribute.SetIDENTITY(const Value: Boolean);
+begin
+  FIDENTITY := Value;
+end;
+
 { ForeignKeyAttribute }
 
 constructor ForeignKeyAttribute.Create(AName: string; AColumns, AReferenceTableName,
   AReferenceFieldName: string; ARuleDelete, ARuleUpdate: TRuleAction;
   ADescription: string);
 begin
-  inherited Create(ADescription);
+  FDescription := ADescription;
   FName := AName;
   FColumns := AColumns;
   FReferenceTableName := AReferenceTableName;
@@ -207,7 +220,7 @@ end;
 
 constructor IGNOREAttribute.Create(AIgnore: Boolean);
 begin
-   FIgnore := AIgnore;
+  FIgnore := AIgnore;
 end;
 
 procedure IGNOREAttribute.SetIgnore(const Value: Boolean);

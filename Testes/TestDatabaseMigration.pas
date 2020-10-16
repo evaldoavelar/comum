@@ -46,7 +46,7 @@ begin
     TConectionParametros.Create(
     tpSqlServer,
     'localhost',
-    'pdvsn',
+    'testeComum',
     'rm',
     'rm',
     'Teste',

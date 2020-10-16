@@ -2,7 +2,8 @@ unit Test.Model.Produto;
 
 interface
 
-uses System.SysUtils, Model.Atributos, Model.Atributos.Tipos, Model.IModelBase, Model.IObserve, Model.ModelBase;
+uses System.SysUtils, Model.Atributos, Model.Atributos.Tipos, Model.IModelBase, Model.IObserve, Model.ModelBase,
+  Types.Nullable;
 
 type
 
@@ -28,6 +29,7 @@ type
     FOBSERVACOES: string;
     FID: Integer;
     FXML: AnsiString;
+    FTESTENULLSTRING: TNullable<string>;
 
     function getBLOQUEADO: Boolean;
     procedure setBLOQUEADO(const Value: Boolean);
@@ -67,6 +69,7 @@ type
     function getQUANTIDADEFRACIONADA: Boolean;
     procedure setQUANTIDADEFRACIONADA(const Value: Boolean);
     procedure SetXML(const Value: AnsiString);
+    procedure SetTESTENULLSTRING(const Value: TNullable<string>);
   published
 
     [PrimaryKey('PK_PRODUTO_CODIGO', 'CODIGO')]
@@ -119,8 +122,10 @@ type
     property QUANTIDADEFRACIONADA: Boolean read getQUANTIDADEFRACIONADA write setQUANTIDADEFRACIONADA;
 
     [campo('MENSAGEMRETORNO', tpXML)]
-    property MENSAGEMRETORNO:AnsiString read FXML write SetXML;
+    property MENSAGEMRETORNO: AnsiString read FXML write SetXML;
 
+    [campo('TESTENULLSTRING', tpVARCHAR, 35)]
+    property TESTENULLSTRING: TNullable<string> read FTESTENULLSTRING write SetTESTENULLSTRING;
 
   public
     constructor create();
@@ -411,6 +416,11 @@ begin
     FQUANTIDADEFRACIONADA := Value;
     NotifyBinding('QUANTIDADEFRACIONADA');
   end;
+end;
+
+procedure TProduto.SetTESTENULLSTRING(const Value: TNullable<string>);
+begin
+  FTESTENULLSTRING := Value;
 end;
 
 procedure TProduto.setULTIMA_COMPRA(const Value: TDateTime);

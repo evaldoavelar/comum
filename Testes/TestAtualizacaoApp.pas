@@ -3,7 +3,7 @@ unit TestAtualizacaoApp;
 interface
 
 uses
-  Exceptions, Atualizacao.IAtualizacaoFTP, Atualizacao.Concret.FTP, System.Zip,
+  Exceptions,Atualizacao.Abstract.FTP, Atualizacao.Concret.FTP, System.Zip,
   IdException, IdExplicitTLSClientServerBase, IdBaseComponent, TestFramework,
   IdTCPConnection, IdFTPCommon, IdTCPClient, IdFTP, IdComponent, Helpers.HelperString,
   WinInet, System.SysUtils, System.IniFiles, Utils.Funcoes, Vcl.Forms;

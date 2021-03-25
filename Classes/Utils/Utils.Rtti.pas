@@ -14,6 +14,7 @@ Type
   TRttiUtil = Class
 
   public
+    class procedure CopyTo<T, Y: Class>(ASource: T; ATarget: Y); static;
     class procedure Copy<T: Class>(ASource: T; ATarget: T; AIgnore: string = ''); static;
     class function Clone<T: Class>(ASource: T): T; static;
 
@@ -451,6 +452,73 @@ begin
     on E: Exception do
       raise Exception.Create('TDaoBase.CopyDataObjectTODataSet: ' + E.Message);
   end;
+end;
+
+class procedure TRttiUtil.CopyTo<T, Y>(ASource: T; ATarget: Y);
+var
+  context: TRttiContext;
+  IsComponent, LookOutForNameProp: Boolean;
+  RttiType: TRttiType;
+  method: TRttiMethod;
+  MinVisibility: TMemberVisibility;
+  prop: TRttiProperty;
+  Fld: TRttiField;
+  SourceAsPointer, ResultAsPointer: Pointer;
+begin
+  RttiType := context.GetType(ASource.ClassType);
+  // procurar um construtor
+  IsComponent := (ASource is TComponent);
+  try
+    // loop nas props, copiando valores que são leitura e escrita
+    Move(ASource, SourceAsPointer, Sizeof(Pointer));
+    Move(ATarget, ResultAsPointer, Sizeof(Pointer));
+
+    if ASource is TComponent then
+    begin
+      Fld := RttiType.GetField('Parent');
+      if Assigned(Fld) then
+      begin
+        Fld.SetValue(ResultAsPointer, Fld.GetValue(SourceAsPointer));
+      end
+      else
+        IsComponent := False;
+    end;
+
+    LookOutForNameProp := IsComponent and (TComponent(ASource).Owner <> nil);
+    if IsComponent then
+      MinVisibility := mvPublished
+    else
+      MinVisibility := mvPublic;
+
+    for Fld in RttiType.GetFields do
+    begin
+      if Fld.Visibility >= MinVisibility then
+        Fld.SetValue(ResultAsPointer, Fld.GetValue(SourceAsPointer));
+    end;
+
+    for prop in RttiType.GetProperties do
+      if (prop.Visibility >= MinVisibility) and prop.IsReadable and prop.IsWritable
+      then
+        try
+            if LookOutForNameProp and (prop.Name = 'Name') and
+              (prop.PropertyType is TRttiStringType) then
+              LookOutForNameProp := False
+            else
+            begin
+              if (prop.PropertyType.TypeKind = tkClass) then
+              begin
+
+              end;
+
+              prop.SetValue(ResultAsPointer, prop.GetValue(SourceAsPointer));
+            end;
+
+        except
+        end;
+  except
+    raise;
+  end;
+
 end;
 
 /// <summary>

@@ -7,3 +7,6 @@
 [submodule "Classes/Terceiros/DataSetConverter4Delphi"]
 	path = Classes/Terceiros/DataSetConverter4Delphi
 	url = https://github.com/evaldoavelar/DataSetConverter4Delphi.git
+[submodule "Classes/Terceiros/DGoogleAnalytics"]
+	path = Classes/Terceiros/DGoogleAnalytics
+	url = https://github.com/maiconsi/DGoogleAnalytics.git

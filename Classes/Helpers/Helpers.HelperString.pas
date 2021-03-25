@@ -12,8 +12,9 @@ uses Utils.Funcoes,
 
 type
 
-  TStringHelper = record helper for   string
-  public
+  TStringHelper = record helper for
+    string
+      public
     function ValidaCPF: Boolean;
     function ValidaCNPJ: Boolean;
     function FormataCPF: string;
@@ -34,6 +35,7 @@ type
     function Count: integer;
     function Upper: string;
     function IsEmpty: Boolean;
+    function StartWith(value: string): Boolean;
     function Replace(const OldValue, NewValue: string): string;
 
   end;
@@ -117,6 +119,11 @@ end;
 function TStringHelper.Count: integer;
 begin
   Result := Length(Self)
+end;
+
+function TStringHelper.StartWith(value: string): Boolean;
+begin
+  Result := ContainsText(Self, value)
 end;
 
 function TStringHelper.SubString(PosInicial, PosFinal: integer): string;

@@ -78,7 +78,8 @@ implementation
 /// </summary>
 procedure TFiredacConection.Close;
 begin
-  Self.FConnection.Close;
+  if (FConnection <> nil) then
+    Self.FConnection.Close;
 end;
 
 /// <summary>

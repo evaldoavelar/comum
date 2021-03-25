@@ -179,7 +179,7 @@ begin
 
       attr := indexOfAttribute(prop, IgnoreNoInsertAttribute);
 
-      //ignorar a propriedade
+      // ignorar a propriedade
       if attr is IgnoreNoInsertAttribute then
         continue;
 
@@ -206,7 +206,7 @@ begin
           method := Rtti.GetType(v.TypeInfo).GetMethod('HasValue');
           if (not method.Invoke(v, []).AsBoolean) then
           begin
-            value := '(NULL)';
+            value := Null; // '(NULL)';
           end
           else
           begin
@@ -245,7 +245,10 @@ begin
         else if (CompareText('Double', propName)) = 0 then
           TVarData(value).vType := varDouble;
 
-        Result.Add(Campo, value);
+       // if isNullable then
+       //   Result.Add(Campo, Null)
+       // else
+          Result.Add(Campo, value);
       end;
     end;
   except

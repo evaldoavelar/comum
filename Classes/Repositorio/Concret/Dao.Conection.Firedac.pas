@@ -23,9 +23,9 @@ uses
 
 {$IFDEF   MSWINDOWS}
 {$IF DECLARED(FireMonkeyVersion)}
-  Firedac.VCLUI.Wait,
-{$ELSE}
   Firedac.FMXUI.Wait,
+{$ELSE}
+  Firedac.VCLUI.Wait,
 {$ENDIF}
   Firedac.Phys.Oracle,
   Firedac.Phys.MSSQLDef,

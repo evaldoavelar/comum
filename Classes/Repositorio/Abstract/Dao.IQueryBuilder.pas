@@ -32,6 +32,7 @@ type
     function Where(const Column: string): IQueryBuilder<T>; overload;
 
     function &And(const pColumn: string): IQueryBuilder<T>; overload;
+    function &And(pWhere: ISQLWhere): IQueryBuilder<T>; overload;
 
     function &Or(const pColumn: string): IQueryBuilder<T>; overload;
     function Equal(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>; overload;

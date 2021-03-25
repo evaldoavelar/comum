@@ -60,6 +60,7 @@ type
     function Where(const pColumn: string): IQueryBuilder<T>; overload;
 
     function &And(const pColumn: string): IQueryBuilder<T>; overload;
+    function &And(pWhere: ISQLWhere): IQueryBuilder<T>; overload;
 
     function &Or(const pColumn: string): IQueryBuilder<T>; overload;
     function Equal(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>; overload;
@@ -117,6 +118,12 @@ function TQueryBuilder<T>.&And(const pColumn: string): IQueryBuilder<T>;
 begin
   FColumn := pColumn;
   FSQLWhere := FSQLWhere.&And(pColumn);
+  result := Self;
+end;
+
+function TQueryBuilder<T>.&And(pWhere: ISQLWhere): IQueryBuilder<T>;
+begin
+  FSQLWhere.&And(pWhere);
   result := Self;
 end;
 

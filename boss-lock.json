@@ -1,0 +1,38 @@
+{
+	"hash": "d41d8cd98f00b204e9800998ecf8427e",
+	"updated": "2022-01-12T14:52:18.4257073-03:00",
+	"installedModules": {
+		"https://github.com/evaldoavelar/datasetconverter4delphi": {
+			"name": "datasetconverter4delphi",
+			"version": "master",
+			"hash": "077c54069cf22d7cc8c3038b650872b2",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
+		"https://github.com/evaldoavelar/delphi-neon": {
+			"name": "delphi-neon",
+			"version": "v1.3.1",
+			"hash": "bb0233ce67e5b5765554fa9ce8416da2",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
+		"https://github.com/maiconsi/dgoogleanalytics": {
+			"name": "dgoogleanalytics",
+			"version": "v1.0.0",
+			"hash": "44c438d3754f052bae01f7862f1133e9",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
+		"https://github.com/pleriche/fastmm4": {
+			"name": "fastmm4",
+			"version": "master",
+			"hash": "fe65db856cd552c28bd41cece2369cbc",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		}
+	}
+}

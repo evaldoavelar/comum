@@ -120,75 +120,87 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.Base.pas"/>
-        <DCCReference Include="..\Classes\Models\Concret\Model.ModelBase.pas"/>
-        <DCCReference Include="..\Classes\Models\Abstract\Model.IModelBase.pas"/>
-        <DCCReference Include="..\Classes\Models\Abstract\Model.IObserve.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.IConection.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Dao.Base.pas"/>
+        <DCCReference Include="..\Models\Concret\Model.ModelBase.pas"/>
+        <DCCReference Include="..\Models\Abstract\Model.IModelBase.pas"/>
+        <DCCReference Include="..\Models\Abstract\Model.IObserve.pas"/>
+        <DCCReference Include="..\Repositorio\Abstract\Dao.IConection.pas"/>
         <DCCReference Include="Model\Test.Model.Pedido.pas"/>
-        <DCCReference Include="..\Classes\Models\Concret\Model.Atributos.pas"/>
-        <DCCReference Include="..\Classes\Models\Concret\Model.Atributos.Tipos.pas"/>
+        <DCCReference Include="..\Models\Concret\Model.Atributos.pas"/>
+        <DCCReference Include="..\Models\Concret\Model.Atributos.Tipos.pas"/>
         <DCCReference Include="Model\Test.Model.Item.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Abstract\Database.IDataseMigration.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Abstract\Database.TTabelaBD.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Database.TDataseMigrationBase.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Database.SGDB.pas"/>
+        <DCCReference Include="..\Repositorio\Abstract\Database.IDataseMigration.pas"/>
+        <DCCReference Include="..\Repositorio\Abstract\Database.TTabelaBD.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Database.TDataseMigrationBase.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Database.SGDB.pas"/>
         <DCCReference Include="TestDatabaseMigration.pas"/>
         <DCCReference Include="Dao\Database.Version.pas"/>
         <DCCReference Include="Dao\DataBase.MigrationLocal.pas"/>
         <DCCReference Include="Model\Test.Model.AUTOINC.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Database.Tabela.SqlServer.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Database.Tabela.SqlServer.pas"/>
         <DCCReference Include="Model\Test.Model.Produto.pas"/>
         <DCCReference Include="TestDaoBase.pas"/>
-        <DCCReference Include="..\Classes\Log\Concret\Log.TxtLog.pas"/>
-        <DCCReference Include="..\Classes\Log\Abstract\Log.ILog.pas"/>
-        <DCCReference Include="..\Classes\Log\Concret\Log.TTipoLog.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Terceiros\SQLBuilder4Delphi\src\SQLBuilder4D.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Database.Tabela.Firebird.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.IQueryBuilder.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.TQueryBuilder.pas"/>
+        <DCCReference Include="..\Log\Concret\Log.TxtLog.pas"/>
+        <DCCReference Include="..\Log\Abstract\Log.ILog.pas"/>
+        <DCCReference Include="..\Log\Concret\Log.TTipoLog.pas"/>
+        <DCCReference Include="..\Repositorio\Terceiros\SQLBuilder4Delphi\src\SQLBuilder4D.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Database.Tabela.Firebird.pas"/>
+        <DCCReference Include="..\Repositorio\Abstract\Dao.IQueryBuilder.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Dao.TQueryBuilder.pas"/>
         <DCCReference Include="TestModel.pas"/>
         <DCCReference Include="Model\Test.Model.Observer.pas"/>
-        <DCCReference Include="..\Classes\Models\Abstract\Model.IObservable.pas"/>
-        <DCCReference Include="..\Classes\Models\Abstract\Model.IPrototype.pas"/>
-        <DCCReference Include="..\Classes\Models\Concret\Model.Atributos.Funcoes.pas"/>
-        <DCCReference Include="..\Classes\Utils\Utils.Rtti.pas"/>
-        <DCCReference Include="..\Classes\Utils\Utils.Crypt.pas"/>
+        <DCCReference Include="..\Models\Abstract\Model.IObservable.pas"/>
+        <DCCReference Include="..\Models\Abstract\Model.IPrototype.pas"/>
+        <DCCReference Include="..\Models\Concret\Model.Atributos.Funcoes.pas"/>
+        <DCCReference Include="..\Utils\Utils.Rtti.pas"/>
+        <DCCReference Include="..\Utils\Utils.Crypt.pas"/>
         <DCCReference Include="TestUtils.pas"/>
         <DCCReference Include="Model\Test.Model.TMOV.pas"/>
-        <DCCReference Include="..\Classes\Helpers\Helpers.HelperDateTime.pas"/>
-        <DCCReference Include="..\Classes\Helpers\Helpers.HelperDate.pas"/>
-        <DCCReference Include="..\Classes\Models\Abstract\Model.IJSON.pas"/>
+        <DCCReference Include="..\Helpers\Helpers.HelperDateTime.pas"/>
+        <DCCReference Include="..\Helpers\Helpers.HelperDate.pas"/>
+        <DCCReference Include="..\Models\Abstract\Model.IJSON.pas"/>
         <DCCReference Include="TestJSonUtils.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Database.Tabela.Oracle.pas"/>
-        <DCCReference Include="..\Classes\Helpers\Helpers.HelperObject.pas"/>
-        <DCCReference Include="..\Classes\JSON\JSON.Atributes.pas"/>
-        <DCCReference Include="..\Classes\JSON\JSON.Utils.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.Conection.Firedac.pas"/>
-        <DCCReference Include="..\Classes\Helpers\Helpers.HelperCurrency.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Database.Tabela.Oracle.pas"/>
+        <DCCReference Include="..\Helpers\Helpers.HelperObject.pas"/>
+        <DCCReference Include="..\JSON\JSON.Atributes.pas"/>
+        <DCCReference Include="..\JSON\JSON.Utils.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Dao.Conection.Firedac.pas"/>
+        <DCCReference Include="..\Helpers\Helpers.HelperCurrency.pas"/>
         <DCCReference Include="TesteHelpers.pas"/>
-        <DCCReference Include="..\Classes\Atualizacao\Concret\Atualizacao.Concret.FTP.pas"/>
-        <DCCReference Include="..\Classes\Exceptions\Exceptions.pas"/>
-        <DCCReference Include="..\Classes\Utils\Utils.Funcoes.pas"/>
-        <DCCReference Include="..\Classes\Helpers\Helpers.HelperString.pas"/>
+        <DCCReference Include="..\Atualizacao\Concret\Atualizacao.Concret.FTP.pas"/>
+        <DCCReference Include="..\Exceptions\Exceptions.pas"/>
+        <DCCReference Include="..\Utils\Utils.Funcoes.pas"/>
+        <DCCReference Include="..\Helpers\Helpers.HelperString.pas"/>
         <DCCReference Include="TestAtualizacaoApp.pas"/>
         <DCCReference Include="TestUtilsArarray.pas"/>
-        <DCCReference Include="..\Classes\Utils\Utils.ArrayUtil.pas"/>
+        <DCCReference Include="..\Utils\Utils.ArrayUtil.pas"/>
         <DCCReference Include="Model\Test.Model.Log.pas"/>
-        <DCCReference Include="..\Classes\Atualizacao\Abstract\Atualizacao.Abstract.FTP.pas"/>
-        <DCCReference Include="..\Classes\Types\Types.Nullable.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.IResultAdapter.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.ResultAdapter.pas"/>
-        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Attributes.pas"/>
-        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.DynamicTypes.pas"/>
-        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Types.pas"/>
-        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Persistence.pas"/>
-        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Utils.pas"/>
-        <DCCReference Include="..\Classes\Terceiros\delphi-neon\Source\Neon.Core.Persistence.JSON.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.Abstract.Parametros.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.Conection.Parametros.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Concret\Dao.DataSet.pas"/>
-        <DCCReference Include="..\Classes\Repositorio\Abstract\Dao.IDataSet.pas"/>
+        <DCCReference Include="..\Atualizacao\Abstract\Atualizacao.Abstract.FTP.pas"/>
+        <DCCReference Include="..\Types\Types.Nullable.pas"/>
+        <DCCReference Include="..\Repositorio\Abstract\Dao.IResultAdapter.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Dao.ResultAdapter.pas"/>
+        <DCCReference Include="..\Repositorio\Abstract\Dao.Abstract.Parametros.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Dao.Conection.Parametros.pas"/>
+        <DCCReference Include="..\Repositorio\Concret\Dao.DataSet.pas"/>
+        <DCCReference Include="..\Repositorio\Abstract\Dao.IDataSet.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Attributes.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.DynamicTypes.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Nullables.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Persistence.JSON.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Persistence.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Persistence.Swagger.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Serializers.DB.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Serializers.RTL.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Serializers.VCL.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.TypeInfo.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Types.pas"/>
+        <DCCReference Include="..\modules\delphi-neon\Source\Neon.Core.Utils.pas"/>
+        <DCCReference Include="..\Criptografia\DCPbase64.pas"/>
+        <DCCReference Include="..\Criptografia\DCPconst.pas"/>
+        <DCCReference Include="..\Criptografia\DCPcrypt2.pas"/>
+        <DCCReference Include="..\Criptografia\DCPrc4.pas"/>
+        <DCCReference Include="..\Criptografia\DCPripemd160.pas"/>
+        <DCCReference Include="..\Criptografia\DCPsha1.pas"/>
         <None Include="ModelSupport_ComumTest\default.txaPackage"/>
         <None Include="ModelSupport_ComumTest\default.txvpck"/>
         <None Include="ModelSupport_ComumTest\Utils\default.txvpck"/>
@@ -420,13 +432,13 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Exceptions\default.txvpck" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Licenca\Abstract\default.txaPackage" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Licenca\Abstract\default.txaPackage" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Exceptions\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -555,7 +567,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\Log\TxtLog\default.txvpck" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\TestDatabaseMigration\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -567,7 +579,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ModelSupport_ComumTest\TestDatabaseMigration\default.txvpck" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="ModelSupport_ComumTest\Log\TxtLog\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

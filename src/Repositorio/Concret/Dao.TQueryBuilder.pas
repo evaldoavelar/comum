@@ -15,6 +15,7 @@ type
     TOnGet = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): T of object;
     TOnExec = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer of object;
     TOnToList = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T> of object;
+    TOnToObjectList = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): TObjectList<T> of object;
     TOnAdapter = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): IDaoResultAdapter<T> of object;
 
   private
@@ -30,20 +31,24 @@ type
     FOnToList: TOnToList;
     FOnToAdapter: TOnAdapter;
     FOnExec: TOnExec;
+    FOnToObjectList: TOnToObjectList;
 
     function VariantToISQLValue(const pValue: Variant): ISQLValue;
     function ReturnParamName(aColumn: string): string;
     procedure Inicilize(aConn: IConection);
     procedure SetOnToAdapter(const Value: TOnAdapter);
+    procedure SetOnToObjectList(const Value: TOnToObjectList);
 
   public
     property OnGet: TOnGet read FOnGet write FOnGet;
     property OnExec: TOnExec read FOnExec write FOnExec;
     property OnToList: TOnToList read FOnToList write FOnToList;
-    property OnToAdapter:TOnAdapter read FOnToAdapter write SetOnToAdapter;
+    property OnToObjectList: TOnToObjectList read FOnToObjectList write SetOnToObjectList;
+    property OnToAdapter: TOnAdapter read FOnToAdapter write SetOnToAdapter;
   public
     function Get(): T;
     function ToList(): TList<T>;
+    function ToObjectList(): TObjectList<T>;
     function ToAdapter: IDaoResultAdapter<T>;
     function Exec(): LongInt;
 
@@ -226,6 +231,11 @@ begin
   FOnToAdapter := Value;
 end;
 
+procedure TQueryBuilder<T>.SetOnToObjectList(const Value: TOnToObjectList);
+begin
+  FOnToObjectList := Value;
+end;
+
 /// <summary>
 /// Da o nome ao parametro e armazena seu valor
 /// </summary>
@@ -398,6 +408,22 @@ begin
     cmd := cmd + FSQLOrderBy.ToString;
 
   result := Self.OnToList(cmd, FCampoValor);
+end;
+
+function TQueryBuilder<T>.ToObjectList: TObjectList<T>;
+var
+  cmd: string;
+begin
+
+  cmd := FSQLSelect.ToString;
+
+  if (Assigned(FSQLWhere)) then
+    cmd := cmd + FSQLWhere.ToString;
+
+  if (Assigned(FSQLOrderBy)) then
+    cmd := cmd + FSQLOrderBy.ToString;
+
+  result := Self.OnToObjectList(cmd, FCampoValor);
 end;
 
 function TQueryBuilder<T>.Where(const pColumn: string): IQueryBuilder<T>;

@@ -20,6 +20,7 @@ type
     function FormataCPF: string;
 
     function ToUpper: string;
+    function ToLower: string;
     function FormataCNPJ: string;
     function ValidaEMAIL: Boolean;
     function ToCurrency: Currency;
@@ -143,6 +144,11 @@ end;
 function TStringHelper.ToInt: integer;
 begin
   Result := strToInt(Self);
+end;
+
+function TStringHelper.ToLower: string;
+begin
+  Result := LowerCase(Self);
 end;
 
 function TStringHelper.ToUpper: string;

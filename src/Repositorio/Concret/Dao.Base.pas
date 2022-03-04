@@ -1,5 +1,5 @@
 unit Dao.Base;
-
+
 interface
 
 
@@ -35,6 +35,7 @@ type
     function OnExec<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): LongInt;
     function OnGet<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
     function OnToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
+    function OnObjectList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TObjectList<T>;
 
   protected
     FLog: ILog;
@@ -231,6 +232,40 @@ begin
   self.Log('<<< Saindo de TDaoBase.OnGet<T> ');
 end;
 
+function TDaoBase.OnObjectList<T>(aCmd: string;
+  aCampoValor: TDictionary<string, Variant>): TObjectList<T>;
+var
+  Model: T;
+  ds: TDataSet;
+  cmd: string;
+begin
+  self.Log('>>> Entrando em  TDaoBase.OnObjectList<T> ');
+  try
+    Result := TObjectList<T>.Create;
+
+    FLastSql := aCmd;
+
+    self.Log(FLastSql);
+    self.Log(aCampoValor);
+
+    ds := FConnection.Open(FLastSql, aCampoValor);
+
+    while not ds.Eof do
+    begin
+      Model := TDaoDataSet<T>.New.DataSetToObject(ds);
+      Result.Add(Model);
+      ds.Next;
+    end;
+
+    FreeAndNil(ds);
+  except
+    on E: Exception do
+      raise Exception.Create('TDaoBase.OnObjectList<T>: ' + E.Message);
+  end;
+  self.Log('<<< Saindo de TDaoBase.OnObjectList<T> ');
+
+end;
+
 function TDaoBase.OnToList<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
 var
   Model: T;
@@ -279,6 +314,7 @@ begin
     builder := TQueryBuilder<T>.Create(Delete, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
+    builder.OnToObjectList := self.OnObjectList<T>;
     builder.OnExec := self.OnExec<T>;
 
     Result := builder;
@@ -492,6 +528,7 @@ begin
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
+    builder.OnToObjectList := self.OnObjectList<T>;
     builder.OnToAdapter := self.SQLToAdapter<T>;
     Result := builder;
 
@@ -695,3 +732,4 @@ begin
 end;
 
 end.
+

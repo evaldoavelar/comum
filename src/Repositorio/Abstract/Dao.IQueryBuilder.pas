@@ -14,6 +14,7 @@ type
     function ToList(): TList<T>;
     function Exec(): LongInt;
     function ToAdapter: IDaoResultAdapter<T>;
+    function ToObjectList(): TObjectList<T>;
 
     function AllColumns: IQueryBuilder<T>; overload;
     function Column(const pColumn: ISQLAggregate): IQueryBuilder<T>; overload;

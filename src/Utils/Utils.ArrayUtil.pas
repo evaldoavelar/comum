@@ -11,6 +11,7 @@ type
     class procedure Append(var Arr: TArray<T>; Value: T); overload;
     class procedure Append(var Arr1: TArray<T>; var Arr2: TArray<T>); overload;
     class function ConcatStr(var Arr1: TArray<string>; aDelimitador: Char): string; overload;
+    class function ConcatStr(var Arr1: TArray<Integer>; aDelimitador: Char): string; overload;
     class function Indexof(var Arr1: TArray<string>; aValue: string): Integer; overload;
   end;
 
@@ -30,6 +31,22 @@ var
 begin
   for I := Low(Arr2) to High(Arr2) do
     Append(Arr1, Arr2[I]);
+end;
+
+class function TArrayUtil<T>.ConcatStr(var Arr1: TArray<Integer>;
+  aDelimitador: Char): string;
+var
+  I: Integer;
+begin
+  Result := '';
+  for I := Low(Arr1) to High(Arr1) do
+  begin
+    if I > 0 then
+      Result := Result + ',';
+
+    Result := Result + QuotedStr(Arr1[I].ToString);
+
+  end;
 end;
 
 class function TArrayUtil<T>.ConcatStr(var Arr1: TArray<string>;

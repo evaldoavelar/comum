@@ -1,5 +1,6 @@
 unit JSON.Utils;
 
+
 interface
 
 uses
@@ -37,6 +38,7 @@ type
     class function FromJSON<T: Class>(jsonStr: string): T; overload;
     class procedure FromJSON(jsonStr: string; aObj: TObject); overload;
     class function ToJSON(obj: TObject): TJSONObject;
+    class function SerializeSimple<T>(AValue: T): TJSONValue;
   end;
 
   PPByte = ^PByte;
@@ -49,13 +51,26 @@ implementation
 
 { TJSONUtil }
 
+class function TJSONUtil.SerializeSimple<T>(AValue: T): TJSONValue;
+var
+  LWriter: TNeonSerializerJSON;
+begin
+  LWriter := TNeonSerializerJSON.Create(BuildSerializerConfig);
+  try
+    result := LWriter.ValueToJSON(  TValue.From<T>(AValue));
+  finally
+    LWriter.Free;
+  end;
+end;
+
+
 class function TJSONUtil.FromJSON<T>(jsonStr: string): T;
 var
   objJson: TJSONValue;
   context: TRttiContext;
   tipo: TRttiType;
   obj: T;
-
+  Serializer: TNeonDeserializerJSON;
   LReader: TNeonDeserializerJSON;
 begin
   objJson := TJSONObject.ParseJSONValue(jsonStr);
@@ -68,6 +83,11 @@ begin
   if not Assigned(objJson) then
     raise Exception.Create('Error parsing JSON string');
 
+  Serializer := TNeonDeserializerJSON.Create(BuildSerializerConfig);
+  Serializer.JSONToObject(obj, objJson);
+  Serializer.Free;
+
+  result := obj;
 end;
 
 class function TJSONUtil.ToJSON(obj: TObject): TJSONObject;

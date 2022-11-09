@@ -39,12 +39,9 @@ type
 
   TThreadUtil = class
   public
-    class procedure Executar(
-      aOnExceptionThread: TOnExceptionThread;
-      aOnAntesExecultar: TOnAntesExecultar;
-      aOnExecultar: TOnAntesExecultar;
-      aOnDepoisExecutar: TOnDepoisExecutar
-      );
+    class function Executar(aOnExceptionThread: TOnExceptionThread;
+  aOnAntesExecultar, aOnExecultar: TOnAntesExecultar;
+  aOnDepoisExecutar: TOnDepoisExecutar): cardinal;
   end;
 
 implementation
@@ -110,9 +107,9 @@ end;
 
 { TThreadUtil }
 
-class procedure TThreadUtil.Executar(aOnExceptionThread: TOnExceptionThread;
+class function TThreadUtil.Executar(aOnExceptionThread: TOnExceptionThread;
   aOnAntesExecultar, aOnExecultar: TOnAntesExecultar;
-  aOnDepoisExecutar: TOnDepoisExecutar);
+  aOnDepoisExecutar: TOnDepoisExecutar):cardinal;
 var
   Thread: TThreadProcesso;
 begin
@@ -122,6 +119,7 @@ begin
   Thread.OnExecultar := aOnExecultar;
   Thread.OnDepoisExecutar := aOnDepoisExecutar;
   Thread.FreeOnTerminate := true;
+  result := Thread.ThreadID;
   Thread.Resume;
 end;
 

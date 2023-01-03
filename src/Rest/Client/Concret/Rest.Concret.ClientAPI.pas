@@ -1,18 +1,21 @@
 unit Rest.Concret.ClientAPI;
 
+
 interface
 
-uses Rest.Abstract.ClientAPI,
-  Rest.Client, Rest.types,
+uses Rest.Abstract.ClientAPI, System.Net.HttpClient,
+  Rest.Client, Rest.Types,
 {$IF DECLARED(FireMonkeyVersion)}
-  FMX.types,
+  FMX.Types,
 {$ENDIF}
-  system.sysutils,
+  System.sysutils,
   Rest.Authenticator.Basic;
 
 type
 
   TRestClientAPI = class(TInterfacedObject, IRestClientAPI)
+  private
+    function GetHTTPBasicAuthenticator: THTTPBasicAuthenticator;
   protected
     FRESTClient: TRestClient;
     FHTTPBasicAuthenticator: THTTPBasicAuthenticator;
@@ -77,20 +80,26 @@ begin
   FRESTClient.ContentType := aContentType;
 end;
 
+function TRestClientAPI.GetHTTPBasicAuthenticator: THTTPBasicAuthenticator;
+begin
+  if FHTTPBasicAuthenticator = nil then
+    FHTTPBasicAuthenticator := THTTPBasicAuthenticator.Create(nil);
+
+  result := FHTTPBasicAuthenticator;
+end;
+
 constructor TRestClientAPI.Create;
 begin
 
   Log('>>> Entrando em  TRestClientAPI.Create ');
-  FHTTPBasicAuthenticator := THTTPBasicAuthenticator.Create(nil);
-
+  FHTTPBasicAuthenticator := nil;
   FRESTClient := TRestClient.Create(nil);
   FRESTClient.Accept := 'application/json, text/plain; q=0.9, text/html;q=0.8,';
   FRESTClient.AcceptCharset := 'utf-8, *;q=0.8';
   FRESTClient.BaseURL := 'http://localhost:8080';
   FRESTClient.RaiseExceptionOn500 := false;
   FRESTClient.ContentType := 'application/json';
-
-  FRESTClient.Authenticator := FHTTPBasicAuthenticator;
+  FRESTClient.SecureProtocols := [THTTPSecureProtocol.SSL3, THTTPSecureProtocol.TLS1, THTTPSecureProtocol.TLS11, THTTPSecureProtocol.TLS12];
 
   FRESTRequest := TRESTRequest.Create(nil);
   FRESTRequest.Client := FRESTClient;
@@ -118,14 +127,14 @@ function TRestClientAPI.Execute: TCustomRESTResponse;
 begin
   Log('>>> Entrando em  TRestClientAPI.Execute ');
   try
-
+    FRESTClient.Authenticator := FHTTPBasicAuthenticator;
     FRESTRequest.Execute;
 
     Log('FRESTRequest.Response.StatusCode ' + FRESTRequest.Response.StatusCode.ToString + ' ' + FRESTRequest.Response.StatusText);
     Log(FRESTRequest.Response.Content);
 
-   // if not(FRESTRequest.Response.StatusCode in [200, 201]) then
-    //  raise TConectionException.Create(FRESTRequest.Response.StatusText);
+    // if not(FRESTRequest.Response.StatusCode in [200, 201]) then
+    // raise TConectionException.Create(FRESTRequest.Response.StatusText);
 
     result := FRESTRequest.Response;
     Log('<<< Saindo de TRestClientAPI.Execute ');
@@ -133,7 +142,7 @@ begin
     on E: Exception do
     begin
       Log(E.message);
-      raise TConectionException.Create(e.Message);
+      raise TConectionException.Create(E.message);
     end;
 
   end;
@@ -163,7 +172,7 @@ end;
 function TRestClientAPI.Password(aPassword: string): IRestClientAPI;
 begin
   result := self;
-  FHTTPBasicAuthenticator.Password := aPassword;
+  GetHTTPBasicAuthenticator.Password := aPassword;
 end;
 
 function TRestClientAPI.Resource(aResource: string): IRestClientAPI;
@@ -181,7 +190,7 @@ end;
 function TRestClientAPI.UserName(aUserName: string): IRestClientAPI;
 begin
   result := self;
-  FHTTPBasicAuthenticator.UserName := aUserName;
+  GetHTTPBasicAuthenticator.UserName := aUserName;
 end;
 
 end.

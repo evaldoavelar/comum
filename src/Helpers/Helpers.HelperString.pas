@@ -38,7 +38,7 @@ type
     function IsEmpty: Boolean;
     function StartWith(value: string): Boolean;
     function Replace(const OldValue, NewValue: string): string;
-
+    function IsValidCelular(): Boolean;
   end;
 
 implementation
@@ -210,6 +210,14 @@ end;
 function TStringHelper.IsEmpty: Boolean;
 begin
   Result := Self = ''
+end;
+
+function TStringHelper.IsValidCelular(): Boolean;
+var
+  ipRegExp: string;
+begin
+  ipRegExp := '^[1-9]{2}(?:[6-9]|9[1-9])[0-9]{3}[0-9]{4}$';
+  Result := TRegEx.IsMatch(Self.GetNumbers(), ipRegExp);
 end;
 
 function TStringHelper.ValidaCNPJ: Boolean;

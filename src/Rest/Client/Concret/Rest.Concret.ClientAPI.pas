@@ -1,6 +1,5 @@
 unit Rest.Concret.ClientAPI;
 
-
 interface
 
 uses Rest.Abstract.ClientAPI, System.Net.HttpClient,
@@ -27,11 +26,12 @@ type
     function Accept(aAccept: string): IRestClientAPI;
     function AcceptCharset(aAcceptCharset: string): IRestClientAPI;
     function ContentType(aContentType: string): IRestClientAPI;
+    function TokenBearer(aToken: string): IRestClientAPI;
 
     function Method(aMethod: TRESTRequestMethod): IRestClientAPI;
     function Resource(aResource: string): IRestClientAPI;
     function Params: TRESTRequestParameterList;
-    function AddParameterBody(const AName, aValue: string): IRestClientAPI;
+    function AddParam_x_www_form_urlencoded(const AName, aValue: string): IRestClientAPI;
     function Body: TCustomRESTRequest.Tbody;
     function Execute: TCustomRESTResponse;
     function Timeout(aTimeOut: integer): IRestClientAPI;
@@ -52,11 +52,12 @@ uses
 
 { TClasseBase }
 
-function TRestClientAPI.AddParameterBody(const AName, aValue: string): IRestClientAPI;
+function TRestClientAPI.AddParam_x_www_form_urlencoded(const AName, aValue: string): IRestClientAPI;
 begin
   result := self;
 
-  FRESTRequest.AddParameter(AName, aValue, TRESTRequestParameterKind.pkREQUESTBODY);
+  FRESTRequest.AddParameter(AName, aValue);
+  FRESTRequest.Params[0].ContentType := TRESTContentType.ctAPPLICATION_X_WWW_FORM_URLENCODED;
 end;
 
 function TRestClientAPI.Accept(aAccept: string): IRestClientAPI;
@@ -193,6 +194,17 @@ function TRestClientAPI.Timeout(aTimeOut: integer): IRestClientAPI;
 begin
   result := self;
   self.FRESTRequest.Timeout := aTimeOut;
+end;
+
+function TRestClientAPI.TokenBearer(aToken: string): IRestClientAPI;
+begin
+  result := self;
+  FRESTRequest.Params.AddItem(
+    'Authorization',
+    Format('Bearer %s', [aToken]),
+    TRESTRequestParameterKind.pkHTTPHEADER,
+    [poDoNotEncode]
+    );
 end;
 
 function TRestClientAPI.UserName(aUserName: string): IRestClientAPI;

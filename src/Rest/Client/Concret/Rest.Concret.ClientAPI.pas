@@ -31,6 +31,7 @@ type
     function Method(aMethod: TRESTRequestMethod): IRestClientAPI;
     function Resource(aResource: string): IRestClientAPI;
     function Params: TRESTRequestParameterList;
+    function AddParameterBody(const AName, aValue: string): IRestClientAPI;
     function Body: TCustomRESTRequest.Tbody;
     function Execute: TCustomRESTResponse;
     function Timeout(aTimeOut: integer): IRestClientAPI;
@@ -50,6 +51,13 @@ uses
   Exceptions;
 
 { TClasseBase }
+
+function TRestClientAPI.AddParameterBody(const AName, aValue: string): IRestClientAPI;
+begin
+  result := self;
+
+  FRESTRequest.AddParameter(AName, aValue, TRESTRequestParameterKind.pkREQUESTBODY);
+end;
 
 function TRestClientAPI.Accept(aAccept: string): IRestClientAPI;
 begin

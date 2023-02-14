@@ -15,6 +15,7 @@ type
 
     function Method(aMethod: TRESTRequestMethod): IRestClientAPI;
     function Resource(aResource: string): IRestClientAPI;
+    function AddParameterBody(const AName, aValue: string): IRestClientAPI;
     function Params: TRESTRequestParameterList;
     function Body:TCustomRESTRequest.Tbody;
     function Execute: TCustomRESTResponse;

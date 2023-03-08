@@ -13,6 +13,7 @@ type
     class function ConcatStr(var Arr1: TArray<string>; aDelimitador: Char): string; overload;
     class function ConcatStr(var Arr1: TArray<Integer>; aDelimitador: Char): string; overload;
     class function Indexof(var Arr1: TArray<string>; aValue: string): Integer; overload;
+    class function Indexof(var Arr1: TArray<Integer>; aValue: Integer): Integer; overload ;
   end;
 
 implementation
@@ -49,6 +50,22 @@ begin
   end;
 end;
 
+class function TArrayUtil<T>.Indexof(var Arr1: TArray<Integer>;
+  aValue: Integer): Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  for I := Low(Arr1) to High(Arr1) do
+  begin
+    if Arr1[I] = aValue then
+    begin
+      Result := I;
+      Break;
+    end;
+  end;
+end;
+
 class function TArrayUtil<T>.ConcatStr(var Arr1: TArray<string>;
   aDelimitador: Char): string;
 var
@@ -61,9 +78,7 @@ begin
       Result := Result + ',';
 
     Result := Result + QuotedStr(Arr1[I]);
-
   end;
-
 end;
 
 class function TArrayUtil<T>.Indexof(var Arr1: TArray<string>; aValue: string): Integer;
@@ -78,9 +93,7 @@ begin
       Result := I;
       Break;
     end;
-
   end;
-
 end;
 
 end.

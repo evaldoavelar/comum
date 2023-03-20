@@ -47,10 +47,10 @@ Type
 implementation
 
 /// <summary>
-/// Testa uma express„o e caso seja verdadeira, levanta a exceÁ„o informada em T
+/// Testa uma express√£o e caso seja verdadeira, levanta a exce√ß√£o informada em T
 /// </summary>
-/// <param name="aExpressao">Express„o booleana para an·lise</param>
-/// /// <param name="aMessage">Mensagem de excess„o</param>
+/// <param name="aExpressao">Express√£o booleana para an√°lise</param>
+/// /// <param name="aMessage">Mensagem de excess√£o</param>
 class procedure TRttiUtil.Validation<T>(aExpressao: Boolean; aMessage: string);
 begin
   if aExpressao then
@@ -60,7 +60,7 @@ end;
 /// <summary>
 /// Cria um objeto passando os parametros informados no array
 /// </summary>
-/// <param name="Args">array de parametros do mÈtodo</param>
+/// <param name="Args">array de parametros do m√©todo</param>
 /// <return>Objeto de tipo T </return>
 class function TRttiUtil.CreateInstance<T>(const Args: array of TValue): T;
 var
@@ -358,7 +358,7 @@ begin
   // procurar um construtor
   IsComponent := (ASource is TComponent);
   try
-    // loop nas props, copiando valores que s„o leitura e escrita
+    // loop nas props, copiando valores que s√£o leitura e escrita
     Move(ASource, SourceAsPointer, Sizeof(Pointer));
     Move(ATarget, ResultAsPointer, Sizeof(Pointer));
 
@@ -469,7 +469,7 @@ begin
   // procurar um construtor
   IsComponent := (ASource is TComponent);
   try
-    // loop nas props, copiando valores que s„o leitura e escrita
+    // loop nas props, copiando valores que s√£o leitura e escrita
     Move(ASource, SourceAsPointer, Sizeof(Pointer));
     Move(ATarget, ResultAsPointer, Sizeof(Pointer));
 
@@ -562,7 +562,8 @@ class procedure TRttiUtil.AssignedFreeAndNil(var aObj);
 begin
   if Assigned(TObject(aObj)) then
   begin
-    FreeAndNil(aObj);
+    TObject(aObj).Free;
+    TObject(aObj) := nil;
   end;
 end;
 

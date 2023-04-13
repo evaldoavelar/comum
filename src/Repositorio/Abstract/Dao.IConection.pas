@@ -5,7 +5,7 @@ interface
 uses
   System.Generics.Collections,
   Data.DB,
-  Database.SGDB;
+  Database.SGDB, Model.CampoValor;
 
 type
 
@@ -16,12 +16,12 @@ type
     procedure Commit;
     procedure Rollback;
     function ExecSQL(const ASQL: String): LongInt; overload;
-    function ExecSQL(const ASQL: String; aNamedParamns: TDictionary<string, Variant>): LongInt; overload;
+    function ExecSQL(const ASQL: String; aNamedParamns: TListaModelCampoValor): LongInt; overload;
     function ExecSQL(const ASQL: String; const AParams: array of Variant): LongInt; overload;
     function Open(const ASQL: String): TDataSet; overload;
     function Open(const ASQL: String; const AParams: array of Variant): TDataSet; overload;
     function Open(const ASQL: String; const AParams: array of Variant; const ATypes: array of TFieldType): TDataSet; overload;
-    function Open(const ASQL: String; aNamedParamns: TDictionary<string, Variant>): TDataSet; overload;
+    function Open(const ASQL: String; aNamedParamns: TListaModelCampoValor): TDataSet; overload;
     procedure Close();
     function GetSGBDType: TSGBD;
     procedure TesteConection;

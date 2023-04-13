@@ -12,7 +12,7 @@ type
   public
     function DataSetToObject(ds: TDataSet): T;
     function CreateInstance: T;
-    class function New:  IDaoDataSet<T>;
+    class function New: IDaoDataSet<T>;
   end;
 
 implementation
@@ -51,7 +51,7 @@ begin
 
 end;
 
-function TDaoDataSet<T>.DataSetToObject(ds: TDataSet):  T;
+function TDaoDataSet<T>.DataSetToObject(ds: TDataSet): T;
 var
   context: TRttiContext;
   rType: TRttiType;
@@ -87,19 +87,26 @@ begin
 
             if StartsText('TNullable<', prop.PropertyType.Name) then
             begin
-              // se o campo eh nulo
-              if (Field.IsNull = false) then
-                Continue;
-
               // get Nullable<T> instance...
               LPropNullable := prop.GetValue(TObject(Entity));
 
-              // invocar FromValue para passar o valor de Field
-              method := context.GetType(LPropNullable.TypeInfo).GetMethod('FromValue');
-              method.Invoke(LPropNullable, [TValue.FromVariant(Field.value)]);
+              // se o campo eh nulo
+              if (Field.IsNull) then
+              begin
+                // invocar Clear par zerar a variavel
+                method := context.GetType(LPropNullable.TypeInfo).GetMethod('Clear');
+                method.Invoke(LPropNullable, []);
+              end
+              else
+              begin
 
-              // passar o valor para a property
-              prop.SetValue(TObject(Entity), LPropNullable);
+                // invocar FromValue para passar o valor de Field
+                method := context.GetType(LPropNullable.TypeInfo).GetMethod('FromValue');
+                method.Invoke(LPropNullable, [TValue.FromVariant(Field.value)]);
+
+                // passar o valor para a property
+                prop.SetValue(TObject(Entity), LPropNullable);
+              end;
             end
             else if (CompareText('string', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsString)

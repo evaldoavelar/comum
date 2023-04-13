@@ -30,6 +30,9 @@ type
     FID: Integer;
     FXML: AnsiString;
     FTESTENULLSTRING: TNullable<string>;
+    FTESTENULLNUMERIC: TNullable<currency>;
+    FTESTENULLINTEGER: TNullable<Integer>;
+    FTESTENULLDATE: TNullable<TDateTime>;
 
     function getBLOQUEADO: Boolean;
     procedure setBLOQUEADO(const Value: Boolean);
@@ -70,6 +73,9 @@ type
     procedure setQUANTIDADEFRACIONADA(const Value: Boolean);
     procedure SetXML(const Value: AnsiString);
     procedure SetTESTENULLSTRING(const Value: TNullable<string>);
+    procedure SetTESTENULLDATE(const Value: TNullable<TDateTime>);
+    procedure SetTESTENULLINTEGER(const Value: TNullable<Integer>);
+    procedure SetTESTENULLNUMERIC(const Value: TNullable<currency>);
   published
 
     [PrimaryKey('PK_PRODUTO_CODIGO', 'CODIGO')]
@@ -126,6 +132,15 @@ type
 
     [campo('TESTENULLSTRING', tpVARCHAR, 35)]
     property TESTENULLSTRING: TNullable<string> read FTESTENULLSTRING write SetTESTENULLSTRING;
+
+    [campo('TESTENULLINTEGER', tpINTEGER)]
+    property TESTENULLINTEGER: TNullable<Integer> read FTESTENULLINTEGER write SetTESTENULLINTEGER;
+
+    [campo('TESTENULLDATE', tpDATE)]
+    property TESTENULLDATE: TNullable<TDateTime> read FTESTENULLDATE write SetTESTENULLDATE;
+
+    [campo('TESTENULLNUMERIC',  tpNUMERIC, 15, 4)]
+    property TESTENULLNUMERIC: TNullable<currency> read FTESTENULLNUMERIC write SetTESTENULLNUMERIC;
 
   public
     constructor create();
@@ -184,7 +199,7 @@ begin
   result.DATA_CADASTRO := pDATA_CADASTRO;
   result.BLOQUEADO := pBLOQUEADo;
   result.OBSERVACOES := pOBSERVACOES;
-
+  result.TESTENULLSTRING.Clear;
 end;
 
 destructor TProduto.destroy;
@@ -416,6 +431,21 @@ begin
     FQUANTIDADEFRACIONADA := Value;
     NotifyBinding('QUANTIDADEFRACIONADA');
   end;
+end;
+
+procedure TProduto.SetTESTENULLDATE(const Value: TNullable<TDateTime>);
+begin
+  FTESTENULLDATE := Value;
+end;
+
+procedure TProduto.SetTESTENULLINTEGER(const Value: TNullable<Integer>);
+begin
+  FTESTENULLINTEGER := Value;
+end;
+
+procedure TProduto.SetTESTENULLNUMERIC(const Value: TNullable<currency>);
+begin
+  FTESTENULLNUMERIC := Value;
 end;
 
 procedure TProduto.SetTESTENULLSTRING(const Value: TNullable<string>);

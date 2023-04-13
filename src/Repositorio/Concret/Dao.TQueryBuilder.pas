@@ -5,18 +5,18 @@ interface
 uses
   Data.DB, System.Classes, System.Generics.Collections, System.Rtti,
   System.SysUtils, Dao.IConection, SQLBuilder4D, Dao.IQueryBuilder,
-  Model.Atributos.Funcoes, Dao.IResultAdapter;
+  Model.Atributos.Funcoes, Dao.IResultAdapter, Model.CampoValor;
 
 type
 
   TQueryBuilder<T: class> = class(TInterfacedObject, IQueryBuilder<T>)
   public
     type
-    TOnGet = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): T of object;
-    TOnExec = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer of object;
-    TOnToList = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T> of object;
-    TOnToObjectList = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): TObjectList<T> of object;
-    TOnAdapter = function(aCmd: string; aCampoValor: TDictionary<string, Variant>): IDaoResultAdapter<T> of object;
+    TOnGet = function(aCmd: string; aCampoValor: TListaModelCampoValor): T of object;
+    TOnExec = function(aCmd: string; aCampoValor: TListaModelCampoValor): Integer of object;
+    TOnToList = function(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T> of object;
+    TOnToObjectList = function(aCmd: string; aCampoValor: TListaModelCampoValor): TObjectList<T> of object;
+    TOnAdapter = function(aCmd: string; aCampoValor: TListaModelCampoValor): IDaoResultAdapter<T> of object;
 
   private
     FSQLSelect: ISQLSelect;
@@ -26,7 +26,7 @@ type
     FSQLUpdate: ISQLUpdate;
     FSQLOrderBy: ISQLOrderBy;
     FColumn: string;
-    FCampoValor: TDictionary<string, Variant>;
+    FCampoValor: TListaModelCampoValor;
     FOnGet: TOnGet;
     FOnToList: TOnToList;
     FOnToAdapter: TOnAdapter;
@@ -117,6 +117,9 @@ type
 
 implementation
 
+uses
+  System.Variants;
+
 { TPrepared<T> }
 
 function TQueryBuilder<T>.&And(const pColumn: string): IQueryBuilder<T>;
@@ -177,7 +180,7 @@ end;
 procedure TQueryBuilder<T>.Inicilize(aConn: IConection);
 begin
   FConn := aConn;
-  FCampoValor := TDictionary<string, Variant>.Create();
+  FCampoValor := TListaModelCampoValor.Create();
   // FSQLWhere := SQL.Where;
 end;
 
@@ -251,7 +254,7 @@ begin
   Value := SQL.Value(':' + paramName);
   Value.Expression.IsColumn;
 
-  FCampoValor.Add(paramName, pValue);
+  FCampoValor.Add(TModelCampoValor.Create( paramName, pValue, VarType(pValue)));
 
   result := Value;
 end;

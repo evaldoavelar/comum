@@ -1,5 +1,6 @@
 unit Dao.Base;
-
+
+
 interface
 
 
@@ -22,7 +23,7 @@ uses
 {$IFDEF MSWINDOWS}
   Winapi.Windows,
 {$ENDIF}
-  System.StrUtils, Dao.DataSet;
+  System.StrUtils, Dao.DataSet, Model.CampoValor;
 
 type
   TDaoBase = class(TInterfacedObject)
@@ -32,10 +33,10 @@ type
     function GetWhere<T: class>(const AParams: array of string; const AValues: array of Variant): string; overload;
     function CampoIsPk<T: class>(pks: TProperties; key: string): Boolean;
 
-    function OnExec<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): LongInt;
-    function OnGet<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
-    function OnToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
-    function OnObjectList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TObjectList<T>;
+    function OnExec<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): LongInt;
+    function OnGet<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): T;
+    function OnToList<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T>;
+    function OnObjectList<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): TObjectList<T>;
 
   protected
     FLog: ILog;
@@ -44,7 +45,7 @@ type
   public
 
     procedure Log(Log: string); overload;
-    procedure Log(CampoValor: TDictionary<string, Variant>); overload;
+    procedure Log(CampoValor: TListaModelCampoValor); overload;
     procedure Log(Log: string; const Args: array of const); overload;
 
     property LastSql: string read FLastSql;
@@ -57,11 +58,11 @@ type
     function Delete<T: class>(Model: T): LongInt; overload;
     function Delete<T: class>(): IQueryBuilder<T>; overload;
 
-    function SQLToList<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>; overload;
-    function SQLToT<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T; overload;
-    function SQLToAdapter<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): IDaoResultAdapter<T>; overload;
+    function SQLToList<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T>; overload;
+    function SQLToT<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): T; overload;
+    function SQLToAdapter<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): IDaoResultAdapter<T>; overload;
 
-    function SQLExec<T: class>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
+    function SQLExec<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): Integer;
 
     function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
     constructor Create(aConnection: IConection; aLog: ILog = nil);
@@ -189,7 +190,7 @@ begin
 {$ENDIF}
 end;
 
-function TDaoBase.OnExec<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): LongInt;
+function TDaoBase.OnExec<T>(aCmd: string; aCampoValor: TListaModelCampoValor): LongInt;
 begin
   self.Log('>>> Entrando em  TDaoBase.OnExec<T> ');
   try
@@ -207,7 +208,7 @@ begin
   self.Log('<<< Saindo de TDaoBase.OnExec<T> ');
 end;
 
-function TDaoBase.OnGet<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
+function TDaoBase.OnGet<T>(aCmd: string; aCampoValor: TListaModelCampoValor): T;
 var
   ds: TDataSet;
   cmd: string;
@@ -233,7 +234,7 @@ begin
 end;
 
 function TDaoBase.OnObjectList<T>(aCmd: string;
-  aCampoValor: TDictionary<string, Variant>): TObjectList<T>;
+  aCampoValor: TListaModelCampoValor): TObjectList<T>;
 var
   Model: T;
   ds: TDataSet;
@@ -266,7 +267,7 @@ begin
 
 end;
 
-function TDaoBase.OnToList<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
+function TDaoBase.OnToList<T>(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T>;
 var
   Model: T;
   ds: TDataSet;
@@ -329,7 +330,7 @@ begin
 
 end;
 
-procedure TDaoBase.Log(CampoValor: TDictionary<string, Variant>);
+procedure TDaoBase.Log(CampoValor: TListaModelCampoValor);
 var
   builder: TStringBuilder;
   key: string;
@@ -340,7 +341,7 @@ begin
 
     for key in CampoValor.Keys do
     begin
-      builder.AppendFormat(' %s = %s ', [key, VarToStr(CampoValor.Items[key])]);
+      builder.AppendFormat(' %s = %s ', [key, VarToStr(CampoValor.Items[key].Value)]);
     end;
 
     if Assigned(FLog) then
@@ -432,7 +433,7 @@ var
   campo: string;
   I: Integer;
   Into: ISQLInsert;
-  CampoValor: TDictionary<string, Variant>;
+  CampoValor: TListaModelCampoValor;
   key: string;
   sqlCmd: string;
 begin
@@ -540,17 +541,17 @@ begin
   end;
 end;
 
-function TDaoBase.SQLExec<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): Integer;
+function TDaoBase.SQLExec<T>(aCmd: string; aCampoValor: TListaModelCampoValor): Integer;
 begin
   Result := self.OnExec<T>(aCmd, aCampoValor);
 end;
 
-function TDaoBase.SQLToList<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): TList<T>;
+function TDaoBase.SQLToList<T>(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T>;
 begin
   Result := self.OnToList<T>(aCmd, aCampoValor);
 end;
 
-function TDaoBase.SQLToT<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): T;
+function TDaoBase.SQLToT<T>(aCmd: string; aCampoValor: TListaModelCampoValor): T;
 begin
   Result := self.OnGet<T>(aCmd, aCampoValor);
 end;
@@ -656,7 +657,7 @@ var
   tabela: string;
   I: Integer;
   Update: ISQLUpdate;
-  CampoValor: TDictionary<string, Variant>;
+  CampoValor: TListaModelCampoValor;
   key: string;
   isPk: Boolean;
 begin
@@ -712,7 +713,7 @@ begin
 
 end;
 
-function TDaoBase.SQLToAdapter<T>(aCmd: string; aCampoValor: TDictionary<string, Variant>): IDaoResultAdapter<T>;
+function TDaoBase.SQLToAdapter<T>(aCmd: string; aCampoValor: TListaModelCampoValor): IDaoResultAdapter<T>;
 var
   ds: TDataSet;
 begin
@@ -732,4 +733,4 @@ begin
 end;
 
 end.
-
+

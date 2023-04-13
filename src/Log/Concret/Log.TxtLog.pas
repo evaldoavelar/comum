@@ -49,7 +49,7 @@ type
     function setAtivo(): ILog;
     function setInativo(): ILog;
 
-    class procedure ClearInstance;
+
 
     constructor Create(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog);
     class function New(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog): ILog;
@@ -67,12 +67,6 @@ begin
 
   if Assigned(FDecorator) then
     FDecorator.d(Log);
-end;
-
-class procedure TLogTXT.ClearInstance;
-begin
-  if Assigned(FInstancia) then
-    freeAndNil(FInstancia);
 end;
 
 constructor TLogTXT.Create(aDiretorio: string; aNomeArquivo: string;

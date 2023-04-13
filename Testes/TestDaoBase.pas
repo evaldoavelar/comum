@@ -246,7 +246,11 @@ begin
   Produto.BLOQUEADO := True;
   Produto.PRECO_CUSTO := 1.99;
   Produto.DATA_CADASTRO := date;
-  Produto.TESTENULLSTRING := 'TESTENULLSTRING';
+  Produto.TESTENULLSTRING := 'string não é nula';
+  Produto.TESTENULLINTEGER.Value := 10;
+  Produto.TESTENULLDATE.Value := StrToDate('13/04/2023');
+  Produto.TESTENULLNUMERIC.Value := 5.69;
+
   FDaoBase.Update<TProduto>(Produto);
 
   // assertivas
@@ -255,8 +259,7 @@ begin
 
   CheckNotNull(ProdutoBD);
   CheckProdutos(Produto, ProdutoBD);
-  CheckEquals(Produto.TESTENULLSTRING.HasValue, True);
-  CheckEquals(Produto.TESTENULLSTRING.Value, ProdutoBD.TESTENULLSTRING.Value);
+
 end;
 
 procedure TestTDaoBase.PodeAtualizarProdutoSQlBuilder;
@@ -498,6 +501,11 @@ begin
   CheckEquals(Produto.BLOQUEADO, ProdutoBD.BLOQUEADO);
   CheckEquals(Produto.OBSERVACOES, ProdutoBD.OBSERVACOES);
   CheckEquals(Produto.QUANTIDADEFRACIONADA, ProdutoBD.QUANTIDADEFRACIONADA);
+  CheckEquals(Produto.TESTENULLSTRING.HasValue, ProdutoBD.TESTENULLSTRING.HasValue);
+  CheckEquals(Produto.TESTENULLINTEGER.HasValue, ProdutoBD.TESTENULLINTEGER.HasValue);
+  CheckEquals(Produto.TESTENULLDATE.HasValue, ProdutoBD.TESTENULLDATE.HasValue);
+  CheckEquals(Produto.TESTENULLNUMERIC.HasValue, ProdutoBD.TESTENULLNUMERIC.HasValue);
+
 
 end;
 

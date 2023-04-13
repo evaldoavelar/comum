@@ -9,13 +9,13 @@ uses
   System.Rtti,
   Model.Atributos,
   Model.Atributos.Tipos,
-  Model.IModelBase, Utils.Funcoes, System.StrUtils, System.Variants;
+  Model.IModelBase,
+  Model.CampoValor,
+  System.Variants,
+  System.StrUtils,
+  Utils.Funcoes;
 
 type
-
-  // TArrayHelper = record helper for TArray<T>
-  // function indexOf(item: T):Integer;
-  // end;
 
   TProperties = array of TRttiProperty;
 
@@ -24,6 +24,10 @@ type
     class function indexOfAttribute(prop: TRttiObject; Attribute: TClass): TCustomAttribute;
     class function GetPropertyByCampo(aCampo: string; properties: TArray<TRttiProperty>): TRttiProperty;
     class function SetTypeVariant(value: Variant; prop: TRttiProperty): Variant; static;
+    class function GetPropertyValue<T: class>(Model: T; aProp: TRttiProperty): Variant; static;
+    class function PropertyInNullableValue(aProp: TRttiProperty): Boolean; static;
+    class function GetPropertyTypeString(aValue: TValue; aProp: TRttiProperty): string; static;
+    class function GetTypeVariant(aValue: TValue; aProp: TRttiProperty): TVarType; static;
 
   public
     class function Tabela<T: class>: string; static;
@@ -31,8 +35,8 @@ type
     class function PropertiePk<T: class>: TProperties; static;
     class function TabelaAutoInc<T: class>(prop: TRttiProperty): string; static;
     class function Campo<T: class>(prop: TRttiProperty): string; static;
-    class function CampoValor<T: class>(Model: T): TDictionary<string, Variant>; overload; static;
-    class function CampoValor<T: class>(Model: T; ValidaForeinkey: Boolean): TDictionary<string, Variant>; overload; static;
+    class function CampoValor<T: class>(Model: T): TListaModelCampoValor; overload; static;
+    class function CampoValor<T: class>(Model: T; ValidaForeinkey: Boolean): TListaModelCampoValor; overload; static;
 
   end;
 
@@ -121,6 +125,35 @@ begin
   end;
 end;
 
+class function TAtributosFuncoes.GetTypeVariant(aValue: TValue; aProp: TRttiProperty): TVarType;
+var
+  LPropName: string;
+begin
+
+  LPropName := GetPropertyTypeString(aValue, aProp);
+
+  Result := varVariant;
+  if (CompareText('String', LPropName)) = 0 then
+    Result := varString;
+  if (CompareText('TDateTime', LPropName)) = 0 then
+    Result := varDate
+  else if (CompareText('TDate', LPropName)) = 0 then
+    Result := varDate
+  else if (CompareText('TTime', LPropName)) = 0 then
+    Result := varDate
+  else if (CompareText('Boolean', LPropName)) = 0 then
+    Result := varBoolean
+  else if (CompareText('Currency', LPropName)) = 0 then
+    Result := varCurrency
+  else if (CompareText('Integer', LPropName)) = 0 then
+    Result := varInteger
+  else if (CompareText('Smallint', LPropName)) = 0 then
+    Result := varSmallint
+  else if (CompareText('Double', LPropName)) = 0 then
+    Result := varDouble;
+
+end;
+
 class function TAtributosFuncoes.SetTypeVariant(value: Variant; prop: TRttiProperty): Variant;
 begin
   Result := value;
@@ -149,28 +182,29 @@ begin
 
 end;
 
-class function TAtributosFuncoes.CampoValor<T>(Model: T): TDictionary<string, Variant>;
+class function TAtributosFuncoes.CampoValor<T>(Model: T): TListaModelCampoValor;
 var
   Rtti: TRttiContext;
   ltype: TRttiType;
   prop: TRttiProperty;
-  method: TRttiMethod;
+
   index: integer;
   Campo: string;
   attr: TCustomAttribute;
   attrCampo: CampoAttribute;
   value: Variant;
   LRecord: TRttiRecordType;
-  v: TValue;
+  LVarType: TVarType;
   propName: string;
   isNullable: Boolean;
+  LPropValue: TValue;
+
 begin
   try
 
-    Result := TDictionary<string, Variant>.create();
+    Result := TListaModelCampoValor.create();
     Rtti := TRttiContext.create;
     ltype := Rtti.GetType(TypeInfo(T));
-    index := 0;
 
     // pecorrer as propriedades
     for prop in ltype.GetProperties do
@@ -187,68 +221,17 @@ begin
 
       if (attr <> nil) then
       begin
+         LPropValue := prop.GetValue(TObject(Model));
         attrCampo := CampoAttribute(attr);
         Campo := attrCampo.Campo;
-        propName := prop.PropertyType.Name;
-        isNullable := StartsText('TNullable<', propName);
-
-        // verificar se eh do tipo Nullable
-        if isNullable then
-        begin
-          // get Nullable<T> instance...
-          v := prop.GetValue(TObject(Model));
-
-          // pegar o nome da propriedade
-          method := Rtti.GetType(v.TypeInfo).GetMethod('GetTypeString');
-          propName := method.Invoke(v, []).AsString;
-
-          // verificar se tem dado
-          method := Rtti.GetType(v.TypeInfo).GetMethod('HasValue');
-          if (not method.Invoke(v, []).AsBoolean) then
-          begin
-            value := Null; // '(NULL)';
-          end
-          else
-          begin
-            method := Rtti.GetType(v.TypeInfo).GetMethod('ToTValue');
-            value := method.Invoke(v, []).AsVariant;
-          end;
-        end
-        else
-        begin
-          value := prop.GetValue(TObject(Model)).AsVariant;
-        end;
+        // propName := GetPropertyTypeString(LPropValue, prop);
+        // isNullable := PropertyInNullableValue(prop);
+        value := GetPropertyValue<T>(Model, prop);
 
         // definir o tipo da variant
-        value := SetTypeVariant(value, prop);
+        LVarType := GetTypeVariant(LPropValue,prop);
 
-        if (CompareText('string', propName) = 0) and (isNullable = false) then
-          value := prop.GetValue(TObject(Model)).AsString
-        else if (CompareText('string', propName) = 0) then
-        begin
-          TVarData(value).vType := varString;
-        end
-        else if (CompareText('TDateTime', propName)) = 0 then
-          TVarData(value).vType := varDate
-        else if (CompareText('TDate', propName)) = 0 then
-          TVarData(value).vType := varDate
-        else if (CompareText('TTime', propName)) = 0 then
-          TVarData(value).vType := varDate
-        else if (CompareText('Boolean', propName)) = 0 then
-          TVarData(value).vType := varBoolean
-        else if (CompareText('Currency', propName)) = 0 then
-          TVarData(value).vType := varCurrency
-        else if (CompareText('Integer', propName)) = 0 then
-          TVarData(value).vType := varInteger
-        else if (CompareText('Smallint', propName)) = 0 then
-          TVarData(value).vType := varSmallint
-        else if (CompareText('Double', propName)) = 0 then
-          TVarData(value).vType := varDouble;
-
-       // if isNullable then
-       //   Result.Add(Campo, Null)
-       // else
-          Result.Add(Campo, value);
+        Result.Add(TModelCampoValor.create(Campo, value, LVarType));
       end;
     end;
   except
@@ -257,7 +240,60 @@ begin
   end;
 end;
 
-class function TAtributosFuncoes.CampoValor<T>(Model: T; ValidaForeinkey: Boolean): TDictionary<string, Variant>;
+class function TAtributosFuncoes.PropertyInNullableValue(aProp: TRttiProperty): Boolean;
+begin
+  Result := StartsText('TNullable<', aProp.PropertyType.Name);
+end;
+
+class function TAtributosFuncoes.GetPropertyTypeString(aValue: TValue; aProp: TRttiProperty): string;
+var
+  method: TRttiMethod;
+  Rtti: TRttiContext;
+
+begin
+  method := Rtti.GetType(aValue.TypeInfo).GetMethod('GetTypeString');
+  if method <> nil then
+    Result := method.Invoke(aValue, []).AsString
+  else
+    Result := aProp.PropertyType.Name;
+end;
+
+class function TAtributosFuncoes.GetPropertyValue<T>(Model: T; aProp: TRttiProperty): Variant;
+var
+  LValue: TValue;
+  propName: string;
+  method: TRttiMethod;
+  Rtti: TRttiContext;
+begin
+
+  // verificar se eh do tipo Nullable
+  if PropertyInNullableValue(aProp) then
+  begin
+    // get Nullable<T> instance...
+    LValue := aProp.GetValue(TObject(Model));
+
+    // pegar o nome da propriedade
+    propName := GetPropertyTypeString(LValue, aProp);
+
+    // verificar se tem dado
+    method := Rtti.GetType(LValue.TypeInfo).GetMethod('HasValue');
+    if (not method.Invoke(LValue, []).AsBoolean) then
+    begin
+      Result := null; // '(NULL)';
+    end
+    else
+    begin
+      method := Rtti.GetType(LValue.TypeInfo).GetMethod('ToTValue');
+      Result := method.Invoke(LValue, []).AsVariant;
+    end;
+  end
+  else
+  begin
+    Result := aProp.GetValue(TObject(Model)).AsVariant;
+  end;
+end;
+
+class function TAtributosFuncoes.CampoValor<T>(Model: T; ValidaForeinkey: Boolean): TListaModelCampoValor;
 var
   Rtti: TRttiContext;
   ltype: TRttiType;
@@ -269,10 +305,12 @@ var
   value: Variant;
   fk: TCustomAttribute;
   blIncluir: Boolean;
+  LVarType: TVarType;
+  LPropValue: TValue;
 begin
   try
 
-    Result := TDictionary<string, Variant>.create();
+    Result := TListaModelCampoValor.create();
     Rtti := TRttiContext.create;
     ltype := Rtti.GetType(TypeInfo(T));
     index := 0;
@@ -287,23 +325,24 @@ begin
       begin
         attrCampo := CampoAttribute(attr);
         Campo := attrCampo.Campo;
-        value := prop.GetValue(TObject(Model)).AsVariant;
+        LPropValue := prop.GetValue(TObject(Model));
+        value := GetPropertyValue<T>(Model, prop);
 
         // definir o tipo da variant
-        value := SetTypeVariant(value, prop);
+        LVarType := GetTypeVariant(LPropValue, prop);
 
         blIncluir := True;
 
         fk := indexOfAttribute(prop, ForeignKeyAttribute);
         if fk <> nil then
         begin
-          if TVarData(value).vType = varInteger then
+          if LVarType = varInteger then
             if value = 0 then
               blIncluir := false;
         end;
 
         if blIncluir then
-          Result.Add(Campo, value);
+          Result.Add(TModelCampoValor.create(Campo, value, LVarType));
       end;
     end;
   except

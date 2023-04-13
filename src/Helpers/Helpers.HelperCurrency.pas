@@ -107,7 +107,7 @@ begin
     if Copy(Texto, 4, 3) = '000' then
       Result := Result + ' Mil Reais'
     else
-      Result := Result + ' Mil ';
+      Result := Result + ' Mil';
   end;
   if (((Copy(Texto, 4, 2) = '00') and (Milhar <> '') and (Copy(Texto, 6, 1) <> '0'))) or (Centavos <> '') and (Milhar <> '') then
     Result := Result + ' e ';

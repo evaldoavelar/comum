@@ -37,7 +37,7 @@ uses
   Firedac.Phys.FBDef,
   Firedac.Phys,
 {$ENDIF}
-  System.Generics.Collections;
+  System.Generics.Collections, Model.CampoValor;
 
 type
 
@@ -47,7 +47,7 @@ type
     FParametros: TConectionParametros;
     function Conexao(nova: Boolean = false): TFDConnection;
     function Query(): TFDQuery;
-    procedure SetQueryParamns(qry: TFDQuery; aNamedParamns: TDictionary<string, Variant>);
+    procedure SetQueryParamns(qry: TFDQuery; aNamedParamns: TListaModelCampoValor);
     function VariantIsEmptyOrNull(const Value: Variant): Boolean;
   public
 
@@ -56,11 +56,11 @@ type
     procedure Rollback;
     function ExecSQL(const ASQL: String): LongInt; overload;
     function ExecSQL(const ASQL: String; const AParams: array of Variant): LongInt; overload;
-    function ExecSQL(const ASQL: String; aNamedParamns: TDictionary<string, Variant>): LongInt; overload;
+    function ExecSQL(const ASQL: String; aNamedParamns: TListaModelCampoValor): LongInt; overload;
     function Open(const ASQL: String): TDataSet; overload;
     function Open(const ASQL: String; const AParams: array of Variant): TDataSet; overload;
     function Open(const ASQL: String; const AParams: array of Variant; const ATypes: array of TFieldType): TDataSet; overload;
-    function Open(const ASQL: String; aNamedParamns: TDictionary<string, Variant>): TDataSet; overload;
+    function Open(const ASQL: String; aNamedParamns: TListaModelCampoValor): TDataSet; overload;
 
     procedure Close();
     function GetSGBDType: TSGBD;
@@ -178,10 +178,10 @@ end;
 /// </summary>
 /// <param name="qry">TFDQuery a ser parametrizada</param>
 /// <param name="aNamedParamns">Lista de Parametros</param>
-procedure TFiredacConection.SetQueryParamns(qry: TFDQuery; aNamedParamns: TDictionary<string, Variant>);
+procedure TFiredacConection.SetQueryParamns(qry: TFDQuery; aNamedParamns: TListaModelCampoValor);
 var
   key: string;
-  Value: Variant;
+  LCampoValor: TModelCampoValor;
   basicType: Integer;
   paramIsNull: Boolean;
 begin
@@ -194,12 +194,12 @@ begin
       Continue;
 
     // pegar o valor do parametro
-    Value := aNamedParamns.Items[key];
+    LCampoValor := aNamedParamns.Items[key];
 
-    paramIsNull := VarToStr(Value) = '(NULL)';
+    paramIsNull := LCampoValor.Value = Null;
 
     // com o valor do parametro, verificar o seu tipo primitido
-    basicType := VarType(Value) and VarTypeMask;
+    basicType := LCampoValor.vType and VarTypeMask;
     case basicType of
       varEmpty:
         begin
@@ -217,7 +217,7 @@ begin
             qry.ParamByName(key).Clear();
           end
           else
-            qry.ParamByName(key).AsSmallInt := Value;
+            qry.ParamByName(key).AsSmallInt := LCampoValor.Value;
         end;
       varInteger:
         begin
@@ -227,7 +227,7 @@ begin
             qry.ParamByName(key).Clear();
           end
           else
-            qry.ParamByName(key).AsInteger := Value;
+            qry.ParamByName(key).AsInteger := LCampoValor.Value;
         end;
       varSingle:
         begin
@@ -237,7 +237,7 @@ begin
             qry.ParamByName(key).Clear();
           end
           else
-            qry.ParamByName(key).AsSingle := Value;
+            qry.ParamByName(key).AsSingle := LCampoValor.Value;
         end;
       varDouble:
         begin
@@ -247,7 +247,7 @@ begin
             qry.ParamByName(key).Clear();
           end
           else
-            qry.ParamByName(key).AsFloat := Value;
+            qry.ParamByName(key).AsFloat := LCampoValor.Value;
         end;
       varCurrency:
         begin
@@ -257,7 +257,7 @@ begin
             qry.ParamByName(key).Clear();
           end
           else
-            qry.ParamByName(key).AsCurrency := Value;
+            qry.ParamByName(key).AsCurrency := LCampoValor.Value;
         end;
       varDate:
         begin
@@ -267,7 +267,7 @@ begin
             qry.ParamByName(key).Clear();
           end
           else
-            qry.ParamByName(key).AsDateTime := Value;
+            qry.ParamByName(key).AsDateTime := LCampoValor.Value;
         end;
       varBoolean:
         begin
@@ -277,11 +277,11 @@ begin
             qry.ParamByName(key).Clear();
           end
           else
-            qry.ParamByName(key).AsBoolean := Value;
+            qry.ParamByName(key).AsBoolean := LCampoValor.Value;
         end;
       varVariant:
         begin
-          qry.ParamByName(key).Value := Value;
+          qry.ParamByName(key).Value := LCampoValor.Value;
         end;
       varUnknown:
         begin
@@ -289,7 +289,7 @@ begin
         end;
       varByte:
         begin
-          qry.ParamByName(key).AsVarByteStr := Value;
+          qry.ParamByName(key).AsVarByteStr := LCampoValor.Value;
         end;
       varUString:
         begin
@@ -300,12 +300,12 @@ begin
           end
           else
           begin
-            qry.ParamByName(key).AsString := Value;
+            qry.ParamByName(key).AsString := LCampoValor.Value;
             // campos grandes, mudar o tipo para ftMemo
             if qry.ParamByName(key).AsString.Length > 2000 then
             begin
               qry.ParamByName(key).DataType := ftMemo;
-              qry.ParamByName(key).AsMemo := Value;
+              qry.ParamByName(key).AsMemo := LCampoValor.Value;
 
             end;
           end;
@@ -320,7 +320,7 @@ begin
             qry.ParamByName(key).Clear();
           end
           else
-            qry.ParamByName(key).AsString := Value;
+            qry.ParamByName(key).AsString := LCampoValor.Value;
         end;
       VarTypeMask, varArray, varByRef, varOleStr, varDispatch, varError:
         begin
@@ -328,7 +328,7 @@ begin
         end;
     else
       begin
-        qry.ParamByName(key).Value := Value;
+        qry.ParamByName(key).value := LCampoValor.Value;
       end;
     end;
   end;
@@ -340,7 +340,7 @@ end;
 /// <param name="AQL">sql a ser execultada</param>
 /// <param name="aNamedParamns">Parametros da sql - nome e o valor </param>
 /// <returns>Numero de linhas afetadas</returns>
-function TFiredacConection.ExecSQL(const ASQL: String; aNamedParamns: TDictionary<string, Variant>): LongInt;
+function TFiredacConection.ExecSQL(const ASQL: String; aNamedParamns: TListaModelCampoValor): LongInt;
 var
   qry: TFDQuery;
 begin
@@ -490,7 +490,7 @@ end;
 /// <param name="aNamedParamns">Parametros da sql - nome e o valor </param>
 /// <returns>Dataset da consulta</returns>
 
-function TFiredacConection.Open(const ASQL: String; aNamedParamns: TDictionary<string, Variant>): TDataSet;
+function TFiredacConection.Open(const ASQL: String; aNamedParamns: TListaModelCampoValor): TDataSet;
 var
   qry: TFDQuery;
 begin

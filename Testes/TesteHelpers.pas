@@ -32,24 +32,24 @@ var
 begin
 
   Valor := 1556.25;
-  Resultado := 'um mil quinhentos e cinquenta e seis reais e vinte e cinco centavos.';
-  CheckEquals(Resultado, Valor.ToReiasExtenco);
+  Resultado := 'um mil e quinhentos e cinquenta e seis reais e vinte e cinco centavos.';
+  CheckEquals(Resultado, Valor.ToReiasExtenco.ToLower);
 
   Valor := 156.25;
   Resultado := 'cento e cinquenta e seis reais e vinte e cinco centavos.';
-  CheckEquals(Resultado, Valor.ToReiasExtenco);
+  CheckEquals(Resultado, Valor.ToReiasExtenco.ToLower);
 
   Valor := 6.25;
   Resultado := 'seis reais e vinte e cinco centavos.';
-  CheckEquals(Resultado, Valor.ToReiasExtenco);
+  CheckEquals(Resultado, Valor.ToReiasExtenco.ToLower);
 
   Valor := 0.25;
   Resultado := 'vinte e cinco centavos.';
-  CheckEquals(Resultado, Valor.ToReiasExtenco);
+  CheckEquals(Resultado, Valor.ToReiasExtenco.ToLower);
 
   Valor := 0.05;
   Resultado := 'cinco centavos.';
-  CheckEquals(Resultado, Valor.ToReiasExtenco);
+  CheckEquals(Resultado, Valor.ToReiasExtenco.ToLower);
 
 end;
 

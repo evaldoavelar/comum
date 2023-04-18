@@ -2,7 +2,8 @@ unit Model.CampoValor;
 
 interface
 
-uses system.Generics.Collections;
+uses system.Generics.Collections,
+  Types.Nullable;
 
 type
   TModelCampoValor = class
@@ -18,7 +19,9 @@ type
     property Value: variant read FValue write SetValue;
     property vType: TVarType read FVType write SetVType;
 
-    constructor Create(aField: string; aValue: variant; aType: TVarType);
+    constructor Create(aField: string; aValue: variant; aType: TVarType); overload;
+    constructor Create(); overload;
+    class function New<T>(aField: string; aValue: TNullable<T>; aType: TVarType): TModelCampoValor;
   end;
 
   TListaModelCampoValor = class
@@ -49,7 +52,8 @@ type
 
 implementation
 
-uses Helpers.HelperString, Utils.ArrayUtil, Exceptions;
+uses Helpers.HelperString, Utils.ArrayUtil, Exceptions, system.Rtti,
+  System.Variants;
 
 { TModelCampoValor }
 
@@ -59,6 +63,24 @@ begin
   Field := aField;
   Value := aValue;
   vType := aType;
+end;
+
+constructor TModelCampoValor.Create;
+begin
+
+end;
+
+class function TModelCampoValor.New<T>(aField: string; aValue: TNullable<T>;
+  aType: TVarType): TModelCampoValor;
+begin
+  result := TModelCampoValor.Create();
+  result.Field := aField;
+  result.vType := aType;
+  result.Value := null;
+
+  if aValue.HasValue then
+    result.Value := aValue.ToTValue;
+
 end;
 
 procedure TModelCampoValor.SetField(const Value: string);
@@ -134,7 +156,7 @@ var
 begin
   result := -1;
   for I := 0 to FItems.Count - 1 do
-    if FItems[i].Field.toUpper = aKey.toUpper then
+    if FItems[I].Field.toUpper = aKey.toUpper then
     begin
       result := I;
       break;

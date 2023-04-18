@@ -365,7 +365,7 @@ end;
 
 destructor TDaoBase.destroy;
 begin
-  FConnection.close;
+  //FConnection.close;
   inherited;
 end;
 

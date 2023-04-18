@@ -506,7 +506,6 @@ begin
   CheckEquals(Produto.TESTENULLDATE.HasValue, ProdutoBD.TESTENULLDATE.HasValue);
   CheckEquals(Produto.TESTENULLNUMERIC.HasValue, ProdutoBD.TESTENULLNUMERIC.HasValue);
 
-
 end;
 
 procedure TestTDaoBase.PodeInserirAtualizarApagarPedido;
@@ -653,7 +652,14 @@ begin
 end;
 
 procedure TestTDaoBase.PodeRetornarClientDataSet;
+var
+  Produto: TProduto;
 begin
+  // ambiente
+  Produto := ProdutoTeste();
+  FDaoBase.Insert<TProduto>(Produto);
+
+  // teste
   var
   cd := FDaoBase
     .SelectALL<TProduto>

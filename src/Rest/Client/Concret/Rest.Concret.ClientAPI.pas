@@ -33,7 +33,7 @@ type
     function Params: TRESTRequestParameterList;
     function AddParam_x_www_form_urlencoded(const AName, aValue: string): IRestClientAPI;
     function Body: TCustomRESTRequest.Tbody;
-    function Execute: TCustomRESTResponse;
+    function Execute(aGeraLog: boolean = true): TCustomRESTResponse;
     function Timeout(aTimeOut: integer): IRestClientAPI;
 
     function UserName(aUserName: string): IRestClientAPI;
@@ -132,7 +132,7 @@ begin
   inherited;
 end;
 
-function TRestClientAPI.Execute: TCustomRESTResponse;
+function TRestClientAPI.Execute(aGeraLog: boolean = true): TCustomRESTResponse;
 begin
   Log('>>> Entrando em  TRestClientAPI.Execute ');
   try
@@ -140,7 +140,8 @@ begin
     FRESTRequest.Execute;
 
     Log('FRESTRequest.Response.StatusCode ' + FRESTRequest.Response.StatusCode.ToString + ' ' + FRESTRequest.Response.StatusText);
-    Log(FRESTRequest.Response.Content);
+    if aGeraLog then
+      Log(FRESTRequest.Response.Content);
 
     // if not(FRESTRequest.Response.StatusCode in [200, 201]) then
     // raise TConectionException.Create(FRESTRequest.Response.StatusText);

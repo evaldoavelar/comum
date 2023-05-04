@@ -74,7 +74,7 @@ type
 implementation
 
 /// <summary>
-/// Fecha a conex„o com o banco de dados
+/// Fecha a conex√£o com o banco de dados
 /// </summary>
 procedure TFiredacConection.Close;
 begin
@@ -83,7 +83,7 @@ begin
 end;
 
 /// <summary>
-/// Commita as alteraÁıes para o banco de dados
+/// Commita as altera√ß√µes para o banco de dados
 /// </summary>
 procedure TFiredacConection.Commit;
 begin
@@ -93,14 +93,14 @@ end;
 /// <summary>
 /// Cria e configura uma Conexao com o banco de dados
 /// </summary>
-/// <param name="nova">Indica se ser· criada uma nova instancia</param>
+/// <param name="nova">Indica se ser√° criada uma nova instancia</param>
 /// <returns>TFDConnection</returns>
 function TFiredacConection.Conexao(nova: Boolean = false): TFDConnection;
 begin
   if (FConnection = nil) or nova then
   begin
     if (not Assigned(FParametros)) then
-      raise TConectionException.Create('Parametros N„o Informado para a classe de conex„o!');
+      raise TConectionException.Create('Parametros N√£o Informado para a classe de conex√£o!');
 
     FConnection := TFDConnection.Create(nil);
 
@@ -125,6 +125,7 @@ begin
             Password := FParametros.Password;
             ApplicationName := FParametros.ApplicationName;
           end;
+          FConnection.Params.Add('ODBCAdvanced=TrustServerCertificate=yes');
         end;
       tpOracle:
         begin
@@ -324,7 +325,7 @@ begin
         end;
       VarTypeMask, varArray, varByRef, varOleStr, varDispatch, varError:
         begin
-          raise Exception.Create('Tipo n„o suportado por Dao.Conection');
+          raise Exception.Create('Tipo n√£o suportado por Dao.Conection');
         end;
     else
       begin
@@ -335,7 +336,7 @@ begin
 end;
 
 /// <summary>
-/// Execulta uma instruÁ„o sql no banco de dados
+/// Execulta uma instru√ß√£o sql no banco de dados
 /// </summary>
 /// <param name="AQL">sql a ser execultada</param>
 /// <param name="aNamedParamns">Parametros da sql - nome e o valor </param>
@@ -369,7 +370,7 @@ begin
 end;
 
 /// <summary>
-/// Execulta uma instruÁ„o sql no banco de dados
+/// Execulta uma instru√ß√£o sql no banco de dados
 /// </summary>
 /// <returns>Numero de linhas afetadas</returns>
 function TFiredacConection.ExecSQL(const ASQL: String): LongInt;
@@ -386,7 +387,7 @@ begin
 end;
 
 /// <summary>
-/// Execulta uma instruÁ„o sql no banco de dados
+/// Execulta uma instru√ß√£o sql no banco de dados
 /// </summary>
 /// <param name="AQL">sql a ser execultada</param>
 /// <param name="aParams">parametros da query</param>
@@ -461,7 +462,7 @@ begin
 end;
 
 /// <summary>
-/// Desfaz uma transaÁ„o
+/// Desfaz uma transa√ß√£o
 /// </summary>
 procedure TFiredacConection.Rollback;
 begin
@@ -469,7 +470,7 @@ begin
 end;
 
 /// <summary>
-/// Inicia uma transaÁ„o
+/// Inicia uma transa√ß√£o
 /// </summary>
 procedure TFiredacConection.StartTransaction;
 begin

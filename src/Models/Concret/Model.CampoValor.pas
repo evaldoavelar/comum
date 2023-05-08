@@ -37,8 +37,8 @@ type
     property Count: Integer read GetCount;
     property Items[aField: string]: TModelCampoValor read GetItem write SetItem; default;
 
-    procedure Add(const Item: TModelCampoValor);
-    procedure Add(aField: string; aValue: variant);
+    procedure Add(const Item: TModelCampoValor); overload;
+    procedure Add(aField: string; aValue: variant); overload;
     procedure Remove(const Item: TModelCampoValor);
     procedure Clear;
     function ContainsKey(aKey: string): Boolean;

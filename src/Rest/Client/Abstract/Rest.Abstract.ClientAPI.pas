@@ -1,6 +1,5 @@
 unit Rest.Abstract.ClientAPI;
 
-
 interface
 
 uses
@@ -20,7 +19,7 @@ type
     function AddParam_x_www_form_urlencoded(const AName, aValue: string): IRestClientAPI;
     function Params: TRESTRequestParameterList;
     function Body: TCustomRESTRequest.Tbody;
-    function Execute: TCustomRESTResponse;
+    function Execute(aGeraLog: boolean = true): TCustomRESTResponse;
 
     function UserName(aUserName: string): IRestClientAPI;
     function Password(aPassword: string): IRestClientAPI;

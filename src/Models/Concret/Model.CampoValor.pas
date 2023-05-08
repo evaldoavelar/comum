@@ -38,6 +38,7 @@ type
     property Items[aField: string]: TModelCampoValor read GetItem write SetItem; default;
 
     procedure Add(const Item: TModelCampoValor);
+    procedure Add(aField: string; aValue: variant);
     procedure Remove(const Item: TModelCampoValor);
     procedure Clear;
     function ContainsKey(aKey: string): Boolean;
@@ -53,7 +54,7 @@ type
 implementation
 
 uses Helpers.HelperString, Utils.ArrayUtil, Exceptions, system.Rtti,
-  System.Variants;
+  system.Variants;
 
 { TModelCampoValor }
 
@@ -103,9 +104,17 @@ end;
 procedure TListaModelCampoValor.Add(const Item: TModelCampoValor);
 begin
   if ContainsKey(Item.FField) then
-    raise TValidacaoException.Create('Campo j� incluso!');
+    raise TValidacaoException.Create('Campo já incluso!');
 
   FItems.Add(Item);
+end;
+
+procedure TListaModelCampoValor.Add(aField: string; aValue: variant);
+begin
+  if ContainsKey(aField) then
+    raise TValidacaoException.Create('Campo já incluso!');
+
+  FItems.Add(TModelCampoValor.Create(aField, aValue, VarType(aValue)));
 end;
 
 procedure TListaModelCampoValor.Clear;

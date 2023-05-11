@@ -40,8 +40,11 @@ type
   TThreadUtil = class
   public
     class function Executar(aOnExceptionThread: TOnExceptionThread;
-  aOnAntesExecultar, aOnExecultar: TOnAntesExecultar;
-  aOnDepoisExecutar: TOnDepoisExecutar): cardinal;
+      aOnAntesExecultar, aOnExecultar: TOnAntesExecultar;
+      aOnDepoisExecutar: TOnDepoisExecutar): cardinal; overload;
+
+    class function Executar(aOnExceptionThread: TOnExceptionThread;
+      aOnExecultar: TOnAntesExecultar): cardinal; overload;
   end;
 
 implementation
@@ -109,7 +112,7 @@ end;
 
 class function TThreadUtil.Executar(aOnExceptionThread: TOnExceptionThread;
   aOnAntesExecultar, aOnExecultar: TOnAntesExecultar;
-  aOnDepoisExecutar: TOnDepoisExecutar):cardinal;
+  aOnDepoisExecutar: TOnDepoisExecutar): cardinal;
 var
   Thread: TThreadProcesso;
 begin
@@ -118,6 +121,19 @@ begin
   Thread.OnAntesExecultar := aOnAntesExecultar;
   Thread.OnExecultar := aOnExecultar;
   Thread.OnDepoisExecutar := aOnDepoisExecutar;
+  Thread.FreeOnTerminate := true;
+  result := Thread.ThreadID;
+  Thread.Resume;
+end;
+
+class function TThreadUtil.Executar(aOnExceptionThread: TOnExceptionThread;
+  aOnExecultar: TOnAntesExecultar): cardinal;
+var
+  Thread: TThreadProcesso;
+begin
+  Thread := TThreadProcesso.Create();
+  Thread.OnExceptionThread := aOnExceptionThread;
+  Thread.OnExecultar := aOnExecultar;
   Thread.FreeOnTerminate := true;
   result := Thread.ThreadID;
   Thread.Resume;

@@ -1,6 +1,5 @@
 unit Dao.Base;
 
-
 interface
 
 
@@ -16,6 +15,7 @@ uses
   Dao.IResultAdapter,
   Dao.ResultAdapter,
   Model.Atributos.Funcoes,
+  Model.Atributos,
   SQLBuilder4D,
   Exceptions,
   System.Generics.Collections,
@@ -51,6 +51,7 @@ type
     property LastSql: string read FLastSql;
 
     function SelectALL<T: class>(): IQueryBuilder<T>; overload;
+    function SelectOnly<T: class>(): IQueryBuilder<T>; overload;
     function Select<T: class>(): IQueryBuilder<T>; overload;
     function Insert<T: class>(Model: T): LongInt;
     function Update<T: class>(Model: T): LongInt; overload;
@@ -365,7 +366,7 @@ end;
 
 destructor TDaoBase.destroy;
 begin
-  //FConnection.close;
+  // FConnection.close;
   inherited;
 end;
 
@@ -539,6 +540,41 @@ begin
       raise TDaoException.Create('SelectALL Exception: ' + E.Message);
     end;
   end;
+end;
+
+function TDaoBase.SelectOnly<T>: IQueryBuilder<T>;
+var
+  Select: ISQLSelect;
+  builder: TQueryBuilder<T>;
+  camposAttr: TArray<CampoAttribute>;
+  I: Integer;
+begin
+  try
+
+    Select := SQL.Select;
+
+    camposAttr := TAtributosFuncoes.Campos<T>();
+
+    for I := Low(camposAttr) to High(camposAttr) do
+       Select := Select.Column(camposAttr[i].Campo);
+
+    Select := Select.From(TAtributosFuncoes.tabela<T>);
+
+    // retornar uma query builder para o usuário continuar construindo a query
+    builder := TQueryBuilder<T>.Create(Select, self.FConnection);
+    builder.OnGet := self.OnGet<T>;
+    builder.OnToList := self.OnToList<T>;
+    builder.OnToObjectList := self.OnObjectList<T>;
+    builder.OnToAdapter := self.SQLToAdapter<T>;
+    Result := builder;
+
+  except
+    on E: Exception do
+    begin
+      raise TDaoException.Create('SelectOnly Exception: ' + E.Message);
+    end;
+  end;
+
 end;
 
 function TDaoBase.SQLExec<T>(aCmd: string; aCampoValor: TListaModelCampoValor): Integer;
@@ -733,4 +769,3 @@ begin
 end;
 
 end.
-

@@ -37,6 +37,7 @@ type
     class function Campo<T: class>(prop: TRttiProperty): string; static;
     class function CampoValor<T: class>(Model: T): TListaModelCampoValor; overload; static;
     class function CampoValor<T: class>(Model: T; ValidaForeinkey: Boolean): TListaModelCampoValor; overload; static;
+    class function Campos<T: class>: TArray<CampoAttribute>; static;
 
   end;
 
@@ -221,7 +222,7 @@ begin
 
       if (attr <> nil) then
       begin
-         LPropValue := prop.GetValue(TObject(Model));
+        LPropValue := prop.GetValue(TObject(Model));
         attrCampo := CampoAttribute(attr);
         Campo := attrCampo.Campo;
         // propName := GetPropertyTypeString(LPropValue, prop);
@@ -229,7 +230,7 @@ begin
         value := GetPropertyValue<T>(Model, prop);
 
         // definir o tipo da variant
-        LVarType := GetTypeVariant(LPropValue,prop);
+        LVarType := GetTypeVariant(LPropValue, prop);
 
         Result.Add(TModelCampoValor.create(Campo, value, LVarType));
       end;
@@ -291,6 +292,44 @@ begin
   begin
     Result := aProp.GetValue(TObject(Model)).AsVariant;
   end;
+end;
+
+class function TAtributosFuncoes.Campos<T>: TArray<CampoAttribute>;
+var
+  Rtti: TRttiContext;
+  ltype: TRttiType;
+  prop: TRttiProperty;
+  propPk: TRttiProperty;
+  index: integer;
+  attr: TCustomAttribute;
+  campo: CampoAttribute;
+  I: integer;
+begin
+  try
+    Rtti := TRttiContext.create;
+    ltype := Rtti.GetType(TypeInfo(T));
+    index := 0;
+
+    // pecorrer as propriedades
+    for prop in ltype.GetProperties do
+    begin
+      // verificar se a propriedade esta anotada com PrimaryKey
+      attr := indexOfAttribute(prop, CampoAttribute);
+
+      if (attr <> nil) then
+      begin
+        campo := CampoAttribute(attr);
+
+        index := Length(Result);
+        SetLength(Result, index + 1);
+        Result[index] := campo;
+      end;
+    end;
+  except
+    on E: Exception do
+      raise Exception.create('TModelHelper.PropertiePk<T>: ' + E.Message);
+  end;
+
 end;
 
 class function TAtributosFuncoes.CampoValor<T>(Model: T; ValidaForeinkey: Boolean): TListaModelCampoValor;

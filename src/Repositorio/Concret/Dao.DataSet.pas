@@ -9,6 +9,8 @@ uses
 type
 
   TDaoDataSet<T: class> = class(TInterfacedObject, IDaoDataSet<T>)
+  private
+    function TValueFromField(const aField: TField): TValue;
   public
     function DataSetToObject(ds: TDataSet): T;
     function CreateInstance: T;
@@ -49,6 +51,21 @@ begin
       raise Exception.Create('TDaoBase.CreateInstance<T>: ' + E.Message);
   end;
 
+end;
+
+function TDaoDataSet<T>.TValueFromField(const aField: TField): TValue;
+var
+  atype: TFieldType;
+begin
+  atype := aField.DataType;
+  case atype of
+    ftBCD, ftFMTBcd:
+      Result := TValue.FromVariant(aField.AsExtended);
+    ftDate, ftDateTime, ftTime, ftTimeStamp:
+      Result := TValue.FromVariant(aField.AsDateTime);
+  else
+    Result := TValue.FromVariant(aField.Value);
+  end;
 end;
 
 function TDaoDataSet<T>.DataSetToObject(ds: TDataSet): T;
@@ -102,7 +119,7 @@ begin
 
                 // invocar FromValue para passar o valor de Field
                 method := context.GetType(LPropNullable.TypeInfo).GetMethod('FromValue');
-                method.Invoke(LPropNullable, [TValue.FromVariant(Field.value)]);
+                method.Invoke(LPropNullable, [TValueFromField(Field)]);
 
                 // passar o valor para a property
                 prop.SetValue(TObject(Entity), LPropNullable);
@@ -144,7 +161,7 @@ begin
             else if (CompareText('SmallInt', prop.PropertyType.Name)) = 0 then
               prop.SetValue(TObject(Entity), Field.AsInteger)
             else
-              prop.SetValue(TObject(Entity), TValue.FromVariant(Field.value));
+              prop.SetValue(TObject(Entity), TValue.FromVariant(Field.Value));
 
           except
             on E: Exception do

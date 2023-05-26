@@ -1,4 +1,4 @@
-unit Model.CampoValor;
+﻿unit Model.CampoValor;
 
 interface
 
@@ -104,7 +104,7 @@ end;
 procedure TListaModelCampoValor.Add(const Item: TModelCampoValor);
 begin
   if ContainsKey(Item.FField) then
-    raise TValidacaoException.Create('Campo já incluso!');
+    raise TValidacaoException.Create('Campo já incluso! '+ Item.FField);
 
   FItems.Add(Item);
 end;
@@ -178,7 +178,7 @@ var
 begin
   for LItem in FItems do
   begin
-    TArrayUtil<string>.Append(result, LItem.Field);
+    TArrayUtil.Append<string>(result, LItem.Field);
   end;
 end;
 

@@ -49,6 +49,7 @@ type
     procedure Log(Log: string; const Args: array of const); overload;
 
     property LastSql: string read FLastSql;
+    property Connection :  IConection read FConnection;
 
     function SelectALL<T: class>(): IQueryBuilder<T>; overload;
     function SelectOnly<T: class>(): IQueryBuilder<T>; overload;

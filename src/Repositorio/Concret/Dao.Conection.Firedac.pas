@@ -1,4 +1,4 @@
-unit Dao.Conection.Firedac;
+﻿unit Dao.Conection.Firedac;
 
 interface
 
@@ -97,58 +97,65 @@ end;
 /// <returns>TFDConnection</returns>
 function TFiredacConection.Conexao(nova: Boolean = false): TFDConnection;
 begin
-  if (FConnection = nil) or nova then
-  begin
-    if (not Assigned(FParametros)) then
-      raise TConectionException.Create('Parametros Não Informado para a classe de conexão!');
+  try
+    if (FConnection = nil) or nova then
+    begin
+      if (not Assigned(FParametros)) then
+        raise TConectionException.Create('Parametros Não Informado para a classe de conexão!');
 
-    FConnection := TFDConnection.Create(nil);
+      FConnection := TFDConnection.Create(nil);
 
-    case FParametros.SGBD of
-      tpSQLite:
-        begin
-          FConnection.DriverName := 'SQLite';
-          FConnection.Params.UserName := '';
-          FConnection.Params.Password := '';
-          FConnection.Params.Database := FParametros.Database;
-        end;
+      case FParametros.SGBD of
+        tpSQLite:
+          begin
+            FConnection.DriverName := 'SQLite';
+            FConnection.Params.UserName := '';
+            FConnection.Params.Password := '';
+            FConnection.Params.Database := FParametros.Database;
+          end;
 
 {$IFDEF  MSWINDOWS}
-      tpSqlServer:
-        begin
-          FConnection.DriverName := 'MSSQL';
-          with FConnection.Params as TFDPhysMSSQLConnectionDefParams do
+        tpSqlServer:
           begin
-            Server := FParametros.Server;
-            Database := FParametros.Database;
-            UserName := FParametros.UserName;
-            Password := FParametros.Password;
-            ApplicationName := FParametros.ApplicationName;
+            FConnection.DriverName := 'MSSQL';
+            with FConnection.Params as TFDPhysMSSQLConnectionDefParams do
+            begin
+              Server := FParametros.Server;
+              Database := FParametros.Database;
+              UserName := FParametros.UserName;
+              Password := FParametros.Password;
+              ApplicationName := FParametros.ApplicationName;
+            end;
+            FConnection.Params.Add('ODBCAdvanced=TrustServerCertificate=yes');
           end;
-          FConnection.Params.Add('ODBCAdvanced=TrustServerCertificate=yes');
-        end;
-      tpOracle:
-        begin
-
-          FConnection.DriverName := 'Ora';
-
-          with FConnection.Params as TFDPhysOracleConnectionDefParams do
+        tpOracle:
           begin
-            Database := FParametros.Database;
-            UserName := FParametros.UserName;
-            Password := FParametros.Password;
 
-            ApplicationName := ExtractFileName(ApplicationName);
+            FConnection.DriverName := 'Ora';
+
+            with FConnection.Params as TFDPhysOracleConnectionDefParams do
+            begin
+              Database := FParametros.Database;
+              UserName := FParametros.UserName;
+              Password := FParametros.Password;
+
+              ApplicationName := ExtractFileName(ApplicationName);
+            end;
           end;
-        end;
 {$ENDIF}
-    end;
+      end;
 
-    FConnection.FetchOptions.Mode := fmAll;
-    FConnection.ResourceOptions.AutoConnect := True;
-    FConnection.Open();
+      FConnection.FetchOptions.Mode := fmAll;
+      FConnection.ResourceOptions.AutoConnect := True;
+      FConnection.Open();
+    end;
+    result := FConnection;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
   end;
-  result := FConnection;
 end;
 
 constructor TFiredacConection.Create(aParametros: TConectionParametros);
@@ -286,7 +293,7 @@ begin
         end;
       varUnknown:
         begin
-          raise Exception.Create('Tipo Desconhecido por Dao.Conection');
+          raise exception.Create('Tipo Desconhecido por Dao.Conection');
         end;
       varByte:
         begin
@@ -325,11 +332,11 @@ begin
         end;
       VarTypeMask, varArray, varByRef, varOleStr, varDispatch, varError:
         begin
-          raise Exception.Create('Tipo não suportado por Dao.Conection');
+          raise exception.Create('Tipo não suportado por Dao.Conection');
         end;
     else
       begin
-        qry.ParamByName(key).value := LCampoValor.Value;
+        qry.ParamByName(key).Value := LCampoValor.Value;
       end;
     end;
   end;
@@ -345,18 +352,24 @@ function TFiredacConection.ExecSQL(const ASQL: String; aNamedParamns: TListaMode
 var
   qry: TFDQuery;
 begin
-  qry := Query();
   try
+    qry := Query();
+    try
 
-    qry.SQL.Text := ASQL;
-    SetQueryParamns(qry, aNamedParamns);
+      qry.SQL.Text := ASQL;
+      SetQueryParamns(qry, aNamedParamns);
 
-    qry.ExecSQL();
-    result := qry.RowsAffected;
-  finally
-    qry.Free;
+      qry.ExecSQL();
+      result := qry.RowsAffected;
+    finally
+      qry.Free;
+    end;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
   end;
-
 end;
 
 function TFiredacConection.GetSGBDType: TSGBD;
@@ -378,11 +391,18 @@ var
   qry: TFDQuery;
 begin
   try
-    qry := Query();
-    qry.ExecSQL(ASQL);
-    result := qry.RowsAffected;
-  finally
-    qry.Free;
+    try
+      qry := Query();
+      qry.ExecSQL(ASQL);
+      result := qry.RowsAffected;
+    finally
+      qry.Free;
+    end;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
   end;
 end;
 
@@ -397,11 +417,18 @@ var
   qry: TFDQuery;
 begin
   try
-    qry := Query();
-    qry.ExecSQL(ASQL, AParams);
-    result := qry.RowsAffected;
-  finally
-    qry.Free;
+    try
+      qry := Query();
+      qry.ExecSQL(ASQL, AParams);
+      result := qry.RowsAffected;
+    finally
+      qry.Free;
+    end;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
   end;
 end;
 
@@ -414,9 +441,16 @@ function TFiredacConection.Open(const ASQL: String): TDataSet;
 var
   qry: TFDQuery;
 begin
-  qry := Query();
-  qry.Open(ASQL);
-  result := qry;
+  try
+    qry := Query();
+    qry.Open(ASQL);
+    result := qry;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
+  end;
 end;
 
 /// <summary>
@@ -429,10 +463,16 @@ function TFiredacConection.Open(const ASQL: String; const AParams: array of Vari
 var
   qry: TFDQuery;
 begin
-  qry := Query();
-  qry.Open(ASQL, AParams);
-  result := qry;
-
+  try
+    qry := Query();
+    qry.Open(ASQL, AParams);
+    result := qry;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
+  end;
 end;
 
 /// <summary>
@@ -446,10 +486,16 @@ function TFiredacConection.Open(const ASQL: String; const AParams: array of Vari
 var
   qry: TFDQuery;
 begin
-  qry := Query();
-  qry.Open(ASQL, AParams, ATypes);
-  result := qry;
-
+  try
+    qry := Query();
+    qry.Open(ASQL, AParams, ATypes);
+    result := qry;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
+  end;
 end;
 
 /// <summary>
@@ -466,7 +512,14 @@ end;
 /// </summary>
 procedure TFiredacConection.Rollback;
 begin
-  Conexao.Rollback;
+  try
+    Conexao.Rollback;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
+  end;
 end;
 
 /// <summary>
@@ -474,7 +527,14 @@ end;
 /// </summary>
 procedure TFiredacConection.StartTransaction;
 begin
-  Conexao.StartTransaction;
+  try
+    Conexao.StartTransaction;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
+  end;
 end;
 
 procedure TFiredacConection.TesteConection;
@@ -495,12 +555,19 @@ function TFiredacConection.Open(const ASQL: String; aNamedParamns: TListaModelCa
 var
   qry: TFDQuery;
 begin
-  qry := Query();
-  qry.SQL.Text := ASQL;
-  SetQueryParamns(qry, aNamedParamns);
+  try
+    qry := Query();
+    qry.SQL.Text := ASQL;
+    SetQueryParamns(qry, aNamedParamns);
 
-  qry.Open();
-  result := qry;
+    qry.Open();
+    result := qry;
+  except
+    on e: exception do
+    begin
+      raise TConectionException.Create(e.Message);
+    end;
+  end;
 end;
 
 end.

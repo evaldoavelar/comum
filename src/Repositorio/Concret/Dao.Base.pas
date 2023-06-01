@@ -1,4 +1,4 @@
-unit Dao.Base;
+ï»¿unit Dao.Base;
 
 interface
 
@@ -49,12 +49,13 @@ type
     procedure Log(Log: string; const Args: array of const); overload;
 
     property LastSql: string read FLastSql;
-    property Connection :  IConection read FConnection;
+    property Connection: IConection read FConnection;
 
     function SelectALL<T: class>(): IQueryBuilder<T>; overload;
     function SelectOnly<T: class>(): IQueryBuilder<T>; overload;
     function Select<T: class>(): IQueryBuilder<T>; overload;
-    function Insert<T: class>(Model: T): LongInt;
+    function Insert<T: class>(Model: T): LongInt; overload;
+    function Insert<T: class>(Model: T; aFields: TArray<string>): LongInt; overload;
     function Update<T: class>(Model: T): LongInt; overload;
     function Update<T: class>(): IQueryBuilder<T>; overload;
     function Delete<T: class>(Model: T): LongInt; overload;
@@ -313,7 +314,7 @@ begin
       .Delete
       .From(TAtributosFuncoes.tabela<T>());
 
-    // retornar uma query builder para o usuário continuar construindo a query
+    // retornar uma query builder para o usuï¿½rio continuar construindo a query
     builder := TQueryBuilder<T>.Create(Delete, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -397,6 +398,50 @@ begin
   except
     on E: Exception do
       raise Exception.Create('TDaoBase.GetWhere<T>: ' + E.Message);
+  end;
+end;
+
+function TDaoBase.Insert<T>(Model: T; aFields: TArray<string>): LongInt;
+var
+  props: TProperties;
+  prop: TRttiProperty;
+  valor: Integer;
+  campo: string;
+  I: Integer;
+  Into: ISQLInsert;
+  CampoValor: TListaModelCampoValor;
+  key: string;
+  sqlCmd: string;
+  tabela: string;
+  aTableAutoInc: string;
+begin
+  try
+    tabela := TAtributosFuncoes.tabela<T>;
+    CampoValor := TAtributosFuncoes.CampoValor<T>(Model);
+
+    Into := SQL
+      .Insert
+      .Into(tabela);
+
+    for I := Low(aFields) to High(aFields) do
+    begin
+      Into := Into.ColumnValue(aFields[I], ':' + aFields[I]);
+    end;
+
+    FLastSql := Into.ToString;
+
+    self.Log(FLastSql);
+    self.Log(CampoValor);
+
+    Result := self.FConnection.ExecSQL(FLastSql, CampoValor);
+
+    FreeAndNil(CampoValor);
+  except
+    on E: Exception do
+    begin
+      Log(' Insert Exception');
+      raise TDaoException.Create(' Insert Exception: ' + E.Message);
+    end;
   end;
 end;
 
@@ -498,7 +543,7 @@ begin
 
     Select := SQL.Select;
 
-    // retornar uma query builder para o usuário continuar construindo a query
+    // retornar uma query builder para o usuï¿½rio continuar construindo a query
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -527,7 +572,7 @@ begin
       .AllColumns
       .From(TAtributosFuncoes.tabela<T>);
 
-    // retornar uma query builder para o usuário continuar construindo a query
+    // retornar uma query builder para o usuï¿½rio continuar construindo a query
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -557,11 +602,11 @@ begin
     camposAttr := TAtributosFuncoes.Campos<T>();
 
     for I := Low(camposAttr) to High(camposAttr) do
-       Select := Select.Column(camposAttr[i].Campo);
+      Select := Select.Column(camposAttr[I].campo);
 
     Select := Select.From(TAtributosFuncoes.tabela<T>);
 
-    // retornar uma query builder para o usuário continuar construindo a query
+    // retornar uma query builder para o usuï¿½rio continuar construindo a query
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -605,7 +650,7 @@ begin
       .Update
       .Table(TAtributosFuncoes.tabela<T>());
 
-    // retornar uma query builder para o usuário continuar construindo a query
+    // retornar uma query builder para o usuï¿½rio continuar construindo a query
     builder := TQueryBuilder<T>.Create(Update, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -715,10 +760,10 @@ begin
     for key in CampoValor.Keys do
     begin
 
-      // verificar se o campo é uma primary key
+      // verificar se o campo ï¿½ uma primary key
       isPk := CampoIsPk<T>(pks, key);
 
-      // se não é pk
+      // se nï¿½o ï¿½ pk
       if isPk = false then
       begin
         // coloca no update

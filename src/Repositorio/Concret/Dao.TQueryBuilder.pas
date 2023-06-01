@@ -33,7 +33,7 @@ type
     FOnExec: TOnExec;
     FOnToObjectList: TOnToObjectList;
 
-    function VariantToISQLValue(const pValue: Variant): ISQLValue;
+    function VariantToISQLValue(const pValue: Variant; isExpression: Boolean = false): ISQLValue;
     function ReturnParamName(aColumn: string): string;
     procedure Inicilize(aConn: IConection);
     procedure SetOnToAdapter(const Value: TOnAdapter);
@@ -54,12 +54,19 @@ type
 
     function From(const pTable: string): IQueryBuilder<T>; overload;
     function From(const pTables: array of string): IQueryBuilder<T>; overload;
+    function From(pSelect: IQueryBuilder<T>; const pAlias: string): IQueryBuilder<T>; overload;
 
     function AllColumns: IQueryBuilder<T>; overload;
     function Column(const pColumn: ISQLAggregate): IQueryBuilder<T>; overload;
     function Column(const pColumn: string): IQueryBuilder<T>; overload;
     function Column(const pColumn: ISQLCoalesce): IQueryBuilder<T>; overload;
     function Column(const pColumn: ISQLCase): IQueryBuilder<T>; overload;
+
+    function SubSelect(pSelect: ISQLSelect; const pAlias: string): IQueryBuilder<T>; overload;
+    function SubSelect(pWhere: ISQLWhere; const pAlias: string): IQueryBuilder<T>; overload;
+    function SubSelect(pGroupBy: ISQLGroupBy; const pAlias: string): IQueryBuilder<T>; overload;
+    function SubSelect(pHaving: ISQLHaving; const pAlias: string): IQueryBuilder<T>; overload;
+    function SubSelect(pOrderBy: ISQLOrderBy; const pAlias: string): IQueryBuilder<T>; overload;
 
     function Where(const AParams: array of string; const AValues: array of Variant): IQueryBuilder<T>; overload;
     function Where(const pColumn: string): IQueryBuilder<T>; overload;
@@ -68,17 +75,12 @@ type
     function &And(pWhere: ISQLWhere): IQueryBuilder<T>; overload;
 
     function &Or(const pColumn: string): IQueryBuilder<T>; overload;
-    function Equal(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>; overload;
-
-    function Different(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>; overload;
-
-    function Greater(const pValue: Variant): IQueryBuilder<T>; overload;
-
-    function GreaterOrEqual(const pValue: Variant): IQueryBuilder<T>; overload;
-
-    function Less(const pValue: Variant): IQueryBuilder<T>; overload;
-
-    function LessOrEqual(const pValue: Variant): IQueryBuilder<T>; overload;
+    function Equal(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
+    function Different(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
+    function Greater(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
+    function GreaterOrEqual(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
+    function Less(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
+    function LessOrEqual(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
 
     function FullJoin(const pTable, pCondition: string): IQueryBuilder<T>;
     function LeftJoin(const pTable, pCondition: string): IQueryBuilder<T>;
@@ -105,7 +107,8 @@ type
     function OrderBy(const AParam: string): IQueryBuilder<T>; overload;
 
     function ColumnSetValue(const pColumn: string; const pValue: Variant): IQueryBuilder<T>; overload;
-
+    function GetFieldValue: TListaModelCampoValor;
+    function GetCMD: string;
   public
 
     constructor Create(var aSqlBase: ISQLSelect; aConn: IConection); overload;
@@ -185,6 +188,11 @@ begin
 end;
 
 function TQueryBuilder<T>.Get: T;
+begin
+  result := OnGet(GetCMD, FCampoValor);
+end;
+
+function TQueryBuilder<T>.GetCMD: string;
 var
   cmd: string;
 begin
@@ -192,13 +200,18 @@ begin
 
   if (Assigned(FSQLWhere)) then
     cmd := cmd + FSQLWhere.ToString;
-
-  result := OnGet(cmd, FCampoValor);
+  result := cmd;
 end;
 
-function TQueryBuilder<T>.Greater(const pValue: Variant): IQueryBuilder<T>;
+function TQueryBuilder<T>.GetFieldValue: TListaModelCampoValor;
 begin
-  FSQLWhere := FSQLWhere.Greater(VariantToISQLValue(pValue));
+  result := FCampoValor;
+end;
+
+function TQueryBuilder<T>.Greater(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>;
+begin
+  FSQLWhere := FSQLWhere.Greater(VariantToISQLValue(pValue, isExpression));
+
   result := Self;
 end;
 
@@ -239,29 +252,68 @@ begin
   FOnToObjectList := Value;
 end;
 
+function TQueryBuilder<T>.SubSelect(pWhere: ISQLWhere; const pAlias: string): IQueryBuilder<T>;
+begin
+  result := Self;
+  FSQLSelect.SubSelect(pWhere, pAlias);
+end;
+
+function TQueryBuilder<T>.SubSelect(pGroupBy: ISQLGroupBy; const pAlias: string): IQueryBuilder<T>;
+begin
+  result := Self;
+  FSQLSelect.SubSelect(pGroupBy, pAlias);
+end;
+
+function TQueryBuilder<T>.SubSelect(pHaving: ISQLHaving; const pAlias: string): IQueryBuilder<T>;
+begin
+  result := Self;
+  FSQLSelect.SubSelect(pHaving, pAlias);
+end;
+
+function TQueryBuilder<T>.SubSelect(pOrderBy: ISQLOrderBy; const pAlias: string): IQueryBuilder<T>;
+begin
+  result := Self;
+  FSQLSelect.SubSelect(pOrderBy, pAlias);
+end;
+
+function TQueryBuilder<T>.SubSelect(pSelect: ISQLSelect; const pAlias: string): IQueryBuilder<T>;
+begin
+  result := Self;
+  FSQLSelect.SubSelect(pSelect, pAlias);
+end;
+
 /// <summary>
 /// Da o nome ao parametro e armazena seu valor
 /// </summary>
 /// <param name="pValue">Parametro</param>
-function TQueryBuilder<T>.VariantToISQLValue(const pValue: Variant): ISQLValue;
+function TQueryBuilder<T>.VariantToISQLValue(const pValue: Variant; isExpression: Boolean = false): ISQLValue;
 var
   Value: ISQLValue;
   paramName: string;
 begin
 
-  paramName := ReturnParamName(FColumn);
+  if isExpression then
+  begin
+    Value := SQL.Value(TValue.FromVariant(pValue));
+    Value.Expression.isExpression;
+  end
+  else
+  begin
 
-  Value := SQL.Value(':' + paramName);
-  Value.Expression.IsColumn;
+    paramName := ReturnParamName(FColumn);
 
-  FCampoValor.Add(TModelCampoValor.Create( paramName, pValue, VarType(pValue)));
+    Value := SQL.Value(':' + paramName);
+    Value.Expression.IsColumn;
+
+    FCampoValor.Add(TModelCampoValor.Create(paramName, pValue, VarType(pValue)));
+  end;
 
   result := Value;
 end;
 
-function TQueryBuilder<T>.GreaterOrEqual(const pValue: Variant): IQueryBuilder<T>;
+function TQueryBuilder<T>.GreaterOrEqual(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>;
 begin
-  FSQLWhere := FSQLWhere.GreaterOrEqual(VariantToISQLValue(pValue));
+  FSQLWhere := FSQLWhere.GreaterOrEqual(VariantToISQLValue(pValue, isExpression));
   result := Self;
 end;
 
@@ -289,15 +341,16 @@ begin
   result := Self;
 end;
 
-function TQueryBuilder<T>.Less(const pValue: Variant): IQueryBuilder<T>;
+function TQueryBuilder<T>.Less(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>;
 begin
-  FSQLWhere := FSQLWhere.Less(VariantToISQLValue(pValue));
+  FSQLWhere := FSQLWhere.Less(VariantToISQLValue(pValue, isExpression));
   result := Self;
 end;
 
-function TQueryBuilder<T>.LessOrEqual(const pValue: Variant): IQueryBuilder<T>;
+function TQueryBuilder<T>.LessOrEqual(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>;
 begin
-  FSQLWhere := FSQLWhere.LessOrEqual(VariantToISQLValue(pValue));
+  FSQLWhere := FSQLWhere.LessOrEqual(VariantToISQLValue(pValue, isExpression));
+
   result := Self;
 end;
 
@@ -443,21 +496,16 @@ begin
   inherited;
 end;
 
-function TQueryBuilder<T>.Different(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>;
+function TQueryBuilder<T>.Different(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>;
 begin
-  if isParam then
-    FSQLWhere := FSQLWhere.Different(VariantToISQLValue(pValue))
-  else
-    FSQLWhere := FSQLWhere.Different(TValue.FromVariant(pValue));
+  FSQLWhere := FSQLWhere.Different(VariantToISQLValue(pValue, isExpression));
+
   result := Self;
 end;
 
-function TQueryBuilder<T>.Equal(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>;
+function TQueryBuilder<T>.Equal(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>;
 begin
-  if isParam then
-    FSQLWhere := FSQLWhere.Equal(VariantToISQLValue(pValue))
-  else
-    FSQLWhere := FSQLWhere.Equal(pValue);
+  FSQLWhere := FSQLWhere.Equal(VariantToISQLValue(pValue, isExpression));
 
   result := Self;
 end;
@@ -526,6 +574,25 @@ end;
 function TQueryBuilder<T>.Column(const pColumn: ISQLCase): IQueryBuilder<T>;
 begin
   FSQLSelect := FSQLSelect.Column(pColumn);
+  result := Self;
+end;
+
+function TQueryBuilder<T>.From(pSelect: IQueryBuilder<T>; const pAlias: string): IQueryBuilder<T>;
+begin
+  FSQLSelect := FSQLSelect.From(pSelect.GetCMD, pAlias);
+  var
+  fieldsValues := pSelect.GetFieldValue;
+
+  var
+  keys := fieldsValues.keys;
+
+  for var I := Low(keys) to High(keys) do
+  begin
+    var
+    itemValue := fieldsValues.Items[keys[I]];
+    FCampoValor.Add(itemValue.Field, itemValue.Value);
+  end;
+
   result := Self;
 end;
 

@@ -3,7 +3,7 @@ unit Dao.IQueryBuilder;
 interface
 
 uses System.Generics.Collections, SQLBuilder4D, System.Rtti,
-  Dao.IResultAdapter;
+  Dao.IResultAdapter, Model.CampoValor;
 
 type
 
@@ -15,6 +15,8 @@ type
     function Exec(): LongInt;
     function ToAdapter: IDaoResultAdapter<T>;
     function ToObjectList(): TObjectList<T>;
+    function GetFieldValue: TListaModelCampoValor;
+    function GetCMD: string;
 
     function AllColumns: IQueryBuilder<T>; overload;
     function Column(const pColumn: ISQLAggregate): IQueryBuilder<T>; overload;
@@ -22,8 +24,15 @@ type
     function Column(const pColumn: ISQLCoalesce): IQueryBuilder<T>; overload;
     function Column(const pColumn: ISQLCase): IQueryBuilder<T>; overload;
 
+    function SubSelect(pSelect: ISQLSelect; const pAlias: string): IQueryBuilder<T>; overload;
+    function SubSelect(pWhere: ISQLWhere; const pAlias: string): IQueryBuilder<T>; overload;
+    function SubSelect(pGroupBy: ISQLGroupBy; const pAlias: string): IQueryBuilder<T>; overload;
+    function SubSelect(pHaving: ISQLHaving; const pAlias: string): IQueryBuilder<T>; overload;
+    function SubSelect(pOrderBy: ISQLOrderBy; const pAlias: string): IQueryBuilder<T>; overload;
+
     function From(const pTable: string): IQueryBuilder<T>; overload;
     function From(const pTables: array of string): IQueryBuilder<T>; overload;
+    function From(pSelect: IQueryBuilder<T>; const pAlias: string): IQueryBuilder<T>; overload;
 
     function FullJoin(const pTable, pCondition: string): IQueryBuilder<T>;
     function LeftJoin(const pTable, pCondition: string): IQueryBuilder<T>;
@@ -36,17 +45,17 @@ type
     function &And(pWhere: ISQLWhere): IQueryBuilder<T>; overload;
 
     function &Or(const pColumn: string): IQueryBuilder<T>; overload;
-    function Equal(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>; overload;
+    function Equal(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
 
-    function Different(const pValue: Variant; isParam: Boolean = True): IQueryBuilder<T>; overload;
+    function Different(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
 
-    function Greater(const pValue: Variant): IQueryBuilder<T>; overload;
+    function Greater(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
 
     function GreaterOrEqual(const pValue: Variant): IQueryBuilder<T>; overload;
 
     function Less(const pValue: Variant): IQueryBuilder<T>; overload;
 
-    function LessOrEqual(const pValue: Variant): IQueryBuilder<T>; overload;
+    function LessOrEqual(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>; overload;
 
     function Like(const pValue: string; const pOp: TSQLLikeOperator = loEqual): IQueryBuilder<T>; overload;
     function Like(const pValues: array of string; const pOp: TSQLLikeOperator = loEqual): IQueryBuilder<T>; overload;

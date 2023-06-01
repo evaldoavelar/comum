@@ -364,6 +364,7 @@ type
     function From(const pTables: array of string): ISQLSelect; overload;
     function From(pTerm: ISQLFrom): ISQLSelect; overload;
     function From(pTerms: array of ISQLFrom): ISQLSelect; overload;
+    function From(pSelect: string; const pAlias: string): ISQLSelect; overload;
 
     function Join(pJoin: ISQLJoin): ISQLSelect; overload;
     function Join(const pTable, pCondition: string): ISQLSelect; overload;
@@ -906,6 +907,7 @@ type
     function From(const pTables: array of string): ISQLSelect; overload;
     function From(pTerm: ISQLFrom): ISQLSelect; overload;
     function From(pTerms: array of ISQLFrom): ISQLSelect; overload;
+    function From(pSelect: string; const pAlias: string): ISQLSelect; overload;
 
     function Join(pJoin: ISQLJoin): ISQLSelect; overload;
     function Join(const pTable, pCondition: string): ISQLSelect; overload;
@@ -2901,6 +2903,12 @@ end;
 function TSQLSelect.Column(const pColumn: ISQLCase): ISQLSelect;
 begin
   Result := Column(pColumn.ToString());
+end;
+
+function TSQLSelect.From(pSelect: string; const pAlias: string): ISQLSelect;
+begin
+  Result := From(TSQLFrom.Create(TSQLTable.Create(('(' + pSelect + ') As ' + pAlias))));
+  Result := Self;
 end;
 
 { TSQLDelete }

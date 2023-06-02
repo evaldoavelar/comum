@@ -3,7 +3,7 @@ unit Dao.ResultAdapter;
 interface
 
 uses
-  Data.DB,  MidasLib ,
+  Data.DB, MidasLib,
   Datasnap.DBClient,
   System.Generics.Collections,
   Dao.IResultAdapter, Dao.DataSet;
@@ -12,11 +12,13 @@ type
   TDaoResultAdapter<T: class> = class(TInterfacedObject, IDaoResultAdapter<T>)
   private
     FDataSet: TDataSet;
+    FFreeDataSet: boolean;
   public
     function AsDataset(): TDataSet;
     function AsClientDataset(): TClientDataSet;
     function AsList(): TList<T>;
     function AsObject(): T;
+    function AsTField(Index: integer): TField;
   public
     constructor Create(aDataSet: TDataSet);
     destructor Destroy; override;
@@ -34,7 +36,7 @@ uses
 
 function TDaoResultAdapter<T>.AsClientDataset(): TClientDataSet;
 var
-  I: Integer;
+  I: integer;
 begin
   Result := TClientDataSet.Create(nil);
   Result.Close;
@@ -66,11 +68,11 @@ begin
     FDataSet.Next;
   end;
 
-  FDataSet.Free;
 end;
 
 function TDaoResultAdapter<T>.AsDataset(): TDataSet;
 begin
+  FFreeDataSet := false;
   Result := FDataSet;
 end;
 
@@ -91,14 +93,21 @@ begin
   TDaoDataSet<T>.New.DataSetToObject(FDataSet);
 end;
 
+function TDaoResultAdapter<T>.AsTField(Index: integer): TField;
+begin
+ result := FDataSet.Fields[index];
+end;
+
 constructor TDaoResultAdapter<T>.Create(aDataSet: TDataSet);
 begin
   FDataSet := aDataSet;
+  FFreeDataSet := true;
 end;
 
 destructor TDaoResultAdapter<T>.Destroy;
 begin
-
+  if FFreeDataSet then
+    FDataSet.Free;
   inherited;
 end;
 

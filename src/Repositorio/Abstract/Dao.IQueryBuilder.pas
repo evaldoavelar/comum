@@ -2,7 +2,7 @@ unit Dao.IQueryBuilder;
 
 interface
 
-uses System.Generics.Collections, SQLBuilder4D, System.Rtti,
+uses System.Generics.Collections, SQLBuilder4D, System.Rtti,Data.DB,
   Dao.IResultAdapter, Model.CampoValor;
 
 type

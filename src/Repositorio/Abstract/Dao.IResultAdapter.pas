@@ -14,6 +14,7 @@ type
     function AsClientDataset(): TClientDataSet;
     function AsList(): TList<T>;
     function AsObject(): T;
+    function AsTField(Index: integer): TField;
   end;
 
 implementation

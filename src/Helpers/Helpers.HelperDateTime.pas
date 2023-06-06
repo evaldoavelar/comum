@@ -37,12 +37,15 @@ end;
 
 function THelperDateTime.FormatoDataBr: string;
 begin
-  Result := FormatDateTime('dd/mm/yyyy', Self);
+  if Self = 0 then
+    result := ''
+  else
+    result := FormatDateTime('dd/mm/yyyy', Self);
 end;
 
 function THelperDateTime.FormatoDataBrExtenco: string;
 begin
-  Result := Format('%s de %s de %s', [
+  result := Format('%s de %s de %s', [
     FormatDateTime('dd', Self),
     FormatDateTime('mmmm', Self),
     FormatDateTime('yyyy', Self)
@@ -51,7 +54,7 @@ end;
 
 function THelperDateTime.FormatoDataHoraBr: string;
 begin
-  Result := FormatDateTime('dd/mm/yyyy hh:mm:ss', Self);
+  result := FormatDateTime('dd/mm/yyyy hh:mm:ss', Self);
 end;
 
 procedure THelperDateTime.ReplaceTimer;

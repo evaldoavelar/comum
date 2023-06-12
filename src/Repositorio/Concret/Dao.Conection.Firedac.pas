@@ -66,8 +66,10 @@ type
     function GetSGBDType: TSGBD;
     procedure TesteConection;
 
-    constructor Create(aParametros: TConectionParametros);
-    class function New(aParametros: TConectionParametros): IConection;
+    constructor Create(aParametros: TConectionParametros); overload;
+    constructor Create(aConnection: TFDConnection); overload;
+    class function New(aParametros: TConectionParametros): IConection; overload;
+    class function New(aConnection: TFDConnection): IConection; overload;
     destructor destroy; override;
   end;
 
@@ -156,6 +158,11 @@ begin
       raise TConectionException.Create(e.Message);
     end;
   end;
+end;
+
+constructor TFiredacConection.Create(aConnection: TFDConnection);
+begin
+  Self.FConnection := aConnection;
 end;
 
 constructor TFiredacConection.Create(aParametros: TConectionParametros);
@@ -375,6 +382,11 @@ end;
 function TFiredacConection.GetSGBDType: TSGBD;
 begin
   result := FParametros.SGBD;
+end;
+
+class function TFiredacConection.New(aConnection: TFDConnection): IConection;
+begin
+  result := TFiredacConection.Create(aConnection);
 end;
 
 class function TFiredacConection.New(aParametros: TConectionParametros): IConection;

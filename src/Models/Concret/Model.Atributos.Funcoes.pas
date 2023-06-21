@@ -136,6 +136,8 @@ begin
   Result := varVariant;
   if (CompareText('String', LPropName)) = 0 then
     Result := varString;
+  if (CompareText('AnsiString', LPropName)) = 0 then
+    Result := varUString;
   if (CompareText('TDateTime', LPropName)) = 0 then
     Result := varDate
   else if (CompareText('TDate', LPropName)) = 0 then
@@ -302,7 +304,7 @@ var
   propPk: TRttiProperty;
   index: integer;
   attr: TCustomAttribute;
-  campo: CampoAttribute;
+  Campo: CampoAttribute;
   I: integer;
 begin
   try
@@ -318,11 +320,11 @@ begin
 
       if (attr <> nil) then
       begin
-        campo := CampoAttribute(attr);
+        Campo := CampoAttribute(attr);
 
         index := Length(Result);
         SetLength(Result, index + 1);
-        Result[index] := campo;
+        Result[index] := Campo;
       end;
     end;
   except

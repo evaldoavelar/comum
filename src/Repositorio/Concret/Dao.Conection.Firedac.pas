@@ -43,12 +43,13 @@ type
 
   TFiredacConection = class(TInterfacedObject, IConection)
   private
+    FFreeConnectionOnDestroy: boolean;
     FConnection: TFDConnection;
     FParametros: TConectionParametros;
-    function Conexao(nova: Boolean = false): TFDConnection;
+    function Conexao(nova: boolean = false): TFDConnection;
     function Query(): TFDQuery;
     procedure SetQueryParamns(qry: TFDQuery; aNamedParamns: TListaModelCampoValor);
-    function VariantIsEmptyOrNull(const Value: Variant): Boolean;
+    function VariantIsEmptyOrNull(const Value: Variant): boolean;
   public
 
     procedure StartTransaction;
@@ -97,7 +98,7 @@ end;
 /// </summary>
 /// <param name="nova">Indica se será criada uma nova instancia</param>
 /// <returns>TFDConnection</returns>
-function TFiredacConection.Conexao(nova: Boolean = false): TFDConnection;
+function TFiredacConection.Conexao(nova: boolean = false): TFDConnection;
 begin
   try
     if (FConnection = nil) or nova then
@@ -163,25 +164,32 @@ end;
 constructor TFiredacConection.Create(aConnection: TFDConnection);
 begin
   Self.FConnection := aConnection;
+  FFreeConnectionOnDestroy := false;
 end;
 
 constructor TFiredacConection.Create(aParametros: TConectionParametros);
 begin
   Self.FParametros := aParametros;
+  FFreeConnectionOnDestroy := True;
 end;
 
 destructor TFiredacConection.destroy;
 begin
+
+  if not FFreeConnectionOnDestroy then
+    exit;
+
   if Assigned(FConnection) then
   begin
     FConnection.Close;
     FreeAndNil(FConnection);
   end;
+
   FreeAndNil(FParametros);
   inherited;
 end;
 
-function TFiredacConection.VariantIsEmptyOrNull(const Value: Variant): Boolean;
+function TFiredacConection.VariantIsEmptyOrNull(const Value: Variant): boolean;
 begin
   result := VarIsClear(Value) or VarIsEmpty(Value) or VarIsNull(Value) or (VarCompareValue(Value, Unassigned) = vrEqual);
   if (not result) and VarIsStr(Value) then
@@ -198,7 +206,7 @@ var
   key: string;
   LCampoValor: TModelCampoValor;
   basicType: Integer;
-  paramIsNull: Boolean;
+  paramIsNull: boolean;
 begin
 
   // pecorrrer os parametros

@@ -104,7 +104,7 @@ end;
 procedure TListaModelCampoValor.Add(const Item: TModelCampoValor);
 begin
   if ContainsKey(Item.FField) then
-    raise TValidacaoException.Create('Campo já incluso! '+ Item.FField);
+    raise TValidacaoException.Create('Campo já incluso!');
 
   FItems.Add(Item);
 end;

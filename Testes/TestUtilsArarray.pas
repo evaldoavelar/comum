@@ -62,7 +62,7 @@ begin
 
   // TODO: Setup method call parameters
 
-  TArrayUtil<Integer>.Append(array1, array2);
+  TArrayUtil.Append<Integer>(array1, array2);
 
 
   // TODO: Validate method results
@@ -88,7 +88,7 @@ begin
   array1[3] := 4;
   array1[4] := 5;
 
-  TArrayUtil<Integer>.Append(array1, 6);
+  TArrayUtil.Append<Integer>(array1, 6);
 
   CheckEquals(Length(array1), 6);
    CheckEquals(array1[5], 6);

@@ -181,7 +181,8 @@
         <DCCReference Include="..\src\Criptografia\DCPrc4.pas"/>
         <DCCReference Include="..\src\Criptografia\DCPripemd160.pas"/>
         <DCCReference Include="..\src\Criptografia\DCPsha1.pas"/>
-        <DCCReference Include="..\src\Models\Concret\Model.CampoValor.pas"/>        
+        <DCCReference Include="..\src\Models\Concret\Model.CampoValor.pas"/>
+        <DCCReference Include="TestStringHelpers.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -211,7 +212,7 @@
                 <DeployFile LocalName="$(BDS)\Redist\iossimulator\libPCRE.dylib" Class="DependencyModule"/>
                 <DeployFile LocalName="$(BDS)\Redist\iossimulator\libcgunwind.1.0.dylib" Class="DependencyModule"/>
                 <DeployFile LocalName="$(BDS)\Redist\osx32\libcgsqlite3.dylib" Class="DependencyModule"/>
-                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule"/>                
+                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule"/>
                 <DeployFile LocalName="Win32\Debug\ComumTest.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployFile LocalName="Win32\Debug\ComumTest.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">

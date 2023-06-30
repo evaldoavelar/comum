@@ -216,7 +216,7 @@ function TStringHelper.IsValidCelular(): Boolean;
 var
   ipRegExp: string;
 begin
-  ipRegExp := '^[1-9]{2}(?:[6-9]|9[1-9])[0-9]{3}[0-9]{4}$';
+  ipRegExp := '^[1-9]{2}(?:[6-9]|9[1-9])[0-9]{4}[0-9]{4}$';
   Result := TRegEx.IsMatch(Self.GetNumbers(), ipRegExp);
 end;
 

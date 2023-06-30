@@ -84,7 +84,8 @@ uses
   DCPrc4 in '..\src\Criptografia\DCPrc4.pas',
   DCPripemd160 in '..\src\Criptografia\DCPripemd160.pas',
   DCPsha1 in '..\src\Criptografia\DCPsha1.pas',
-  Model.CampoValor in '..\src\Models\Concret\Model.CampoValor.pas';
+  Model.CampoValor in '..\src\Models\Concret\Model.CampoValor.pas',
+  TestStringHelpers in 'TestStringHelpers.pas';
 
 {$R *.res}
 

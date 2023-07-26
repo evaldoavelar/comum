@@ -16,6 +16,7 @@ type
   private
     function GetHTTPBasicAuthenticator: THTTPBasicAuthenticator;
   protected
+    FOnLog: TProc<string>;
     FRESTClient: TRestClient;
     FHTTPBasicAuthenticator: THTTPBasicAuthenticator;
     FRESTRequest: TRESTRequest;
@@ -38,6 +39,8 @@ type
 
     function UserName(aUserName: string): IRestClientAPI;
     function Password(aPassword: string): IRestClientAPI;
+
+    function SetLog(OnLog: TProc<string>): IRestClientAPI;
 
   public
     constructor Create();
@@ -136,6 +139,9 @@ function TRestClientAPI.Execute(aGeraLog: boolean = true): TCustomRESTResponse;
 begin
   Log('>>> Entrando em  TRestClientAPI.Execute ');
   try
+
+    Log(Format('%s%s', [FRESTClient.BaseURL, FRESTRequest.Resource]));
+
     FRESTClient.Authenticator := FHTTPBasicAuthenticator;
     FRESTRequest.Execute;
 
@@ -160,7 +166,8 @@ end;
 
 procedure TRestClientAPI.Log(aValue: string);
 begin
-
+  if Assigned(FOnLog) then
+    FOnLog(aValue);
 end;
 
 function TRestClientAPI.Method(aMethod: TRESTRequestMethod): IRestClientAPI;
@@ -189,6 +196,12 @@ function TRestClientAPI.Resource(aResource: string): IRestClientAPI;
 begin
   result := self;
   FRESTRequest.Resource := aResource;
+end;
+
+function TRestClientAPI.SetLog(OnLog: TProc<string>): IRestClientAPI;
+begin
+  result := self;
+  FOnLog := OnLog;
 end;
 
 function TRestClientAPI.Timeout(aTimeOut: integer): IRestClientAPI;

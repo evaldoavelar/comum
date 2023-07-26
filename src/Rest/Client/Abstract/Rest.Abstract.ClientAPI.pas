@@ -4,9 +4,11 @@ interface
 
 uses
   Rest.Client, Rest.types,
-  Rest.Authenticator.Basic;
+  Rest.Authenticator.Basic,
+  system.SysUtils;
 
 type
+
   IRestClientAPI = interface
     function BaseURL(aBaseURL: string): IRestClientAPI;
     function Accept(aAccept: string): IRestClientAPI;
@@ -24,7 +26,7 @@ type
     function UserName(aUserName: string): IRestClientAPI;
     function Password(aPassword: string): IRestClientAPI;
     function TimeOut(aTimeOut: integer): IRestClientAPI;
-
+    function SetLog(OnLog: TProc<string>): IRestClientAPI;
   end;
 
 implementation

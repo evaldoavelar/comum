@@ -547,6 +547,7 @@ begin
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
+    builder.OnToObjectList := self.OnObjectList<T>;
     builder.OnToAdapter := self.SQLToAdapter<T>;
 
     Result := builder;
@@ -654,6 +655,7 @@ begin
     builder := TQueryBuilder<T>.Create(Update, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
+    builder.OnToObjectList := self.OnObjectList<T>;
     builder.OnExec := self.OnExec<T>;
 
     Result := builder;
@@ -810,7 +812,7 @@ begin
     Result := TDaoResultAdapter<T>.New(ds);
   except
     on E: Exception do
-      raise Exception.Create('TDaoBase.OnToList<T>: ' + E.Message);
+      raise Exception.Create('TDaoBase.SQLToAdapter<T>: ' + E.Message);
   end;
 end;
 

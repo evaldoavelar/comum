@@ -6,13 +6,16 @@ uses
   Classes, SysUtils, System.Rtti, System.TypInfo;
 
 type
+
   TNullable<T> = record
   private
     FHasValue: Boolean;
     FValue: T;
+  public
+    function GetValueType: PTypeInfo;
     function GetValue: T;
     procedure SetValue(AValue: T);
-
+    function GetHasValue: Boolean;
   public
     procedure Clear;
     property Value: T read GetValue write SetValue;
@@ -57,6 +60,11 @@ begin
   SetValue(Value);
 end;
 
+function TNullable<T>.GetHasValue: Boolean;
+begin
+  Result := HasValue;
+end;
+
 function TNullable<T>.GetTypeString: string;
 var
   PropInfo: TPropInfo;
@@ -75,7 +83,12 @@ begin
   if FHasValue then
     Result := FValue
   else
-    raise Exception.Create('vari·vel È nula');
+    raise Exception.Create('vari√°vel √© nula');
+end;
+
+function TNullable<T>.GetValueType: PTypeInfo;
+begin
+  Result := TypeInfo(T);
 end;
 
 function TNullable<T>.HasValue: Boolean;

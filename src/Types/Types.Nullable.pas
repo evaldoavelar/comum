@@ -24,6 +24,7 @@ type
     function ToString: string;
     function ToTValue: Variant;
     function GetTypeString: string;
+    function GetValueOrValueDefault(): Tvalue;
     function HasValue: Boolean;
     procedure FromValue(Value: T);
   end;
@@ -44,7 +45,7 @@ begin
     else if TypeInfo(T) = TypeInfo(TTime) then
       Result := TimeToStr(PDateTime(@FValue)^)
     else
-      Result := TValue.From<T>(FValue).ToString;
+      Result := Tvalue.From<T>(FValue).ToString;
   end
   else
     Result := '';
@@ -52,7 +53,7 @@ end;
 
 function TNullable<T>.ToTValue: Variant;
 begin
-  Result := TValue.From<T>(FValue).AsVariant;
+  Result := Tvalue.From<T>(FValue).AsVariant;
 end;
 
 procedure TNullable<T>.FromValue(Value: T);
@@ -84,6 +85,40 @@ begin
     Result := FValue
   else
     raise Exception.Create('variável é nula');
+end;
+
+function TNullable<T>.GetValueOrValueDefault: Tvalue;
+var
+  LPropName: string;
+begin
+
+  if FHasValue then
+    exit(Tvalue.From<T>(FValue));
+
+  LPropName := GetTypeString;
+
+  Result := '';
+  if (CompareText('String', LPropName)) = 0 then
+    Result := '';
+  if (CompareText('AnsiString', LPropName)) = 0 then
+    Result := '';
+  if (CompareText('TDateTime', LPropName)) = 0 then
+    Result := 0
+  else if (CompareText('TDate', LPropName)) = 0 then
+    Result := 0
+  else if (CompareText('TTime', LPropName)) = 0 then
+    Result := 0
+  else if (CompareText('Boolean', LPropName)) = 0 then
+    Result := False
+  else if (CompareText('Currency', LPropName)) = 0 then
+    Result := 0
+  else if (CompareText('Integer', LPropName)) = 0 then
+    Result := 0
+  else if (CompareText('Smallint', LPropName)) = 0 then
+    Result := 0
+  else if (CompareText('Double', LPropName)) = 0 then
+    Result := 0;
+
 end;
 
 function TNullable<T>.GetValueType: PTypeInfo;

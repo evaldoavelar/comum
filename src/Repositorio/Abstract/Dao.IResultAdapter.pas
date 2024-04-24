@@ -13,6 +13,7 @@ type
     function AsDataset(): TDataSet;
     function AsClientDataset(): TClientDataSet;
     function AsList(): TList<T>;
+    function AsObjectList(): TObjectList<T>;
     function AsObject(): T;
     function AsTField(Index: integer): TField;
   end;

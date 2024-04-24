@@ -17,6 +17,7 @@ type
     function AsDataset(): TDataSet;
     function AsClientDataset(): TClientDataSet;
     function AsList(): TList<T>;
+    function AsObjectList(): TObjectList<T>;
     function AsObject(): T;
     function AsTField(Index: integer): TField;
   public
@@ -80,6 +81,8 @@ function TDaoResultAdapter<T>.AsList(): TList<T>;
 var
   Model: T;
 begin
+  Result := TList<T>.Create;
+  FDataSet.First;
   while not FDataSet.Eof do
   begin
     Model := TDaoDataSet<T>.New.DataSetToObject(FDataSet);
@@ -93,9 +96,24 @@ begin
   TDaoDataSet<T>.New.DataSetToObject(FDataSet);
 end;
 
+function TDaoResultAdapter<T>.AsObjectList: TObjectList<T>;
+var
+  Model: T;
+begin
+  Result := TObjectList<T>.Create;
+  FDataSet.First;
+  while not FDataSet.Eof do
+  begin
+    Model := TDaoDataSet<T>.New.DataSetToObject(FDataSet);
+    Result.Add(Model);
+    FDataSet.Next;
+  end;
+
+end;
+
 function TDaoResultAdapter<T>.AsTField(Index: integer): TField;
 begin
- result := FDataSet.Fields[index];
+  Result := FDataSet.Fields[index];
 end;
 
 constructor TDaoResultAdapter<T>.Create(aDataSet: TDataSet);

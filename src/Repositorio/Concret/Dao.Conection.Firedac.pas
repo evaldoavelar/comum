@@ -50,6 +50,7 @@ type
     function Query(): TFDQuery;
     procedure SetQueryParamns(qry: TFDQuery; aNamedParamns: TListaModelCampoValor);
     function VariantIsEmptyOrNull(const Value: Variant): boolean;
+    procedure OnBeforeDisconnect(Sender: TObject);
   public
 
     procedure StartTransaction;
@@ -150,6 +151,13 @@ begin
 
       FConnection.FetchOptions.Mode := fmAll;
       FConnection.ResourceOptions.AutoConnect := True;
+     // FConnection.TxOptions.AutoStart := false;
+//      FConnection.TxOptions.AutoStop := false;
+//      FConnection.TxOptions.AutoCommit := false;
+      FConnection.TxOptions.DisconnectAction := xdRollback;
+      // FConnection.BeforeDisconnect := OnBeforeDisconnect;
+      // FConnection.OnLost := OnBeforeDisconnect;
+      // FConnection.BeforeCommit
       FConnection.Open();
     end;
     result := FConnection;
@@ -548,7 +556,9 @@ end;
 procedure TFiredacConection.StartTransaction;
 begin
   try
+
     Conexao.StartTransaction;
+
   except
     on e: exception do
     begin
@@ -570,6 +580,13 @@ end;
 /// <param name="AQL">sql a ser execultada</param>
 /// <param name="aNamedParamns">Parametros da sql - nome e o valor </param>
 /// <returns>Dataset da consulta</returns>
+
+procedure TFiredacConection.OnBeforeDisconnect(Sender: TObject);
+begin
+  if FConnection <> nil then
+    if FConnection.Transaction.Active then
+      FConnection.Transaction.Rollback;
+end;
 
 function TFiredacConection.Open(const ASQL: String; aNamedParamns: TListaModelCampoValor): TDataSet;
 var

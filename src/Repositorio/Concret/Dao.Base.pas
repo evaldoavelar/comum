@@ -344,7 +344,10 @@ begin
 
     for key in CampoValor.Keys do
     begin
-      builder.AppendFormat(' %s = %s ', [key, VarToStr(CampoValor.Items[key].Value)]);
+      if (CampoValor.Items[key].Value = null) then
+        builder.AppendFormat(' %s = null ', [key])
+      else
+        builder.AppendFormat(' %s = %s ', [key, VarToStr(CampoValor.Items[key].Value)]);
     end;
 
     if Assigned(FLog) then

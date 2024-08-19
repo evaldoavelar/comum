@@ -107,6 +107,8 @@ type
     function OrderBy(const AParam: string): IQueryBuilder<T>; overload;
 
     function ColumnSetValue(const pColumn: string; const pValue: Variant): IQueryBuilder<T>; overload;
+    function OFFSET(const aPageNumber: Integer; aPageSize: Integer): IQueryBuilder<T>; overload;
+
     function GetFieldValue: TListaModelCampoValor;
     function GetCMD: string;
   public
@@ -144,6 +146,16 @@ begin
   result := Self;
 end;
 
+function TQueryBuilder<T>.OFFSET(const aPageNumber: Integer;
+  aPageSize: Integer): IQueryBuilder<T>;
+begin
+  FSQLOrderBy := FSQLOrderBy
+    .Offset(aPageNumber)
+    .Fetch(aPageSize);
+
+  result := Self;
+end;
+
 function TQueryBuilder<T>.&Or(const pColumn: string): IQueryBuilder<T>;
 begin
   FColumn := pColumn;
@@ -154,7 +166,7 @@ end;
 function TQueryBuilder<T>.ColumnSetValue(const pColumn: string; const pValue: Variant): IQueryBuilder<T>;
 begin
   if FSQLUpdate = nil then
-    raise Exception.Create('FSQLUpdate n„o foi inicializado!');
+    raise Exception.Create('FSQLUpdate n√£o foi inicializado!');
 
   result := Self;
   FColumn := pColumn;
@@ -520,7 +532,7 @@ begin
   else if Assigned(FSQLDelete) then
     cmd := FSQLDelete.ToString
   else
-    raise Exception.Create('FSQLUpdate or FSQLDelete n„o informados!');
+    raise Exception.Create('FSQLUpdate or FSQLDelete n√£o informados!');
 
   if (Assigned(FSQLWhere)) then
     cmd := cmd + FSQLWhere.ToString;

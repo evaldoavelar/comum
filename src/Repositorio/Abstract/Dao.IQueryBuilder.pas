@@ -2,7 +2,7 @@ unit Dao.IQueryBuilder;
 
 interface
 
-uses System.Generics.Collections, SQLBuilder4D, System.Rtti,Data.DB,
+uses System.Generics.Collections, SQLBuilder4D, System.Rtti, Data.DB,
   Dao.IResultAdapter, Model.CampoValor;
 
 type
@@ -74,6 +74,8 @@ type
     function OrderBy(const AParam: string): IQueryBuilder<T>; overload;
 
     function ColumnSetValue(const pColumn: string; const pValue: Variant): IQueryBuilder<T>; overload;
+
+    function Offset(const aPageNumber: integer; aPageSize: integer): IQueryBuilder<T>; overload;
   end;
 
 implementation

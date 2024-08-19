@@ -158,6 +158,12 @@ type
     function Alias(const pAlias: string): ISQLCase;
   end;
 
+  ISQLOffSet = interface(ISQLClause)
+    ['{DA336BFC-D78C-4D9C-89BA-4CB05CA3322C}']
+    function Offset(const pRows: integer): ISQLOffSet;
+    function Fetch(const pRows: integer): ISQLOffSet;
+  end;
+
   ISQLOrderBy = interface(ISQLClause)
     ['{9B16882D-08F9-4CA9-8E9A-9E4A0BF19C59}']
     procedure CopyOf(pSource: ISQLOrderBy);
@@ -165,6 +171,8 @@ type
     function Column(const pColumn: string; const pSortType: TSQLSort = srNone): ISQLOrderBy;
     function Columns(const pColumns: array of string; const pSortType: TSQLSort = srNone): ISQLOrderBy;
     function Sort(const pSortType: TSQLSort): ISQLOrderBy;
+    function Offset(const pRows: integer): ISQLOrderBy;
+    function Fetch(const pRows: integer): ISQLOrderBy;
 
     function Union(pSelect: ISQLSelect; const pType: TSQLUnionType = utUnion): ISQLOrderBy; overload;
     function Union(pWhere: ISQLWhere; const pType: TSQLUnionType = utUnion): ISQLOrderBy; overload;
@@ -698,8 +706,21 @@ type
     property UnionSQL: string read GetUnionSQL;
   end;
 
+  TSQLOffSet = class(TSQLClause, ISQLOffSet)
+  strict private
+    FRowsOffSet: integer;
+    FRowsFecth: integer;
+  protected
+    function DoToString(): string; override;
+  public
+    procedure AfterConstruction; override;
+    function Offset(const pRows: integer): ISQLOffSet;
+    function Fetch(const pRows: integer): ISQLOffSet;
+  end;
+
   TSQLOrderBy = class(TSQLClause, ISQLOrderBy)
   strict private
+    FTSQLOffSet: ISQLOffSet;
     FSortType: TSQLSort;
     FUnions: TList<ISQLUnion>;
     procedure AddUnion(const pSQL: string; const pType: TSQLUnionType);
@@ -714,6 +735,8 @@ type
     function Column(const pColumn: string; const pSortType: TSQLSort = srNone): ISQLOrderBy;
     function Columns(const pColumns: array of string; const pSortType: TSQLSort = srNone): ISQLOrderBy;
     function Sort(const pSortType: TSQLSort): ISQLOrderBy;
+    function Offset(const pRows: integer): ISQLOrderBy;
+    function Fetch(const pRows: integer): ISQLOrderBy;
 
     function Union(pSelect: ISQLSelect; const pType: TSQLUnionType = utUnion): ISQLOrderBy; overload;
     function Union(pWhere: ISQLWhere; const pType: TSQLUnionType = utUnion): ISQLOrderBy; overload;
@@ -1450,7 +1473,7 @@ end;
 function TSQLValue.IsReserverdWord(const pValue: string): Boolean;
 var
   vWords: TArray<string>;
-  I: Integer;
+  I: integer;
 begin
   Result := False;
 
@@ -1647,7 +1670,7 @@ end;
 
 function TSQLJoin.DoToString: string;
 var
-  I: Integer;
+  I: integer;
   vSb: TStringBuilder;
 begin
   Result := EmptyStr;
@@ -1721,6 +1744,7 @@ begin
   inherited AfterConstruction;
   FSortType := srNone;
   FUnions := TList<ISQLUnion>.Create;
+  FTSQLOffSet := TSQLOffSet.Create(Self.ToString);
 end;
 
 procedure TSQLOrderBy.BeforeDestruction;
@@ -1748,7 +1772,7 @@ end;
 function TSQLOrderBy.Columns(const pColumns: array of string;
   const pSortType: TSQLSort): ISQLOrderBy;
 var
-  I: Integer;
+  I: integer;
 begin
   Criterias.Clear;
   for I := Low(pColumns) to High(pColumns) do
@@ -1760,7 +1784,7 @@ end;
 
 procedure TSQLOrderBy.CopyOf(pSource: ISQLOrderBy);
 var
-  I: Integer;
+  I: integer;
 begin
   Criterias.Clear;
   for I := 0 to Pred(pSource.Criterias.Count) do
@@ -1769,7 +1793,7 @@ end;
 
 function TSQLOrderBy.DoToString: string;
 var
-  I: Integer;
+  I: integer;
   vSb: TStringBuilder;
 begin
   Result := EmptyStr;
@@ -1802,10 +1826,24 @@ begin
     for I := 0 to Pred(FUnions.Count) do
       vSb.AppendLine.Append(FUnions[I].ToString);
 
+    vSb.Append(FTSQLOffSet.ToString);
+
     Result := vSb.ToString();
   finally
     FreeAndNil(vSb);
   end;
+end;
+
+function TSQLOrderBy.Fetch(const pRows: integer): ISQLOrderBy;
+begin
+  Self.FTSQLOffSet.Fetch(pRows);
+  Result := Self;
+end;
+
+function TSQLOrderBy.Offset(const pRows: integer): ISQLOrderBy;
+begin
+  Self.FTSQLOffSet.Offset(pRows);
+  Result := Self;
 end;
 
 function TSQLOrderBy.Sort(const pSortType: TSQLSort): ISQLOrderBy;
@@ -1871,7 +1909,7 @@ end;
 
 function TSQLHaving.Expressions(pAggregateTerms: array of ISQLAggregate): ISQLHaving;
 var
-  I: Integer;
+  I: integer;
 begin
   Criterias.Clear;
   for I := Low(pAggregateTerms) to High(pAggregateTerms) do
@@ -1881,7 +1919,7 @@ end;
 
 function TSQLHaving.Expressions(const pTerms: array of string): ISQLHaving;
 var
-  I: Integer;
+  I: integer;
 begin
   Criterias.Clear;
   for I := Low(pTerms) to High(pTerms) do
@@ -1897,7 +1935,7 @@ end;
 
 procedure TSQLHaving.CopyOf(pSource: ISQLHaving);
 var
-  I: Integer;
+  I: integer;
 begin
   Criterias.Clear;
   for I := 0 to Pred(pSource.Criterias.Count) do
@@ -1906,7 +1944,7 @@ end;
 
 function TSQLHaving.DoToString: string;
 var
-  I: Integer;
+  I: integer;
   vSb: TStringBuilder;
 begin
   Result := EmptyStr;
@@ -2007,7 +2045,7 @@ end;
 
 function TSQLGroupBy.Columns(const pColumns: array of string): ISQLGroupBy;
 var
-  I: Integer;
+  I: integer;
 begin
   Criterias.Clear;
   for I := Low(pColumns) to High(pColumns) do
@@ -2017,7 +2055,7 @@ end;
 
 procedure TSQLGroupBy.CopyOf(pSource: ISQLGroupBy);
 var
-  I: Integer;
+  I: integer;
 begin
   Criterias.Clear;
   for I := 0 to Pred(pSource.Criterias.Count) do
@@ -2026,7 +2064,7 @@ end;
 
 function TSQLGroupBy.DoToString: string;
 var
-  I: Integer;
+  I: integer;
   vSb: TStringBuilder;
 begin
   Result := EmptyStr;
@@ -2114,7 +2152,7 @@ end;
 procedure TSQLWhere.AddInList(pValues: array of ISQLValue; const pNotIn: Boolean);
 var
   vSb: TStringBuilder;
-  I: Integer;
+  I: integer;
   vInsensetive: Boolean;
   vStrIn: string;
 begin
@@ -2264,7 +2302,7 @@ end;
 
 function TSQLWhere.DoToString: string;
 var
-  I: Integer;
+  I: integer;
   vSb: TStringBuilder;
 begin
   Result := EmptyStr;
@@ -2375,7 +2413,7 @@ end;
 function TSQLWhere.InList(const pValues: array of TValue): ISQLWhere;
 var
   vValues: array of ISQLValue;
-  I: Integer;
+  I: integer;
 begin
   SetLength(vValues, Length(pValues));
   for I := Low(pValues) to High(pValues) do
@@ -2422,7 +2460,7 @@ function TSQLWhere.Like(const pValues: array of string;
   const pOp: TSQLLikeOperator): ISQLWhere;
 var
   vValues: array of ISQLValue;
-  I: Integer;
+  I: integer;
 begin
   SetLength(vValues, Length(pValues));
   for I := Low(pValues) to High(pValues) do
@@ -2438,7 +2476,7 @@ end;
 function TSQLWhere.Like(pValues: array of ISQLValue): ISQLWhere;
 var
   vWhere: ISQLWhere;
-  I: Integer;
+  I: integer;
 begin
   vWhere := TSQLWhere.Create(nil);
 
@@ -2481,7 +2519,7 @@ end;
 function TSQLWhere.NotInList(const pValues: array of TValue): ISQLWhere;
 var
   vValues: array of ISQLValue;
-  I: Integer;
+  I: integer;
 begin
   SetLength(vValues, Length(pValues));
   for I := Low(pValues) to High(pValues) do
@@ -2503,7 +2541,7 @@ end;
 function TSQLWhere.NotLike(pValues: array of ISQLValue): ISQLWhere;
 var
   vWhere: ISQLWhere;
-  I: Integer;
+  I: integer;
 begin
   vWhere := TSQLWhere.Create(nil);
 
@@ -2522,7 +2560,7 @@ function TSQLWhere.NotLike(const pValues: array of string;
   const pOp: TSQLLikeOperator): ISQLWhere;
 var
   vValues: array of ISQLValue;
-  I: Integer;
+  I: integer;
 begin
   SetLength(vValues, Length(pValues));
   for I := Low(pValues) to High(pValues) do
@@ -2667,7 +2705,7 @@ end;
 
 function TSQLSelect.DoToString: string;
 var
-  I: Integer;
+  I: integer;
   vSb: TStringBuilder;
 begin
   Result := EmptyStr;
@@ -2714,7 +2752,7 @@ end;
 function TSQLSelect.From(pTerms: array of ISQLFrom): ISQLSelect;
 var
   vSb: TStringBuilder;
-  I: Integer;
+  I: integer;
 begin
   vSb := TStringBuilder.Create;
   try
@@ -2738,7 +2776,7 @@ end;
 function TSQLSelect.From(const pTables: array of string): ISQLSelect;
 var
   vFroms: array of ISQLFrom;
-  I: Integer;
+  I: integer;
 begin
   SetLength(vFroms, Length(pTables));
   for I := Low(pTables) to High(pTables) do
@@ -2993,7 +3031,7 @@ end;
 
 function TSQLUpdate.Columns(const pColumns: array of string): ISQLUpdate;
 var
-  I: Integer;
+  I: integer;
 begin
   FColumns.Clear;
   for I := Low(pColumns) to High(pColumns) do
@@ -3033,7 +3071,7 @@ end;
 
 function TSQLUpdate.DoToString: string;
 var
-  I: Integer;
+  I: integer;
   vSb: TStringBuilder;
 begin
   Result := EmptyStr;
@@ -3065,7 +3103,7 @@ end;
 function TSQLUpdate.SetValues(const pValues: array of TValue): ISQLUpdate;
 var
   vValues: array of ISQLValue;
-  I: Integer;
+  I: integer;
 begin
   SetLength(vValues, Length(pValues));
   for I := Low(pValues) to High(pValues) do
@@ -3075,7 +3113,7 @@ end;
 
 function TSQLUpdate.SetValues(pValues: array of ISQLValue): ISQLUpdate;
 var
-  I: Integer;
+  I: integer;
 begin
   FValues.Clear;
   for I := Low(pValues) to High(pValues) do
@@ -3131,7 +3169,7 @@ end;
 
 function TSQLInsert.Columns(const pColumns: array of string): ISQLInsert;
 var
-  I: Integer;
+  I: integer;
 begin
   FColumns.Clear;
   for I := low(pColumns) to high(pColumns) do
@@ -3171,7 +3209,7 @@ end;
 
 function TSQLInsert.DoToString: string;
 var
-  I: Integer;
+  I: integer;
   vSb: TStringBuilder;
 begin
   Result := EmptyStr;
@@ -3233,7 +3271,7 @@ end;
 
 function TSQLInsert.Values(pValues: array of ISQLValue): ISQLInsert;
 var
-  I: Integer;
+  I: integer;
 begin
   FValues.Clear;
   for I := Low(pValues) to High(pValues) do
@@ -3244,7 +3282,7 @@ end;
 function TSQLInsert.Values(const pValues: array of TValue): ISQLInsert;
 var
   vValues: array of ISQLValue;
-  I: Integer;
+  I: integer;
 begin
   SetLength(vValues, Length(pValues));
   for I := Low(pValues) to High(pValues) do
@@ -3903,6 +3941,38 @@ end;
 class function SQL.Value(const pValue: TValue): ISQLValue;
 begin
   Result := TSQLValue.Create(pValue);
+end;
+
+{ TSQLOffSet }
+
+procedure TSQLOffSet.AfterConstruction;
+begin
+  inherited;
+  FRowsOffSet := -1;
+  FRowsFecth := -1;
+end;
+
+function TSQLOffSet.DoToString: string;
+
+begin
+  Result := '';
+  if FRowsOffSet >= 0 then
+    Result := ' OFFSET ' + IntToStr(FRowsOffSet) + ' ROWS ';
+
+  if FRowsFecth >= 0 then
+    Result := Result + ' FETCH NEXT ' + IntToStr(FRowsFecth) + ' ROWS ONLY ';
+end;
+
+function TSQLOffSet.Fetch(const pRows: integer): ISQLOffSet;
+begin
+  Result := Self;
+  FRowsFecth := pRows;
+end;
+
+function TSQLOffSet.Offset(const pRows: integer): ISQLOffSet;
+begin
+  Result := Self;
+  FRowsOffSet := pRows;
 end;
 
 end.

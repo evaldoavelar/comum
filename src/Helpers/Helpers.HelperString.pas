@@ -18,7 +18,7 @@ type
     function ValidaCPF: Boolean;
     function ValidaCNPJ: Boolean;
     function FormataCPF: string;
-
+    function FormataCPFParcial: string;
     function ToUpper: string;
     function ToLower: string;
     function FormataCNPJ: string;
@@ -200,6 +200,37 @@ end;
 function TStringHelper.FormataCPF: string;
 begin
   Result := FormatmaskText('000\.000\.000\-00;0', Self.GetNumbers());
+end;
+
+function TStringHelper.FormataCPFParcial: string;
+var
+  DigitsOnly: string;
+  i: integer;
+begin
+  // Remove todos os caracteres não numéricos
+  DigitsOnly := Self.GetNumbers();
+
+  // Formatar conforme o número de dígitos
+  case Length(DigitsOnly) of
+    1 .. 3:
+      Result := DigitsOnly; // Se tiver até 3 dígitos, retorna como está
+    4:
+      Result := Format('%s.%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, 1)]);
+    5 .. 7:
+      Result := Format('%s.%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, Length(DigitsOnly) - 3)]);
+    8 .. 10:
+      Result := Format('%s.%s.%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, 3), Copy(DigitsOnly, 7, Length(DigitsOnly) - 6)]);
+    11: // CPF
+      Result := Format('%s.%s.%s-%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, 3), Copy(DigitsOnly, 7, 3), Copy(DigitsOnly, 10, 2)]);
+    12 .. 13:
+      Result := Format('%s.%s.%s-%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, 3), Copy(DigitsOnly, 7, 3), Copy(DigitsOnly, 10, Length(DigitsOnly) - 9)]);
+    14: // CNPJ
+      Result := Format('%s.%s.%s/%s-%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 3), Copy(DigitsOnly, 6, 3), Copy(DigitsOnly, 9, 4), Copy(DigitsOnly, 13, 2)]);
+  else
+    // Se não corresponder ao formato de CPF ou CNPJ, apenas devolve os dígitos
+    Result := DigitsOnly;
+  end;
+
 end;
 
 function TStringHelper.GetNumbers: string;

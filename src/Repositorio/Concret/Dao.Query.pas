@@ -42,6 +42,7 @@ type
     property SQL: TStringList read FSQL write FSQL;
     property Parameters: TListaModelCampoValor read FParameters write FParameters;
 
+    function Exec: Integer; overload;
     procedure Open; overload;
     procedure Open(aString: string); overload;
     procedure Clear;
@@ -99,6 +100,15 @@ end;
 function TDaoQuery.Eof: Boolean;
 begin
   result := FDataSet.Eof;
+end;
+
+function TDaoQuery.Exec: Integer;
+begin
+  self.Log(FSQL.Text);
+  self.Log(FParameters);
+
+  result := FConnection
+    .ExecSQL(FSQL.Text, FParameters);
 end;
 
 function TDaoQuery.FieldByName(const FieldName: string): TField;

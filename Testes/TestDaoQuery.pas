@@ -33,6 +33,7 @@ type
   published
     procedure TestOpenQuery;
     procedure TestOpenQueryComParametros;
+    procedure TestExec;
   end;
 
 implementation
@@ -88,6 +89,31 @@ begin
   FDaoBase.Free;
   FDaoQuery.Free;
   FDaoQuery := nil;
+end;
+
+procedure TestTDaoQuery.TestExec;
+begin
+  FDaoQuery.Clear;
+  FDaoQuery.SQL.Add('update ');
+  FDaoQuery.SQL.Add('PRODUTO ');
+  FDaoQuery.SQL.Add('set descricao = :DESCRICAO ');
+  FDaoQuery.SQL.Add('where codigo = :CODIGO');
+  FDaoQuery.Parameters.Add('CODIGO', FModels[0].CODIGO);
+  FDaoQuery.Parameters.Add('DESCRICAO', 'ALTERADO');
+  FDaoQuery.Exec;
+
+  FDaoQuery.Clear;
+  FDaoQuery.SQL.Add('select  * ');
+  FDaoQuery.SQL.Add('from PRODUTO ');
+  FDaoQuery.SQL.Add('where CODIGO = :CODIGO');
+  FDaoQuery.Parameters.Add('CODIGO', FModels[0].CODIGO);
+  FDaoQuery.Open;
+
+  CheckFalse(FDaoQuery.IsEmpty);
+  CheckEquals(FModels[0].CODIGO, FDaoQuery.FieldByName('CODIGO').AsString);
+  CheckEquals('ALTERADO', FDaoQuery.FieldByName('DESCRICAO').AsString);
+  CheckNotEquals(FModels[0].DESCRICAO, FDaoQuery.FieldByName('DESCRICAO').AsString);
+
 end;
 
 procedure TestTDaoQuery.TestOpenQuery;

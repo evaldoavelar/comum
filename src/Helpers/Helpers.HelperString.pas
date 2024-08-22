@@ -1,4 +1,4 @@
-unit Helpers.HelperString;
+﻿unit Helpers.HelperString;
 
 interface
 
@@ -22,6 +22,7 @@ type
     function ToUpper: string;
     function ToLower: string;
     function FormataCNPJ: string;
+    function FormataCNPJParcial: string;
     function ValidaEMAIL: Boolean;
     function ToCurrency: Currency;
     function GetNumbers: string;
@@ -197,6 +198,33 @@ begin
 
 end;
 
+function TStringHelper.FormataCNPJParcial: string;
+var
+  DigitsOnly: string;
+  i: integer;
+begin
+  // Remove todos os caracteres não numéricos
+  DigitsOnly := Self.GetNumbers();
+
+  // Formatar conforme o número de dígitos   31.890.124/0001-13
+  case Length(DigitsOnly) of
+    1 .. 2:
+      Result := DigitsOnly; // Se tiver até 2 dígitos, retorna como está
+    3..5:
+      Result := Format('%s.%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, Length(DigitsOnly) - 2)]);
+    6 .. 8:
+      Result := Format('%s.%s.%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 3), Copy(DigitsOnly, 6, Length(DigitsOnly) - 5)]);
+    9 .. 12:
+       Result := Format('%s.%s.%s/%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 3), Copy(DigitsOnly, 6, 3), Copy(DigitsOnly, 9, Length(DigitsOnly) - 8)]);
+    13..14: // CNPJ
+      Result := Format('%s.%s.%s/%s-%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 3), Copy(DigitsOnly, 6, 3), Copy(DigitsOnly, 9, 4), Copy(DigitsOnly, 13, 2)]);
+  else
+    // Se não corresponder ao formato de CPF ou CNPJ, apenas devolve os dígitos
+    Result := DigitsOnly;
+  end;
+end;
+
+
 function TStringHelper.FormataCPF: string;
 begin
   Result := FormatmaskText('000\.000\.000\-00;0', Self.GetNumbers());
@@ -216,11 +244,11 @@ begin
       Result := DigitsOnly; // Se tiver até 3 dígitos, retorna como está
     4:
       Result := Format('%s.%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, 1)]);
-    5 .. 7:
+    5 .. 6:
       Result := Format('%s.%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, Length(DigitsOnly) - 3)]);
-    8 .. 10:
+    7 .. 9:
       Result := Format('%s.%s.%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, 3), Copy(DigitsOnly, 7, Length(DigitsOnly) - 6)]);
-    11: // CPF
+    10 .. 11: // CPF
       Result := Format('%s.%s.%s-%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, 3), Copy(DigitsOnly, 7, 3), Copy(DigitsOnly, 10, 2)]);
     12 .. 13:
       Result := Format('%s.%s.%s-%s', [Copy(DigitsOnly, 1, 3), Copy(DigitsOnly, 4, 3), Copy(DigitsOnly, 7, 3), Copy(DigitsOnly, 10, Length(DigitsOnly) - 9)]);

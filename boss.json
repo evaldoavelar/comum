@@ -1,10 +1,12 @@
 {
-	"name": "Comum",
+	"name": "comum",
 	"description": "",
 	"version": "1.0.0",
 	"homepage": "",
-	"mainsrc": "./src",
-	"projects": [],
+	"mainsrc": "./Testes",
+	"projects": [
+		"ComumTest.dproj"
+	],
 	"dependencies": {
 		"https://github.com/evaldoavelar/datasetconverter4delphi": ">0.0.0",
 		"https://github.com/evaldoavelar/delphi-neon": "^v1.3.1",

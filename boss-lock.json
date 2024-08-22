@@ -1,6 +1,6 @@
 {
 	"hash": "d41d8cd98f00b204e9800998ecf8427e",
-	"updated": "2022-01-12T14:52:18.4257073-03:00",
+	"updated": "2024-08-22T08:24:31.2974632-03:00",
 	"installedModules": {
 		"https://github.com/evaldoavelar/datasetconverter4delphi": {
 			"name": "datasetconverter4delphi",
@@ -29,7 +29,7 @@
 		"https://github.com/pleriche/fastmm4": {
 			"name": "fastmm4",
 			"version": "master",
-			"hash": "fe65db856cd552c28bd41cece2369cbc",
+			"hash": "3f2382f4030cbc5d4ce6a1ca03fb3a4d",
 			"artifacts": {},
 			"failed": false,
 			"changed": false

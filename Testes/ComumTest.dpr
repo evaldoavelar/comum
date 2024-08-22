@@ -85,7 +85,10 @@ uses
   DCPripemd160 in '..\src\Criptografia\DCPripemd160.pas',
   DCPsha1 in '..\src\Criptografia\DCPsha1.pas',
   Model.CampoValor in '..\src\Models\Concret\Model.CampoValor.pas',
-  TestStringHelpers in 'TestStringHelpers.pas';
+  TestStringHelpers in 'TestStringHelpers.pas',
+  Dao.Query in '..\src\Repositorio\Concret\Dao.Query.pas',
+  TestDaoQuery in 'TestDaoQuery.pas',
+  Seed in 'Seed.pas';
 
 {$R *.res}
 

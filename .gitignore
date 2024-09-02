@@ -71,6 +71,8 @@ __recovery/
 Testes/ModelSupport_ComumTest/
 Testes/Win32/
 submodules
+Testes/modules/
+Testes/boss-lock.json
 
 
 

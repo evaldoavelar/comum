@@ -2,7 +2,6 @@
 
 interface
 
-
 uses
   System.Rtti,
   System.SysUtils,
@@ -426,12 +425,16 @@ begin
     begin
       // Adiciona a chave à lista de colunas
       Keys.Add(Pair.JsonString.Value);
-      Values.Add(':' + Pair.JsonString.Value);
 
       if Pair.JsonValue is TJSONNull then
-        LCampoValor.Add(Pair.JsonString.Value, 'null')
+      begin
+        Values.Add(null);
+      end
       else
+      begin
+        Values.Add(':' + Pair.JsonString.Value);
         LCampoValor.Add(GetParameterFromJson(Pair));
+      end;
     end;
 
     // Monta a instrução SQL INSERT
@@ -733,11 +736,13 @@ begin
     for Pair in JsonObject do
     begin
       // Adiciona a chave à lista de colunas
-      UpdateList.Add(Format('%s = :%s', [Pair.JsonString.Value, Pair.JsonString.Value]));
       if Pair.JsonValue is TJSONNull then
-        LCampoValor.Add(Pair.JsonString.Value, 'null')
+        UpdateList.Add(Format('%s = null', [Pair.JsonString.Value]))
       else
+      begin
+        UpdateList.Add(Format('%s = :%s', [Pair.JsonString.Value, Pair.JsonString.Value]));
         LCampoValor.Add(GetParameterFromJson(Pair));
+      end;
     end;
 
     // Monta a instrução SQL UPDATE
@@ -749,7 +754,7 @@ begin
     self.Log(FLastSql);
     self.Log(LCampoValor);
 
-    Result := self.FConnection.ExecSQL(FLastSql, LCampoValor);
+    Result := self.FConnection.ExecSQL(FLastSql, LCampoValor)
 
   finally
     UpdateList.Free;

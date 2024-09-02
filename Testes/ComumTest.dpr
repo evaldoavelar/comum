@@ -88,7 +88,8 @@ uses
   TestStringHelpers in 'TestStringHelpers.pas',
   Dao.Query in '..\src\Repositorio\Concret\Dao.Query.pas',
   TestDaoQuery in 'TestDaoQuery.pas',
-  Seed in 'Seed.pas';
+  Seed in 'Seed.pas',
+  Helpers.HelperTJsonValue in '..\src\Helpers\Helpers.HelperTJsonValue.pas';
 
 {$R *.res}
 

@@ -187,6 +187,7 @@
         <DCCReference Include="..\src\Repositorio\Concret\Dao.Query.pas"/>
         <DCCReference Include="TestDaoQuery.pas"/>
         <DCCReference Include="Seed.pas"/>
+        <DCCReference Include="..\src\Helpers\Helpers.HelperTJsonValue.pas"/>
         <None Include="ModelSupport_ComumTest\default.txaPackage"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

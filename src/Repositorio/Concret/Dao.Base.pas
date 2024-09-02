@@ -7,6 +7,7 @@ uses
   System.Rtti,
   System.SysUtils,
   System.Classes,
+  System.JSON,
   System.Variants,
   Data.DB,
   Dao.IQueryBuilder,
@@ -37,6 +38,7 @@ type
     function OnGet<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): T;
     function OnToList<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T>;
     function OnObjectList<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): TObjectList<T>;
+    function GetParameterFromJson(const aPair: TJSONPair): TModelCampoValor;
 
   protected
     FLog: ILog;
@@ -56,8 +58,10 @@ type
     function Select<T: class>(): IQueryBuilder<T>; overload;
     function Insert<T: class>(Model: T): LongInt; overload;
     function Insert<T: class>(Model: T; aFields: TArray<string>): LongInt; overload;
+    function Insert(const TableName: string; const JsonObject: TJSONObject): LongInt; overload;
     function Update<T: class>(Model: T): LongInt; overload;
     function Update<T: class>(): IQueryBuilder<T>; overload;
+    function Update(const TableName: string; const aWhereClause: string; const JsonObject: TJSONObject): LongInt; overload;
     function Delete<T: class>(Model: T): LongInt; overload;
     function Delete<T: class>(): IQueryBuilder<T>; overload;
 
@@ -73,6 +77,8 @@ type
   end;
 
 implementation
+
+uses Helpers.HelperTJsonValue;
 
 { TDaoBase }
 
@@ -404,7 +410,49 @@ begin
   end;
 end;
 
-function TDaoBase.Insert<T>(Model: T; aFields: TArray<string>): LongInt;
+function TDaoBase.Insert(const TableName: string; const JsonObject: TJSONObject): LongInt;
+var
+  Keys, Values: TStringList;
+  Pair: TJSONPair;
+  ValueStr: string;
+  LCampoValor: TListaModelCampoValor;
+begin
+  Keys := TStringList.Create;
+  Values := TStringList.Create;
+  LCampoValor := TListaModelCampoValor.Create;
+
+  try
+    for Pair in JsonObject do
+    begin
+      // Adiciona a chave à lista de colunas
+      Keys.Add(Pair.JsonString.Value);
+      Values.Add(':' + Pair.JsonString.Value);
+
+      if Pair.JsonValue is TJSONNull then
+        LCampoValor.Add(Pair.JsonString.Value, 'null')
+      else
+        LCampoValor.Add(GetParameterFromJson(Pair));
+    end;
+
+    // Monta a instrução SQL INSERT
+    FLastSql := Format('INSERT INTO %s (%s) VALUES (%s)', [TableName, Keys.CommaText, Values.CommaText]);
+
+    self.Log(FLastSql);
+    self.Log(LCampoValor);
+
+    Result := self.FConnection.ExecSQL(FLastSql, LCampoValor);
+
+  finally
+    Keys.Free;
+    Values.Free;
+    LCampoValor.Free;
+  end;
+
+end;
+
+function TDaoBase.Insert<T>(Model: T;
+  aFields:
+  TArray<string>): LongInt;
 var
   props: TProperties;
   prop: TRttiProperty;
@@ -448,7 +496,9 @@ begin
   end;
 end;
 
-function TDaoBase.CampoIsPk<T>(pks: TProperties; key: string): Boolean;
+function TDaoBase.CampoIsPk<T>(pks: TProperties;
+  key:
+  string): Boolean;
 var
   prop: TRttiProperty;
   campo: string;
@@ -627,19 +677,85 @@ begin
 
 end;
 
-function TDaoBase.SQLExec<T>(aCmd: string; aCampoValor: TListaModelCampoValor): Integer;
+function TDaoBase.SQLExec<T>(aCmd: string;
+  aCampoValor:
+  TListaModelCampoValor): Integer;
 begin
   Result := self.OnExec<T>(aCmd, aCampoValor);
 end;
 
-function TDaoBase.SQLToList<T>(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T>;
+function TDaoBase.SQLToList<T>(aCmd: string;
+  aCampoValor:
+  TListaModelCampoValor): TList<T>;
 begin
   Result := self.OnToList<T>(aCmd, aCampoValor);
 end;
 
-function TDaoBase.SQLToT<T>(aCmd: string; aCampoValor: TListaModelCampoValor): T;
+function TDaoBase.SQLToT<T>(aCmd: string;
+  aCampoValor:
+  TListaModelCampoValor): T;
 begin
   Result := self.OnGet<T>(aCmd, aCampoValor);
+end;
+
+function TDaoBase.GetParameterFromJson(const aPair: TJSONPair): TModelCampoValor;
+begin
+  if aPair.JsonValue.IsInteger then
+    Result := (TModelCampoValor.Create(aPair.JsonString.Value, aPair.JsonValue.Value, varInteger))
+  else if aPair.JsonValue.IsCurrency then
+    Result := (TModelCampoValor.Create(aPair.JsonString.Value, aPair.JsonValue.Value, varCurrency))
+  else if aPair.JsonValue.IsDouble then
+    Result := (TModelCampoValor.Create(aPair.JsonString.Value, aPair.JsonValue.Value, varDouble))
+  else if aPair.JsonValue.IsDate then
+    Result := (TModelCampoValor.Create(aPair.JsonString.Value, aPair.JsonValue.Value, varDate))
+  else
+    Result := TModelCampoValor.Create(aPair.JsonString.Value, aPair.JsonValue.Value, varString);
+end;
+
+function TDaoBase.Update(const TableName: string; const aWhereClause: string; const JsonObject: TJSONObject): LongInt;
+var
+  UpdateList: TStringList;
+  Pair: TJSONPair;
+  ValueStr: string;
+  LCampoValor: TListaModelCampoValor;
+begin
+  if JsonObject = nil then
+    raise Exception.Create('JsonObject is null');
+
+  UpdateList := TStringList.Create;
+  UpdateList.Delimiter := ',';
+  UpdateList.StrictDelimiter := True;
+  LCampoValor := TListaModelCampoValor.Create;
+
+  self.Log(JsonObject.ToJSON);
+
+  try
+    for Pair in JsonObject do
+    begin
+      // Adiciona a chave à lista de colunas
+      UpdateList.Add(Format('%s = :%s', [Pair.JsonString.Value, Pair.JsonString.Value]));
+      if Pair.JsonValue is TJSONNull then
+        LCampoValor.Add(Pair.JsonString.Value, 'null')
+      else
+        LCampoValor.Add(GetParameterFromJson(Pair));
+    end;
+
+    // Monta a instrução SQL UPDATE
+    if aWhereClause = EmptyStr then
+      FLastSql := Format('UPDATE %s SET %s', [TableName, UpdateList.CommaText])
+    else
+      FLastSql := Format('UPDATE %s SET %s WHERE %s', [TableName, UpdateList.DelimitedText, aWhereClause]);
+
+    self.Log(FLastSql);
+    self.Log(LCampoValor);
+
+    Result := self.FConnection.ExecSQL(FLastSql, LCampoValor);
+
+  finally
+    UpdateList.Free;
+    LCampoValor.Free;
+  end;
+
 end;
 
 function TDaoBase.Update<T>: IQueryBuilder<T>;
@@ -800,7 +916,9 @@ begin
 
 end;
 
-function TDaoBase.SQLToAdapter<T>(aCmd: string; aCampoValor: TListaModelCampoValor): IDaoResultAdapter<T>;
+function TDaoBase.SQLToAdapter<T>(aCmd: string;
+  aCampoValor:
+  TListaModelCampoValor): IDaoResultAdapter<T>;
 var
   ds: TDataSet;
 begin

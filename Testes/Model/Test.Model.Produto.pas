@@ -76,7 +76,7 @@ type
     procedure SetTESTENULLDATE(const Value: TNullable<TDateTime>);
     procedure SetTESTENULLINTEGER(const Value: TNullable<Integer>);
     procedure SetTESTENULLNUMERIC(const Value: TNullable<currency>);
-  published
+  public
 
     [PrimaryKey('PK_PRODUTO_CODIGO', 'CODIGO')]
     [campo('CODIGO', tpVARCHAR, 40, 0, True)]

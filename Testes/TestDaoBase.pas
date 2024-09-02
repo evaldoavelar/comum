@@ -11,7 +11,7 @@ unit TestDaoBase;
 
 interface
 
-uses Firedac.VCLUI.Wait,
+uses Firedac.VCLUI.Wait, System.JSON,
   TestFramework, System.SysUtils, System.DateUtils, Model.ModelBase, Dao.Base, Dao.IConection,
   System.Classes, Dao.Conection.Firedac, Data.DB, System.Rtti, Dao.Conection.Parametros,
   Database.SGDB, Test.Model.Produto, Test.Model.Pedido, Test.Model.Item, System.Generics.Collections,
@@ -40,8 +40,10 @@ type
     procedure GetProdutoUmParametros;
 
     procedure PodeInserirProduto;
+    procedure PodeInserirProdutoDoJson;
     procedure PodeAtualizarProdutoSQlBuilder;
     procedure PodeAtualizarProduto;
+    procedure PodeAtualizarProdutoDoJson;
     procedure PodeExcluirProduto;
     procedure PodeExcluirProdutoSQLBuilder;
 
@@ -55,7 +57,7 @@ type
 implementation
 
 uses
-  Seed;
+  Seed, JSON.Utils;
 
 procedure TestTDaoBase.SetUp;
 var
@@ -202,6 +204,33 @@ begin
   ProdutoBD := FDaoBase.SelectALL<TProduto>.Where(['CODIGO'], [Produto.CODIGO]).Get();
 
   CheckNotNull(ProdutoBD);
+  CheckProdutos(Produto, ProdutoBD);
+
+end;
+
+procedure TestTDaoBase.PodeAtualizarProdutoDoJson;
+var
+  Produto: TProduto;
+  LProdutoJson: TJSonObject;
+  ProdutoBD: TProduto;
+begin // ambiente
+  Produto := TSeed.ProdutoTeste();
+  FDaoBase.Insert<TProduto>(Produto);
+
+  // teste
+  Produto.DESCRICAO := 'Alterado';
+  LProdutoJson := TJSONUtil.ToJSON(Produto);
+  OutputDebugString(PChar(LProdutoJson.ToString));
+
+  FDaoBase.Update('PRODUTO', 'codigo = ' + Produto.CODIGO.QuotedString, LProdutoJson);
+
+  // assertiva
+  ProdutoBD := FDaoBase.SelectALL<TProduto>
+    .Where('CODIGO').Equal(Produto.CODIGO)
+    .Get();
+
+  CheckNotNull(ProdutoBD);
+  CheckEquals(TSeed.GetXML, ProdutoBD.MENSAGEMRETORNO);
   CheckProdutos(Produto, ProdutoBD);
 
 end;
@@ -483,6 +512,32 @@ begin
   CheckEquals(TSeed.GetXML, ProdutoBD.MENSAGEMRETORNO);
   CheckProdutos(Produto, ProdutoBD);
   CheckEquals(Produto.TESTENULLSTRING.HasValue, ProdutoBD.TESTENULLSTRING.HasValue);
+
+end;
+
+procedure TestTDaoBase.PodeInserirProdutoDoJson;
+var
+  Produto: TProduto;
+  LProdutoJson: TJSonObject;
+  ProdutoBD: TProduto;
+begin
+  // ambiente
+  Produto := TSeed.ProdutoTeste();
+
+  // teste
+  LProdutoJson := TJSONUtil.ToJSON(Produto);
+  OutputDebugString(PChar(LProdutoJson.ToString));
+
+  FDaoBase.Insert('PRODUTO', LProdutoJson);
+
+  // assertiva
+  ProdutoBD := FDaoBase.SelectALL<TProduto>
+    .Where('CODIGO').Equal(Produto.CODIGO)
+    .Get();
+
+  CheckNotNull(ProdutoBD);
+  CheckEquals(TSeed.GetXML, ProdutoBD.MENSAGEMRETORNO);
+  CheckProdutos(Produto, ProdutoBD);
 
 end;
 

@@ -40,6 +40,9 @@ type
 
     function Where(const AParams: array of string; const AValues: array of Variant): IQueryBuilder<T>; overload;
     function Where(const Column: string): IQueryBuilder<T>; overload;
+    function Where(pWhere: ISQLWhere): IQueryBuilder<T>; overload;
+    function Where(pBuilder: IQueryBuilder<T>): IQueryBuilder<T>; overload;
+    function Where: ISQLWhere; overload;
 
     function &And(const pColumn: string): IQueryBuilder<T>; overload;
     function &And(pWhere: ISQLWhere): IQueryBuilder<T>; overload;

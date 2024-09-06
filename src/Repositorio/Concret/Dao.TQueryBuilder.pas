@@ -70,6 +70,9 @@ type
 
     function Where(const AParams: array of string; const AValues: array of Variant): IQueryBuilder<T>; overload;
     function Where(const pColumn: string): IQueryBuilder<T>; overload;
+    function Where(pWhere: ISQLWhere): IQueryBuilder<T>; overload;
+    function Where(pBuilder: IQueryBuilder<T>): IQueryBuilder<T>; overload;
+    function Where: ISQLWhere; overload;
 
     function &And(const pColumn: string): IQueryBuilder<T>; overload;
     function &And(pWhere: ISQLWhere): IQueryBuilder<T>; overload;
@@ -150,7 +153,7 @@ function TQueryBuilder<T>.OFFSET(const aPageNumber: Integer;
   aPageSize: Integer): IQueryBuilder<T>;
 begin
   FSQLOrderBy := FSQLOrderBy
-    .Offset(aPageNumber)
+    .OFFSET(aPageNumber)
     .Fetch(aPageSize);
 
   result := Self;
@@ -321,6 +324,17 @@ begin
   end;
 
   result := Value;
+end;
+
+function TQueryBuilder<T>.Where: ISQLWhere;
+begin
+  result := FSQLWhere;
+end;
+
+function TQueryBuilder<T>.Where(pWhere: ISQLWhere): IQueryBuilder<T>;
+begin
+  FSQLWhere := pWhere;
+  result := Self;
 end;
 
 function TQueryBuilder<T>.GreaterOrEqual(const pValue: Variant; isExpression: Boolean = false): IQueryBuilder<T>;
@@ -604,6 +618,18 @@ begin
     itemValue := fieldsValues.Items[keys[I]];
     FCampoValor.Add(itemValue.Field, itemValue.Value);
   end;
+
+  result := Self;
+end;
+
+function TQueryBuilder<T>.Where(pBuilder: IQueryBuilder<T>): IQueryBuilder<T>;
+begin
+  FSQLWhere := pBuilder.Where;
+  var
+  parametes := pBuilder.GetFieldValue.ToArray();
+
+  for var item in parametes do
+    FCampoValor.Add(item.Clone);;
 
   result := Self;
 end;

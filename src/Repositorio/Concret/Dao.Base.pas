@@ -9,6 +9,7 @@ uses
   System.JSON,
   System.Variants,
   Data.DB,
+  Dao.Query,
   Dao.IQueryBuilder,
   Dao.TQueryBuilder,
   Dao.IConection,
@@ -42,7 +43,7 @@ type
   protected
     FLog: ILog;
     FConnection: IConection;
-
+    FDaoQuery: TDaoQuery;
   public
 
     procedure Log(Log: string); overload;
@@ -55,12 +56,15 @@ type
     function SelectALL<T: class>(): IQueryBuilder<T>; overload;
     function SelectOnly<T: class>(): IQueryBuilder<T>; overload;
     function Select<T: class>(): IQueryBuilder<T>; overload;
+
     function Insert<T: class>(Model: T): LongInt; overload;
     function Insert<T: class>(Model: T; aFields: TArray<string>): LongInt; overload;
     function Insert(const TableName: string; const JsonObject: TJSONObject): LongInt; overload;
+
     function Update<T: class>(Model: T): LongInt; overload;
     function Update<T: class>(): IQueryBuilder<T>; overload;
     function Update(const TableName: string; const aWhereClause: string; const JsonObject: TJSONObject): LongInt; overload;
+
     function Delete<T: class>(Model: T): LongInt; overload;
     function Delete<T: class>(): IQueryBuilder<T>; overload;
 
@@ -69,6 +73,8 @@ type
     function SQLToAdapter<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): IDaoResultAdapter<T>; overload;
 
     function SQLExec<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): Integer;
+
+    function Query(): TDaoQuery; overload;
 
     function AutoIncremento(TabelaAutoIncremento, TabelaOrigem, campo: string): Integer;
     constructor Create(aConnection: IConection; aLog: ILog = nil);
@@ -87,9 +93,7 @@ var
   ds: TDataSet;
   inResult: Integer;
 begin
-
   try
-
     try
 
       cmd :=
@@ -178,6 +182,7 @@ constructor TDaoBase.Create(aConnection: IConection; aLog: ILog = nil);
 begin
   self.FConnection := aConnection;
   self.FLog := aLog;
+  self.FDaoQuery := TDaoQuery.Create(aConnection, aLog);
 end;
 
 procedure TDaoBase.Log(Log: string);
@@ -307,6 +312,11 @@ begin
   self.Log('<<< Saindo de TDaoBase.OnToList<T> ');
 end;
 
+function TDaoBase.Query: TDaoQuery;
+begin
+  Result := FDaoQuery;
+end;
+
 function TDaoBase.Delete<T>(): IQueryBuilder<T>;
 var
   Delete: ISQLDelete;
@@ -344,6 +354,8 @@ var
   key: string;
 begin
   try
+    if CampoValor = nil then
+      exit;
 
     builder := TStringBuilder.Create;
 
@@ -377,6 +389,7 @@ end;
 destructor TDaoBase.destroy;
 begin
   // FConnection.close;
+  self.FDaoQuery.Free;
   inherited;
 end;
 

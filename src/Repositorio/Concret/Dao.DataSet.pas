@@ -56,11 +56,33 @@ end;
 function TDaoDataSet<T>.TValueFromField(const aField: TField): TValue;
 var
   atype: TFieldType;
+  LBCDField: TBCDField;
+  LFMTBCDField: TFMTBCDField;
 begin
   atype := aField.DataType;
   case atype of
-    ftBCD, ftFMTBcd:
-      Result := TValue.FromVariant(aField.AsExtended);
+    ftWord, ftSmallint, ftInteger:
+      Result := TValue.FromVariant(aField.AsInteger);
+    ftFloat:
+      Result := TValue.FromVariant(aField.AsFloat);
+    ftCurrency:
+      Result := TValue.FromVariant(aField.AsCurrency);
+    ftBCD:
+      begin
+        LBCDField := TBCDField(aField);
+        if (LBCDField.Precision <= 10) then
+          Result := TValue.FromVariant(aField.AsInteger)
+        else
+          Result := TValue.FromVariant(aField.AsFloat);
+      end;
+    ftFMTBcd:
+      begin
+        LFMTBCDField := TFMTBCDField(aField);
+        if (LFMTBCDField.Precision <= 10) then
+          Result := TValue.FromVariant(aField.AsInteger)
+        else
+          Result := TValue.FromVariant(aField.AsFloat);
+      end;
     ftDate, ftDateTime, ftTime, ftTimeStamp:
       Result := TValue.FromVariant(aField.AsDateTime);
   else
@@ -90,7 +112,7 @@ begin
 
     for prop in rType.GetProperties do
     begin
-      // a propriedade é de escrita
+      // a propriedade ï¿½ de escrita
       if prop.IsWritable then
       begin
         // pegar o campo corresponte a property

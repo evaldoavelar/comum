@@ -11,7 +11,8 @@ type
 
     procedure Encode(Dia, mes, ano: Word);
     procedure EncodeStr(Dia, mes, ano: string);
-    procedure ReplaceTimer;
+    procedure ReplaceTimer; overload;
+    procedure ReplaceTimer(aHora, aMin, aSec, aMil: Word); overload;
     procedure SetDateNow;
     function FormatoDataBr: string;
     function FormatoJson: string;
@@ -70,6 +71,17 @@ var
 begin
   newTime := EncodeTime(0, 0, 0, 0);
   ReplaceTime(Self, newTime);
+end;
+
+procedure THelperDateTime.ReplaceTimer(aHora, aMin, aSec, aMil: Word);
+var
+  newTime: TDateTime;
+  data: TDateTime;
+begin
+  newTime := EncodeTime(aHora, aMin, aSec, aMil);
+  data := Self;
+  ReplaceTime(data, newTime);
+  Self := data;
 end;
 
 procedure THelperDateTime.SetDateNow;

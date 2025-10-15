@@ -40,6 +40,8 @@ type
     function StartWith(value: string): Boolean;
     function Replace(const OldValue, NewValue: string): string;
     function IsValidCelular(): Boolean;
+    function FormataTelefone: string;
+    function FormataCEP: string;
   end;
 
 implementation
@@ -287,6 +289,48 @@ end;
 function TStringHelper.ValidaCPF: Boolean;
 begin
   Result := TUtil.ValidaCPF(Self);
+end;
+
+function TStringHelper.FormataTelefone: string;
+var
+  DigitsOnly: string;
+begin
+  // Remove todos os caracteres não numéricos
+  DigitsOnly := Self.GetNumbers();
+
+  // Formatar conforme o número de dígitos
+  case Length(DigitsOnly) of
+    0:
+      Result := '';
+    1..7:
+      Result := DigitsOnly; // Retorna como está se tiver menos de 8 dígitos
+    8:
+      Result := Format('%s-%s', [Copy(DigitsOnly, 1, 4), Copy(DigitsOnly, 5, 4)]); // 1234-5678
+    9:
+      Result := Format('%s-%s', [Copy(DigitsOnly, 1, 5), Copy(DigitsOnly, 6, 4)]); // 12345-6789
+    10:
+      Result := Format('(%s) %s-%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 4), Copy(DigitsOnly, 7, 4)]); // (12) 3456-7890
+    11:
+      Result := Format('(%s) %s-%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 5), Copy(DigitsOnly, 8, 4)]); // (12) 93456-7890
+  else
+    Result := DigitsOnly; // Retorna os dígitos sem formatação
+  end;
+end;
+
+function TStringHelper.FormataCEP: string;
+var
+  DigitsOnly: string;
+begin
+  // Remove todos os caracteres não numéricos
+  DigitsOnly := Self.GetNumbers();
+
+  // Formatar CEP (12345-678)
+  if Length(DigitsOnly) = 8 then
+    Result := Format('%s-%s', [Copy(DigitsOnly, 1, 5), Copy(DigitsOnly, 6, 3)])
+  else if Length(DigitsOnly) > 0 then
+    Result := DigitsOnly
+  else
+    Result := '';
 end;
 
 end.

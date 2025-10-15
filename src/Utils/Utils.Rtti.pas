@@ -457,68 +457,115 @@ end;
 class procedure TRttiUtil.CopyTo<T, Y>(ASource: T; ATarget: Y);
 var
   context: TRttiContext;
-  IsComponent, LookOutForNameProp: Boolean;
-  RttiType: TRttiType;
-  method: TRttiMethod;
-  MinVisibility: TMemberVisibility;
-  prop: TRttiProperty;
-  Fld: TRttiField;
-  SourceAsPointer, ResultAsPointer: Pointer;
+  sourceType, targetType: TRttiType;
+  sourceProp, targetProp: TRttiProperty;
+  sourceValue: TValue;
+  sourceTypeName, targetTypeName: string;
+  isNullableSource, isNullableTarget: Boolean;
+  nullableValue: TValue;
+  hasValueMethod: TRttiMethod;
+  hasValue: Boolean;
+  getValueMethod: TRttiMethod;
 begin
-  RttiType := context.GetType(ASource.ClassType);
-  // procurar um construtor
-  IsComponent := (ASource is TComponent);
+  if not Assigned(ASource) or not Assigned(ATarget) then
+    Exit;
+
+  context := TRttiContext.Create;
+  sourceType := context.GetType(ASource.ClassType);
+  targetType := context.GetType(ATarget.ClassType);
+
   try
-    // loop nas props, copiando valores que são leitura e escrita
-    Move(ASource, SourceAsPointer, Sizeof(Pointer));
-    Move(ATarget, ResultAsPointer, Sizeof(Pointer));
-
-    if ASource is TComponent then
+    // Iterar pelas propriedades da classe de origem
+    for sourceProp in sourceType.GetProperties do
     begin
-      Fld := RttiType.GetField('Parent');
-      if Assigned(Fld) then
-      begin
-        Fld.SetValue(ResultAsPointer, Fld.GetValue(SourceAsPointer));
-      end
-      else
-        IsComponent := False;
-    end;
+      // Verificar se a propriedade é legível
+      if not sourceProp.IsReadable then
+        Continue;
 
-    LookOutForNameProp := IsComponent and (TComponent(ASource).Owner <> nil);
-    if IsComponent then
-      MinVisibility := mvPublished
-    else
-      MinVisibility := mvPublic;
+      // Procurar a propriedade correspondente na classe de destino
+      targetProp := targetType.GetProperty(sourceProp.Name);
+      
+      // Se não encontrou a propriedade no destino, pular
+      if not Assigned(targetProp) then
+        Continue;
 
-    for Fld in RttiType.GetFields do
-    begin
-      if Fld.Visibility >= MinVisibility then
-        Fld.SetValue(ResultAsPointer, Fld.GetValue(SourceAsPointer));
-    end;
+      // Verificar se a propriedade de destino é gravável
+      if not targetProp.IsWritable then
+        Continue;
 
-    for prop in RttiType.GetProperties do
-      if (prop.Visibility >= MinVisibility) and prop.IsReadable and prop.IsWritable
-      then
-        try
-            if LookOutForNameProp and (prop.Name = 'Name') and
-              (prop.PropertyType is TRttiStringType) then
-              LookOutForNameProp := False
-            else
+      try
+        // Obter os nomes dos tipos
+        sourceTypeName := sourceProp.PropertyType.Name;
+        targetTypeName := targetProp.PropertyType.Name;
+
+        // Verificar se é TNullable
+        isNullableSource := sourceTypeName.StartsWith('TNullable<');
+        isNullableTarget := targetTypeName.StartsWith('TNullable<');
+
+        // Caso 1: Source é TNullable e Target também é TNullable
+        if isNullableSource and isNullableTarget then
+        begin
+          sourceValue := sourceProp.GetValue(TObject(ASource));
+          targetProp.SetValue(TObject(ATarget), sourceValue);
+        end
+        // Caso 2: Source é TNullable mas Target não é
+        else if isNullableSource and not isNullableTarget then
+        begin
+          // Obter o valor do TNullable de forma segura
+          sourceValue := sourceProp.GetValue(TObject(ASource));
+          
+          // Usar o método HasValue do TNullable para verificar se tem valor
+          hasValueMethod := sourceProp.PropertyType.GetMethod('HasValue');
+          if Assigned(hasValueMethod) then
+          begin
+            hasValue := hasValueMethod.Invoke(sourceValue, []).AsBoolean;
+            
+            if hasValue then
             begin
-              if (prop.PropertyType.TypeKind = tkClass) then
+              // Usar o método GetValue do TNullable para obter o valor interno
+              getValueMethod := sourceProp.PropertyType.GetMethod('GetValue');
+              if Assigned(getValueMethod) then
               begin
-
+                nullableValue := getValueMethod.Invoke(sourceValue, []);
+                targetProp.SetValue(TObject(ATarget), nullableValue);
               end;
-
-              prop.SetValue(ResultAsPointer, prop.GetValue(SourceAsPointer));
             end;
-
-        except
+            // Se não tem valor, não faz nada (deixa o valor padrão no destino)
+          end;
+        end
+        // Caso 3: Source não é TNullable mas Target é TNullable
+        else if not isNullableSource and isNullableTarget then
+        begin
+          sourceValue := sourceProp.GetValue(TObject(ASource));
+          // O operador Implicit do TNullable vai converter automaticamente
+          targetProp.SetValue(TObject(ATarget), sourceValue);
+        end
+        // Caso 4: Ambos não são TNullable
+        else
+        begin
+          // Verificar se os tipos são compatíveis
+          if (sourceTypeName = targetTypeName) or 
+             (sourceProp.PropertyType.TypeKind = targetProp.PropertyType.TypeKind) then
+          begin
+            sourceValue := sourceProp.GetValue(TObject(ASource));
+            targetProp.SetValue(TObject(ATarget), sourceValue);
+          end;
         end;
-  except
-    raise;
-  end;
 
+      except
+        on E: Exception do
+        begin
+          // Log do erro mas continuar processando outras propriedades
+          // Você pode descomentar a linha abaixo para debug
+          // raise Exception.CreateFmt('Erro ao copiar propriedade %s: %s', [sourceProp.Name, E.Message]);
+        end;
+      end;
+    end;
+
+  except
+    on E: Exception do
+      raise Exception.Create('TRttiUtil.CopyTo: ' + E.Message);
+  end;
 end;
 
 /// <summary>

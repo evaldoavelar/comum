@@ -49,7 +49,7 @@ type
     function setAtivo(): ILog;
     function setInativo(): ILog;
 
-
+    procedure Clean(aDiasAposCriacao: integer);
 
     constructor Create(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog);
     class function New(aDiretorio: string; aNomeArquivo: string; aDecorator: ILog): ILog;
@@ -67,6 +67,16 @@ begin
 
   if Assigned(FDecorator) then
     FDecorator.d(Log);
+end;
+
+
+procedure TLogTXT.Clean(aDiasAposCriacao: integer);
+begin
+  try
+    d('Apagando logs antigos...');
+    TUtilsIO.DeleteArquivosAntigos(FDiretorio, 'log', false, aDiasAposCriacao);
+  except
+  end;
 end;
 
 constructor TLogTXT.Create(aDiretorio: string; aNomeArquivo: string;

@@ -26,6 +26,7 @@ type
     procedure d(aParamns: TDictionary<string, Variant>); overload;
     procedure d(e:Exception); overload;
 
+    procedure Clean(aDiasAposCriacao: integer);
   end;
 
 implementation

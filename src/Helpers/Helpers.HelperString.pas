@@ -39,9 +39,11 @@ type
     function IsEmpty: Boolean;
     function StartWith(value: string): Boolean;
     function Replace(const OldValue, NewValue: string): string;
-    function IsValidCelular(): Boolean;
+    function ValidarCelular(): Boolean;
+    function ValidarCEP(): Boolean;
     function FormataTelefone: string;
     function FormataCEP: string;
+    function ToTitle: string;
   end;
 
 implementation
@@ -273,12 +275,21 @@ begin
   Result := Self = ''
 end;
 
-function TStringHelper.IsValidCelular(): Boolean;
+function TStringHelper.ValidarCelular(): Boolean;
 var
   ipRegExp: string;
 begin
   ipRegExp := '^[1-9]{2}(?:[6-9]|9[1-9])[0-9]{4}[0-9]{4}$';
   Result := TRegEx.IsMatch(Self.GetNumbers(), ipRegExp);
+end;
+
+function TStringHelper.ValidarCEP(): Boolean;
+var
+  DigitsOnly: string;
+begin
+  DigitsOnly := Self.GetNumbers();
+  // CEP válido deve ter exatamente 8 dígitos
+  Result := Length(DigitsOnly) = 8;
 end;
 
 function TStringHelper.ValidaCNPJ: Boolean;
@@ -331,6 +342,37 @@ begin
     Result := DigitsOnly
   else
     Result := '';
+end;
+
+function TStringHelper.ToTitle: string;
+var
+  I: Integer;
+  CapitalizeNext: Boolean;
+  C: Char;
+begin
+  if Trim(Self) = '' then
+  begin
+    Result := Self;
+    Exit;
+  end;
+
+  Result := LowerCase(Trim(Self));
+  CapitalizeNext := True;
+
+  for I := 1 to Length(Result) do
+  begin
+    C := Result[I];
+    
+    if CapitalizeNext and (C <> ' ') then
+    begin
+      Result[I] := UpCase(C);
+      CapitalizeNext := False;
+    end;
+    
+    // Capitalizar após espaço, hífen ou outros separadores
+    if CharInSet(C, [' ', '-', '.', '''', '/', '\']) then
+      CapitalizeNext := True;
+  end;
 end;
 
 end.

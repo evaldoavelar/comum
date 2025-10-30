@@ -93,6 +93,10 @@ var
   RestLen: integer;
 begin
   Result := Self;
+
+  if Len = 0 then
+    Exit;
+
   RestLen := Len - Length(Self);
   if RestLen > 0 then
     Result := StringOfChar(Ch, RestLen) + Self
@@ -105,6 +109,10 @@ var
   RestLen: integer;
 begin
   Result := Self;
+
+  if Len = 0 then
+    Exit;
+
   RestLen := Len - Length(Self);
   if RestLen > 0 then
     Result := Self + StringOfChar(Ch, RestLen)
@@ -214,20 +222,19 @@ begin
   case Length(DigitsOnly) of
     1 .. 2:
       Result := DigitsOnly; // Se tiver até 2 dígitos, retorna como está
-    3..5:
+    3 .. 5:
       Result := Format('%s.%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, Length(DigitsOnly) - 2)]);
     6 .. 8:
       Result := Format('%s.%s.%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 3), Copy(DigitsOnly, 6, Length(DigitsOnly) - 5)]);
     9 .. 12:
-       Result := Format('%s.%s.%s/%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 3), Copy(DigitsOnly, 6, 3), Copy(DigitsOnly, 9, Length(DigitsOnly) - 8)]);
-    13..14: // CNPJ
+      Result := Format('%s.%s.%s/%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 3), Copy(DigitsOnly, 6, 3), Copy(DigitsOnly, 9, Length(DigitsOnly) - 8)]);
+    13 .. 14: // CNPJ
       Result := Format('%s.%s.%s/%s-%s', [Copy(DigitsOnly, 1, 2), Copy(DigitsOnly, 3, 3), Copy(DigitsOnly, 6, 3), Copy(DigitsOnly, 9, 4), Copy(DigitsOnly, 13, 2)]);
   else
     // Se não corresponder ao formato de CPF ou CNPJ, apenas devolve os dígitos
     Result := DigitsOnly;
   end;
 end;
-
 
 function TStringHelper.FormataCPF: string;
 begin
@@ -313,7 +320,7 @@ begin
   case Length(DigitsOnly) of
     0:
       Result := '';
-    1..7:
+    1 .. 7:
       Result := DigitsOnly; // Retorna como está se tiver menos de 8 dígitos
     8:
       Result := Format('%s-%s', [Copy(DigitsOnly, 1, 4), Copy(DigitsOnly, 5, 4)]); // 1234-5678
@@ -346,9 +353,9 @@ end;
 
 function TStringHelper.ToTitle: string;
 var
-  I: Integer;
+  i: integer;
   CapitalizeNext: Boolean;
-  C: Char;
+  c: char;
 begin
   if Trim(Self) = '' then
   begin
@@ -359,18 +366,18 @@ begin
   Result := LowerCase(Trim(Self));
   CapitalizeNext := True;
 
-  for I := 1 to Length(Result) do
+  for i := 1 to Length(Result) do
   begin
-    C := Result[I];
-    
-    if CapitalizeNext and (C <> ' ') then
+    c := Result[i];
+
+    if CapitalizeNext and (c <> ' ') then
     begin
-      Result[I] := UpCase(C);
+      Result[i] := UpCase(c);
       CapitalizeNext := False;
     end;
-    
+
     // Capitalizar após espaço, hífen ou outros separadores
-    if CharInSet(C, [' ', '-', '.', '''', '/', '\']) then
+    if CharInSet(c, [' ', '-', '.', '''', '/', '\']) then
       CapitalizeNext := True;
   end;
 end;

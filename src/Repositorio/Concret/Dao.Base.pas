@@ -68,6 +68,7 @@ type
     function Delete<T: class>(Model: T): LongInt; overload;
     function Delete<T: class>(): IQueryBuilder<T>; overload;
 
+    function SQLToObjectList<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): TObjectList<T>; overload;
     function SQLToList<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T>; overload;
     function SQLToT<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): T; overload;
     function SQLToAdapter<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): IDaoResultAdapter<T>; overload;
@@ -329,7 +330,7 @@ begin
       .Delete
       .From(TAtributosFuncoes.tabela<T>());
 
-    // retornar uma query builder para o usu�rio continuar construindo a query
+    // retornar uma query builder para o usuário continuar construindo a query
     builder := TQueryBuilder<T>.Create(Delete, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -612,7 +613,7 @@ begin
 
     Select := SQL.Select;
 
-    // retornar uma query builder para o usu�rio continuar construindo a query
+    // retornar uma query builder para o usuário continuar construindo a query
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -642,7 +643,7 @@ begin
       .AllColumns
       .From(TAtributosFuncoes.tabela<T>);
 
-    // retornar uma query builder para o usu�rio continuar construindo a query
+    // retornar uma query builder para o usuário continuar construindo a query
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -676,7 +677,7 @@ begin
 
     Select := Select.From(TAtributosFuncoes.tabela<T>);
 
-    // retornar uma query builder para o usu�rio continuar construindo a query
+    // retornar uma query builder para o usuário continuar construindo a query
     builder := TQueryBuilder<T>.Create(Select, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -700,11 +701,14 @@ begin
   Result := self.OnExec<T>(aCmd, aCampoValor);
 end;
 
-function TDaoBase.SQLToList<T>(aCmd: string;
-  aCampoValor:
-  TListaModelCampoValor): TList<T>;
+function TDaoBase.SQLToList<T>(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T>;
 begin
   Result := self.OnToList<T>(aCmd, aCampoValor);
+end;
+
+function TDaoBase.SQLToObjectList<T>(aCmd: string; aCampoValor: TListaModelCampoValor): TObjectList<T>;
+begin
+  Result := self.OnObjectList<T>(aCmd, aCampoValor);
 end;
 
 function TDaoBase.SQLToT<T>(aCmd: string;
@@ -788,7 +792,7 @@ begin
       .Update
       .Table(TAtributosFuncoes.tabela<T>());
 
-    // retornar uma query builder para o usu�rio continuar construindo a query
+    // retornar uma query builder para o usuário continuar construindo a query
     builder := TQueryBuilder<T>.Create(Update, self.FConnection);
     builder.OnGet := self.OnGet<T>;
     builder.OnToList := self.OnToList<T>;
@@ -899,10 +903,10 @@ begin
     for key in CampoValor.Keys do
     begin
 
-      // verificar se o campo � uma primary key
+      // verificar se o campo é uma primary key
       isPk := CampoIsPk<T>(pks, key);
 
-      // se n�o � pk
+      // se não é pk
       if isPk = false then
       begin
         // coloca no update

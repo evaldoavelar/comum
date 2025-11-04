@@ -23,8 +23,8 @@ type
   public
     class procedure Append<T>(var Arr: TArray<T>; Value: T); overload;
     class procedure Append<T>(var Arr1: TArray<T>; const Arr2: array of T); overload;
-    class function ConcatStr<T>(var Arr1: TArray<string>; aDelimitador: Char): string; overload;
-    class function ConcatStr<T>(var Arr1: TArray<integer>; aDelimitador: Char): string; overload;
+    class function ConcatStr(const Arr1: TArray<string>; aDelimitador: Char): string; overload;
+    class function ConcatStr(const Arr1: TArray<integer>; aDelimitador: Char): string; overload;
     class function Indexof<T>(var Values: TArray<T>; Item: T): integer; overload; static;
     class function Indexof<T>(var Values: TArray<T>; Item: T; const Comparer: IComparer<T>): integer; overload; static;
 
@@ -81,7 +81,7 @@ begin
   Result := Compare<T>(Values, ValuesToCompare, TComparer<T>.Default);
 end;
 
-class function TArrayUtil.ConcatStr<T>(var Arr1: TArray<integer>;
+class function TArrayUtil.ConcatStr(const Arr1: TArray<integer>;
   aDelimitador: Char): string;
 var
   I: integer;
@@ -193,7 +193,7 @@ begin
   end;
 end;
 
-class function TArrayUtil.ConcatStr<T>(var Arr1: TArray<string>;
+class function TArrayUtil.ConcatStr(const Arr1: TArray<string>;
   aDelimitador: Char): string;
 var
   I: integer;

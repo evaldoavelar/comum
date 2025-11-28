@@ -39,6 +39,7 @@ type
     function OnToList<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): TList<T>;
     function OnObjectList<T: class>(aCmd: string; aCampoValor: TListaModelCampoValor): TObjectList<T>;
     function GetParameterFromJson(const aPair: TJSONPair): TModelCampoValor;
+    procedure GetUpdateFields<T: class>(Update: ISQLUpdate; CampoValor: TListaModelCampoValor);
 
   protected
     FLog: ILog;
@@ -62,6 +63,7 @@ type
     function Insert(const TableName: string; const JsonObject: TJSONObject): LongInt; overload;
 
     function Update<T: class>(Model: T): LongInt; overload;
+    function UpdateWithoutWhere<T: class>(Model: T): IQueryBuilder<T>; overload;
     function Update<T: class>(): IQueryBuilder<T>; overload;
     function Update(const TableName: string; const aWhereClause: string; const JsonObject: TJSONObject): LongInt; overload;
 
@@ -190,18 +192,13 @@ procedure TDaoBase.Log(Log: string);
 begin
   if Assigned(FLog) then
     FLog.d(Log);
-{$IFDEF MSWINDOWS}
-  OutputDebugString(PChar(Log));
-{$ENDIF}
+
 end;
 
 procedure TDaoBase.Log(Log: string; const Args: array of const);
 begin
   if Assigned(FLog) then
     FLog.d(Log, Args);
-{$IFDEF MSWINDOWS}
-  OutputDebugString(PChar(Format(Log, Args)));
-{$ENDIF}
 end;
 
 function TDaoBase.OnExec<T>(aCmd: string; aCampoValor: TListaModelCampoValor): LongInt;
@@ -373,9 +370,6 @@ begin
       FLog.d(builder.ToString());
     end;
 
-{$IFDEF MSWINDOWS}
-    OutputDebugString(PChar(builder.ToString()));
-{$ENDIF}
     FreeAndNil(builder);
 
   except
@@ -876,15 +870,38 @@ begin
   end;
 end;
 
-function TDaoBase.Update<T>(Model: T): LongInt;
+procedure TDaoBase.GetUpdateFields<T>(Update: ISQLUpdate; CampoValor: TListaModelCampoValor);
+var
+  pks: TProperties;
+  key: string;
+  isPk: Boolean;
+begin // primary keys
+  pks := TAtributosFuncoes.PropertiePk<T>;
+
+  for key in CampoValor.Keys do
+  begin
+
+    // verificar se o campo é uma primary key
+    isPk := CampoIsPk<T>(pks, key);
+
+    // se não é pk
+    if isPk = false then
+    begin
+      // coloca no update
+      Update := Update.ColumnSetValue(key, ':' + key);
+    end;
+  end;
+
+end;
+
+function TDaoBase.UpdateWithoutWhere<T>(Model: T): IQueryBuilder<T>;
 var
   pks: TProperties;
   tabela: string;
-  I: Integer;
   Update: ISQLUpdate;
+  builder: TQueryBuilder<T>;
   CampoValor: TListaModelCampoValor;
   key: string;
-  isPk: Boolean;
 begin
   Log('>> Update');
   try
@@ -895,24 +912,57 @@ begin
     // campos e valores
     CampoValor := TAtributosFuncoes.CampoValor<T>(Model, True);
 
-    // primary keys
-    pks := TAtributosFuncoes.PropertiePk<T>;
-
     Update := SQL.Update.Table(tabela);
+
+    GetUpdateFields<T>(Update, CampoValor);
+
+    // retornar uma query builder para o usuário continuar construindo a query
+    builder := TQueryBuilder<T>.Create(Update, self.FConnection);
+    builder.OnGet := self.OnGet<T>;
+    builder.OnToList := self.OnToList<T>;
+    builder.OnToObjectList := self.OnObjectList<T>;
+    builder.OnExec := self.OnExec<T>;
 
     for key in CampoValor.Keys do
     begin
-
-      // verificar se o campo é uma primary key
-      isPk := CampoIsPk<T>(pks, key);
-
-      // se não é pk
-      if isPk = false then
-      begin
-        // coloca no update
-        Update := Update.ColumnSetValue(key, ':' + key);
-      end;
+      builder.GetFieldValue.Add(TModelCampoValor.Create(
+        CampoValor.Items[key].Field,
+        CampoValor.Items[key].Value,
+        CampoValor.Items[key].vType));
     end;
+
+    Result := builder;
+
+    CampoValor.Free;
+
+  except
+    on E: Exception do
+    begin
+      Log('<< Update Exception');
+      raise TDaoException.Create(E.Message);
+    end;
+  end;
+
+end;
+
+function TDaoBase.Update<T>(Model: T): LongInt;
+var
+  tabela: string;
+  Update: ISQLUpdate;
+  CampoValor: TListaModelCampoValor;
+begin
+  Log('>> Update');
+  try
+
+    // tabela
+    tabela := TAtributosFuncoes.tabela<T>;
+
+    // campos e valores
+    CampoValor := TAtributosFuncoes.CampoValor<T>(Model, True);
+
+    Update := SQL.Update.Table(tabela);
+
+    GetUpdateFields<T>(Update, CampoValor);
 
     FLastSql := Update.ToString +
       GetWhere<T>(Model);

@@ -45,6 +45,7 @@ type
     FLog: ILog;
     FConnection: IConection;
     FDaoQuery: TDaoQuery;
+
   public
 
     procedure Log(Log: string); overload;
@@ -86,7 +87,7 @@ type
 
 implementation
 
-uses Helpers.HelperTJsonValue;
+uses Helpers.HelperTJsonValue, Util.Database;
 
 { TDaoBase }
 
@@ -189,10 +190,13 @@ begin
 end;
 
 procedure TDaoBase.Log(Log: string);
+var
+  LogNormalizado: string;
 begin
   if Assigned(FLog) then
+  begin
     FLog.d(Log);
-
+  end;
 end;
 
 procedure TDaoBase.Log(Log: string; const Args: array of const);
@@ -205,7 +209,7 @@ function TDaoBase.OnExec<T>(aCmd: string; aCampoValor: TListaModelCampoValor): L
 begin
   self.Log('>>> Entrando em  TDaoBase.OnExec<T> ');
   try
-    FLastSql := aCmd;
+    FLastSql := TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);
 
     self.Log(FLastSql);
     self.Log(aCampoValor);
@@ -226,7 +230,7 @@ var
 begin
   self.Log('>>> Entrando em  TDaoBase.OnGet<T> ');
   try
-    FLastSql := aCmd;
+    FLastSql :=  TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);;
     self.Log(FLastSql);
     self.Log(aCampoValor);
 
@@ -255,7 +259,7 @@ begin
   try
     Result := TObjectList<T>.Create;
 
-    FLastSql := aCmd;
+    FLastSql :=  TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);;
 
     self.Log(FLastSql);
     self.Log(aCampoValor);
@@ -288,7 +292,7 @@ begin
   try
     Result := TList<T>.Create;
 
-    FLastSql := aCmd;
+    FLastSql :=  TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);
 
     self.Log(FLastSql);
     self.Log(aCampoValor);
@@ -447,6 +451,7 @@ begin
 
     // Monta a instrução SQL INSERT
     FLastSql := Format('INSERT INTO %s (%s) VALUES (%s)', [TableName, Keys.CommaText, Values.CommaText]);
+    FLastSql := TUtilDatabase.AddSchema(FLastSql, FConnection.DatabaseSchema, FLog);
 
     self.Log(FLastSql);
     self.Log(LCampoValor);
@@ -490,7 +495,7 @@ begin
       Into := Into.ColumnValue(aFields[I], ':' + aFields[I]);
     end;
 
-    FLastSql := Into.ToString;
+    FLastSql := TUtilDatabase.AddSchema(Into.ToString, FConnection.DatabaseSchema, FLog);
 
     self.Log(FLastSql);
     self.Log(CampoValor);
@@ -581,7 +586,7 @@ begin
       Into := Into.ColumnValue(key, ':' + key);
     end;
 
-    FLastSql := Into.ToString;
+    FLastSql := TUtilDatabase.AddSchema(Into.ToString, FConnection.DatabaseSchema, FLog);
 
     self.Log(FLastSql);
     self.Log(CampoValor);
@@ -762,6 +767,8 @@ begin
     else
       FLastSql := Format('UPDATE %s SET %s WHERE %s', [TableName, UpdateList.DelimitedText, aWhereClause]);
 
+    FLastSql := TUtilDatabase.AddSchema(FLastSql, FConnection.DatabaseSchema, FLog);
+
     self.Log(FLastSql);
     self.Log(LCampoValor);
 
@@ -855,6 +862,8 @@ begin
     FLastSql := SQL.Delete.From(tabela)
       .ToString +
       GetWhere<T>(Model);
+
+    FLastSql := TUtilDatabase.AddSchema(FLastSql, FConnection.DatabaseSchema, FLog);
 
     Log(FLastSql);
     Result := self.FConnection.ExecSQL(FLastSql);
@@ -967,6 +976,8 @@ begin
     FLastSql := Update.ToString +
       GetWhere<T>(Model);
 
+    FLastSql := TUtilDatabase.AddSchema(FLastSql, FConnection.DatabaseSchema, FLog);
+
     Log(FLastSql);
     self.Log(CampoValor);
 
@@ -995,7 +1006,7 @@ var
   ds: TDataSet;
 begin
   try
-    FLastSql := aCmd;
+    FLastSql := TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);
 
     self.Log(FLastSql);
     self.Log(aCampoValor);

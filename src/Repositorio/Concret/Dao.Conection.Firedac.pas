@@ -46,11 +46,16 @@ type
     FFreeConnectionOnDestroy: boolean;
     FConnection: TFDConnection;
     FParametros: TConectionParametros;
+    FDatabaseSchema: string;
+    procedure SetDatabaseSchema(aSchema: string);
+    function GetDatabaseSchema: string;
     function Conexao(nova: boolean = false): TFDConnection;
     function Query(): TFDQuery;
     procedure SetQueryParamns(qry: TFDQuery; aNamedParamns: TListaModelCampoValor);
     function VariantIsEmptyOrNull(const Value: Variant): boolean;
     procedure OnBeforeDisconnect(Sender: TObject);
+  public
+    property DatabaseSchema: string read GetDatabaseSchema write SetDatabaseSchema;
   public
 
     procedure StartTransaction;
@@ -151,9 +156,9 @@ begin
 
       FConnection.FetchOptions.Mode := fmAll;
       FConnection.ResourceOptions.AutoConnect := True;
-     // FConnection.TxOptions.AutoStart := false;
-//      FConnection.TxOptions.AutoStop := false;
-//      FConnection.TxOptions.AutoCommit := false;
+      // FConnection.TxOptions.AutoStart := false;
+      // FConnection.TxOptions.AutoStop := false;
+      // FConnection.TxOptions.AutoCommit := false;
       FConnection.TxOptions.DisconnectAction := xdRollback;
       // FConnection.BeforeDisconnect := OnBeforeDisconnect;
       // FConnection.OnLost := OnBeforeDisconnect;
@@ -209,6 +214,11 @@ end;
 /// </summary>
 /// <param name="qry">TFDQuery a ser parametrizada</param>
 /// <param name="aNamedParamns">Lista de Parametros</param>
+procedure TFiredacConection.SetDatabaseSchema(aSchema: string);
+begin
+  FDatabaseSchema := aSchema;
+end;
+
 procedure TFiredacConection.SetQueryParamns(qry: TFDQuery; aNamedParamns: TListaModelCampoValor);
 var
   key: string;
@@ -393,6 +403,11 @@ begin
       raise TConectionException.Create(e.Message);
     end;
   end;
+end;
+
+function TFiredacConection.GetDatabaseSchema: string;
+begin
+  result := FDatabaseSchema;
 end;
 
 function TFiredacConection.GetSGBDType: TSGBD;

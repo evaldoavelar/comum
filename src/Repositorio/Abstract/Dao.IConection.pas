@@ -12,6 +12,10 @@ type
   IConection = interface
     ['{F4CD79FE-8AB6-449D-9041-C3F44BC18D09}']
 
+    procedure SetDatabaseSchema(aSchema: string);
+    function GetDatabaseSchema: string;
+    property DatabaseSchema: string read GetDatabaseSchema write SetDatabaseSchema;
+
     procedure StartTransaction;
     procedure Commit;
     procedure Rollback;

@@ -87,7 +87,7 @@ type
 
 implementation
 
-uses Helpers.HelperTJsonValue, Util.Database;
+uses Helpers.HelperTJsonValue, Util.Database, Log.Performance;
 
 { TDaoBase }
 
@@ -206,46 +206,58 @@ begin
 end;
 
 function TDaoBase.OnExec<T>(aCmd: string; aCampoValor: TListaModelCampoValor): LongInt;
+var
+  LLogP: ILogPerformance;
 begin
-  self.Log('>>> Entrando em  TDaoBase.OnExec<T> ');
+  LLogP := TLogPerformance.Start;
   try
-    FLastSql := TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);
+    self.Log('>>> Entrando em  TDaoBase.OnExec<T> ');
+    try
+      FLastSql := TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);
 
-    self.Log(FLastSql);
-    self.Log(aCampoValor);
+      self.Log(FLastSql);
+      self.Log(aCampoValor);
 
-    Result := FConnection.ExecSQL(FLastSql, aCampoValor);
+      Result := FConnection.ExecSQL(FLastSql, aCampoValor);
 
-  except
-    on E: Exception do
-      raise Exception.Create('TDaoBase.OnExec<T>: ' + E.Message);
+    except
+      on E: Exception do
+        raise Exception.Create('TDaoBase.OnExec<T>: ' + E.Message);
+    end;
+
+  finally
+    self.Log('<<< Saindo de TDaoBase.OnExec<T> - Query Execultada em %s', [LLogP.Stop]);
   end;
-  self.Log('<<< Saindo de TDaoBase.OnExec<T> ');
 end;
 
 function TDaoBase.OnGet<T>(aCmd: string; aCampoValor: TListaModelCampoValor): T;
 var
   ds: TDataSet;
   cmd: string;
+  LLogP: ILogPerformance;
 begin
-  self.Log('>>> Entrando em  TDaoBase.OnGet<T> ');
+  LLogP := TLogPerformance.Start;
   try
-    FLastSql :=  TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);;
-    self.Log(FLastSql);
-    self.Log(aCampoValor);
+    self.Log('>>> Entrando em  TDaoBase.OnGet<T> ');
+    try
+      FLastSql := TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);;
+      self.Log(FLastSql);
+      self.Log(aCampoValor);
 
-    ds := FConnection.Open(FLastSql, aCampoValor);
-    if (ds.IsEmpty = false) then
-      Result := TDaoDataSet<T>.New.DataSetToObject(ds)
-    else
-      Result := nil;
+      ds := FConnection.Open(FLastSql, aCampoValor);
+      if (ds.IsEmpty = false) then
+        Result := TDaoDataSet<T>.New.DataSetToObject(ds)
+      else
+        Result := nil;
 
-    FreeAndNil(ds);
-  except
-    on E: Exception do
-      raise Exception.Create('TDaoBase.OnGet<T>: ' + E.Message);
+      FreeAndNil(ds);
+    except
+      on E: Exception do
+        raise Exception.Create('TDaoBase.OnGet<T>: ' + E.Message);
+    end;
+  finally
+    self.Log('<<< Saindo de TDaoBase.OnGet<T> - Query Execultada em %s', [LLogP.Stop]);
   end;
-  self.Log('<<< Saindo de TDaoBase.OnGet<T> ');
 end;
 
 function TDaoBase.OnObjectList<T>(aCmd: string;
@@ -254,31 +266,36 @@ var
   Model: T;
   ds: TDataSet;
   cmd: string;
+  LLogP: ILogPerformance;
 begin
-  self.Log('>>> Entrando em  TDaoBase.OnObjectList<T> ');
+  LLogP := TLogPerformance.Start;
   try
-    Result := TObjectList<T>.Create;
+    self.Log('>>> Entrando em  TDaoBase.OnObjectList<T> ');
+    try
+      Result := TObjectList<T>.Create;
 
-    FLastSql :=  TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);;
+      FLastSql := TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);;
 
-    self.Log(FLastSql);
-    self.Log(aCampoValor);
+      self.Log(FLastSql);
+      self.Log(aCampoValor);
 
-    ds := FConnection.Open(FLastSql, aCampoValor);
+      ds := FConnection.Open(FLastSql, aCampoValor);
 
-    while not ds.Eof do
-    begin
-      Model := TDaoDataSet<T>.New.DataSetToObject(ds);
-      Result.Add(Model);
-      ds.Next;
+      while not ds.Eof do
+      begin
+        Model := TDaoDataSet<T>.New.DataSetToObject(ds);
+        Result.Add(Model);
+        ds.Next;
+      end;
+
+      FreeAndNil(ds);
+    except
+      on E: Exception do
+        raise Exception.Create('TDaoBase.OnObjectList<T>: ' + E.Message);
     end;
-
-    FreeAndNil(ds);
-  except
-    on E: Exception do
-      raise Exception.Create('TDaoBase.OnObjectList<T>: ' + E.Message);
+  finally
+    self.Log('<<< Saindo de TDaoBase.OnObjectList<T> - Query Execultada em %s', [LLogP.Stop]);
   end;
-  self.Log('<<< Saindo de TDaoBase.OnObjectList<T> ');
 
 end;
 
@@ -287,31 +304,41 @@ var
   Model: T;
   ds: TDataSet;
   cmd: string;
+  LLogP: ILogPerformance;
 begin
-  self.Log('>>> Entrando em  TDaoBase.OnToList<T> ');
+  LLogP := TLogPerformance.Start;
   try
-    Result := TList<T>.Create;
+    self.Log('>>> Entrando em  TDaoBase.OnToList<T> ');
+    try
+      if not Assigned(FConnection) then
+        raise TDaoException.Create('TDaoBase.OnToList<T>: conexão não inicializada');
 
-    FLastSql :=  TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);
+      Result := TList<T>.Create;
+      FLastSql := TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);
 
-    self.Log(FLastSql);
-    self.Log(aCampoValor);
+      self.Log(FLastSql);
+      self.Log(aCampoValor);
 
-    ds := FConnection.Open(FLastSql, aCampoValor);
+      ds := nil;
+      ds := FConnection.Open(FLastSql, aCampoValor);
+      if not Assigned(ds) then
+        raise TDaoException.Create('TDaoBase.OnToList<T>: Open retornou nil');
 
-    while not ds.Eof do
-    begin
-      Model := TDaoDataSet<T>.New.DataSetToObject(ds);
-      Result.Add(Model);
-      ds.Next;
+      while not ds.Eof do
+      begin
+        Model := TDaoDataSet<T>.New.DataSetToObject(ds);
+        Result.Add(Model);
+        ds.Next;
+      end;
+
+      FreeAndNil(ds);
+    except
+      on E: Exception do
+        raise Exception.Create('TDaoBase.OnToList<T>: ' + E.Message);
     end;
-
-    FreeAndNil(ds);
-  except
-    on E: Exception do
-      raise Exception.Create('TDaoBase.OnToList<T>: ' + E.Message);
+  finally
+    self.Log('<<< Saindo de TDaoBase.OnToList<T> - Query Execultada em %s', [LLogP.Stop]);
   end;
-  self.Log('<<< Saindo de TDaoBase.OnToList<T> ');
 end;
 
 function TDaoBase.Query: TDaoQuery;
@@ -1004,19 +1031,25 @@ function TDaoBase.SQLToAdapter<T>(aCmd: string;
   TListaModelCampoValor): IDaoResultAdapter<T>;
 var
   ds: TDataSet;
+  LLogP: ILogPerformance;
 begin
+  LLogP := TLogPerformance.Start;
   try
-    FLastSql := TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);
+    try
+      FLastSql := TUtilDatabase.AddSchema(aCmd, FConnection.DatabaseSchema, FLog);
 
-    self.Log(FLastSql);
-    self.Log(aCampoValor);
+      self.Log(FLastSql);
+      self.Log(aCampoValor);
 
-    ds := FConnection.Open(FLastSql, aCampoValor);
+      ds := FConnection.Open(FLastSql, aCampoValor);
 
-    Result := TDaoResultAdapter<T>.New(ds);
-  except
-    on E: Exception do
-      raise Exception.Create('TDaoBase.SQLToAdapter<T>: ' + E.Message);
+      Result := TDaoResultAdapter<T>.New(ds);
+    except
+      on E: Exception do
+        raise Exception.Create('TDaoBase.SQLToAdapter<T>: ' + E.Message);
+    end;
+  finally
+    self.Log('Query Execultada em %s', [LLogP.Stop]);
   end;
 end;
 

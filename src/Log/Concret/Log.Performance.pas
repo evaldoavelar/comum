@@ -3,7 +3,7 @@ unit Log.Performance;
 interface
 
 uses
-  System.SysUtils, System.Diagnostics, Log.ILog, Log.TLog;
+  System.SysUtils, System.Diagnostics, Log.ILog;
 
 type
   /// <summary>

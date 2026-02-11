@@ -4,6 +4,7 @@ interface
 
 uses Log.ILog,
   Log.TTipoLog,
+  Utils.IO,
   System.Classes,
 {$IF Defined(MSWINDOWS)}
   Winapi.Windows,
